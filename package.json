@@ -1,0 +1,7 @@
+{
+    "name": "com.khutchins.package.core",
+    "displayName": "KH Package Core",
+    "version": "1.0.0",
+    "unity": "2019.3",
+    "description": "My core scripts."
+}
