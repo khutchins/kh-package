@@ -51,7 +51,6 @@ public class MainMenu : MenuGenerator {
 				})
 			}, new GameObject[] { CreditsPrefab }, true),
 			MenuConfigHelper.StandardOptionsPanel(MENU_KEY_OPTIONS, _manager),
-			MenuConfigHelper.AssistMenu(_manager)
 		}, MenuDecoration);
 
 		CreateMenu(_manager, config);
