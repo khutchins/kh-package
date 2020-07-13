@@ -15,43 +15,95 @@ namespace KH.Editor {
 		private static string DD_STEAM = "steam";
 		private static string DD_ITCHIO = "itchio";
 
-		private static string[] SupportedDDServices = { DD_ITCHIO };
+		private static string[] SupportedDDServices = { DD_ITCHIO, DD_STEAM };
 
-		[MenuItem("Build/Build Supported Platforms")]
+		[MenuItem("Build/Build Everything")]
 		static void BuildForSupportedPlatforms() {
 			BuildTarget[] supportedTargets = { BuildTarget.StandaloneWindows64, BuildTarget.StandaloneOSX, BuildTarget.StandaloneLinux64, BuildTarget.WebGL };
 			BuildForPlatforms(supportedTargets, SupportedDDServices);
 		}
 
-		[MenuItem("Build/Build Desktop Platforms")]
+		[MenuItem("Build/Build Everything for Desktop")]
 		static void BuildForDesktopPlatforms() {
 			BuildTarget[] supportedTargets = { BuildTarget.StandaloneWindows64, BuildTarget.StandaloneOSX, BuildTarget.StandaloneLinux64 };
 			BuildForPlatforms(supportedTargets, SupportedDDServices);
 		}
 
-		[MenuItem("Build/Build for Windows")]
-		static void BuildForWindows() {
-			BuildForPlatform(BuildTarget.StandaloneWindows64);
+		[MenuItem("Build/Itch.io/Build Everything")]
+		static void BuildItchForSupportedPlatforms() {
+			BuildTarget[] supportedTargets = { BuildTarget.StandaloneWindows64, BuildTarget.StandaloneOSX, BuildTarget.StandaloneLinux64, BuildTarget.WebGL };
+			BuildForPlatform(supportedTargets, DD_ITCHIO);
 		}
 
-		[MenuItem("Build/Build for Mac")]
-		static void BuildForMac() {
-			BuildForPlatform(BuildTarget.StandaloneOSX);
+		[MenuItem("Build/Itch.io/Build Everything for Desktop")]
+		static void BuildItchForDesktopPlatforms() {
+			BuildTarget[] supportedTargets = { BuildTarget.StandaloneWindows64, BuildTarget.StandaloneOSX, BuildTarget.StandaloneLinux64 };
+			BuildForPlatform(supportedTargets, DD_ITCHIO);
 		}
 
-		[MenuItem("Build/Build for Linux")]
-		static void BuildForLinux() {
-			BuildForPlatform(BuildTarget.StandaloneLinux64);
+		[MenuItem("Build/Itch.io/Build for Windows")]
+		static void BuildItchForWindows() {
+			BuildForPlatform(BuildTarget.StandaloneWindows64, DD_ITCHIO);
 		}
 
-		[MenuItem("Build/Build for WebGL")]
-		static void BuildForWebGL() {
-			BuildForPlatform(BuildTarget.WebGL);
+		[MenuItem("Build/Itch.io/Build for Mac")]
+		static void BuildItchForMac() {
+			BuildForPlatform(BuildTarget.StandaloneOSX, DD_ITCHIO);
+		}
+
+		[MenuItem("Build/Itch.io/Build for Linux")]
+		static void BuildItchForLinux() {
+			BuildForPlatform(BuildTarget.StandaloneLinux64, DD_ITCHIO);
+		}
+
+		[MenuItem("Build/Itch.io/Build for WebGL")]
+		static void BuildItchForWebGL() {
+			BuildForPlatform(BuildTarget.WebGL, DD_ITCHIO);
+		}
+
+		[MenuItem("Build/Steam/Build Everything")]
+		static void BuildSteamForSupportedPlatforms() {
+			BuildTarget[] supportedTargets = { BuildTarget.StandaloneWindows64, BuildTarget.StandaloneOSX, BuildTarget.StandaloneLinux64, BuildTarget.WebGL };
+			BuildForPlatform(supportedTargets, DD_STEAM);
+		}
+
+		[MenuItem("Build/Steam/Build Everything for Desktop")]
+		static void BuildSteamForDesktopPlatforms() {
+			BuildTarget[] supportedTargets = { BuildTarget.StandaloneWindows64, BuildTarget.StandaloneOSX, BuildTarget.StandaloneLinux64 };
+			BuildForPlatform(supportedTargets, DD_STEAM);
+		}
+
+		[MenuItem("Build/Steam/Build for Windows")]
+		static void BuildSteamForWindows() {
+			BuildForPlatform(BuildTarget.StandaloneWindows64, DD_STEAM);
+		}
+
+		[MenuItem("Build/Steam/Build for Mac")]
+		static void BuildSteamForMac() {
+			BuildForPlatform(BuildTarget.StandaloneOSX, DD_STEAM);
+		}
+
+		[MenuItem("Build/Steam/Build for Linux")]
+		static void BuildSteamForLinux() {
+			BuildForPlatform(BuildTarget.StandaloneLinux64, DD_STEAM);
+		}
+
+		[MenuItem("Build/Steam/Build for WebGL")]
+		static void BuildSteamForWebGL() {
+			BuildForPlatform(BuildTarget.WebGL, DD_STEAM);
 		}
 
 		static void BuildForPlatform(BuildTarget target) {
 			BuildTarget[] targets = { target };
 			BuildForPlatforms(targets, SupportedDDServices);
+		}
+
+		static void BuildForPlatform(BuildTarget target, string ddService) {
+			BuildForPlatforms(new BuildTarget[] { target }, new string[] { ddService });
+		}
+
+		static void BuildForPlatform(BuildTarget[] targets, string ddService) {
+			BuildForPlatforms(targets, new string[] { ddService });
 		}
 
 		static void BuildForPlatforms(BuildTarget[] targets, string[] ddServices) {
@@ -64,7 +116,7 @@ namespace KH.Editor {
 				targets = newTargets.Distinct().ToArray();
 			}
 
-			foreach(BuildTarget target in targets) {
+			foreach (BuildTarget target in targets) {
 				foreach (string service in ddServices) {
 					string path = PathForBuildTarget(target, service);
 					Debug.Log("Building " + target);
@@ -87,7 +139,7 @@ namespace KH.Editor {
 		}
 
 		private static string FolderExtForBuildTarget(BuildTarget target) {
-			switch(target) {
+			switch (target) {
 				case BuildTarget.StandaloneOSX:
 					return ".app";
 				default:
@@ -96,10 +148,10 @@ namespace KH.Editor {
 		}
 
 		private static string ExtForBuildTarget(BuildTarget target) {
-			switch(target) {
+			switch (target) {
 				case BuildTarget.StandaloneOSX:
 					return ".app";
-				case BuildTarget.StandaloneLinux64: 
+				case BuildTarget.StandaloneLinux64:
 					return ".x64";
 				case BuildTarget.StandaloneWindows:
 				case BuildTarget.StandaloneWindows64:
@@ -119,9 +171,9 @@ namespace KH.Editor {
 		/// <param name="target">The build target</param>
 		/// <returns></returns>
 		private static bool ShouldCopyFilesAndFolders(BuildTarget target) {
-			switch(target) {
+			switch (target) {
 				case BuildTarget.StandaloneOSX:
-				case BuildTarget.StandaloneLinux64: 
+				case BuildTarget.StandaloneLinux64:
 				case BuildTarget.StandaloneWindows:
 				case BuildTarget.StandaloneWindows64:
 					return true;
@@ -132,13 +184,13 @@ namespace KH.Editor {
 		}
 
 		private static void PlatformSpecificPostProcessing(BuildTarget target, string path) {
-			if(target == BuildTarget.StandaloneWindows 
+			if (target == BuildTarget.StandaloneWindows
 				|| target == BuildTarget.StandaloneWindows64
 				|| target == BuildTarget.StandaloneLinux64) {
 				string appPath = Combine(path, PlayerSettings.productName);
 				string pathWithExt = appPath + ExtForBuildTarget(target);
 				Debug.Log("Moving " + path + " -> " + pathWithExt);
-                File.Move(appPath, appPath + ExtForBuildTarget(target));
+				File.Move(appPath, appPath + ExtForBuildTarget(target));
 			}
 		}
 
@@ -191,13 +243,13 @@ namespace KH.Editor {
 		static void CopyFilesAndFolders(string src, string dest) {
 			Debug.Log("CopyFilesAndFolders: " + src + "->" + dest);
 
-			foreach(string dir in Directory.GetDirectories(src, "*", SearchOption.AllDirectories)) {
+			foreach (string dir in Directory.GetDirectories(src, "*", SearchOption.AllDirectories)) {
 				Debug.Log("Dir: " + dir);
-                Directory.CreateDirectory(dir.Replace(src, dest));
+				Directory.CreateDirectory(dir.Replace(src, dest));
 			}
 
 			// Copy all the files & Replaces any files with the same name
-			foreach(string path in Directory.GetFiles(src, "*.*", SearchOption.TopDirectoryOnly)) {
+			foreach (string path in Directory.GetFiles(src, "*.*", SearchOption.TopDirectoryOnly)) {
 				Debug.Log("Path: " + path);
 				File.Copy(path, path.Replace(src, dest), true);
 			}
@@ -215,9 +267,9 @@ namespace KH.Editor {
 
 		static string Combine(params string[] paths) {
 			string str = "";
-			if(paths.Length > 0) {
+			if (paths.Length > 0) {
 				str = paths[0];
-				for(int i = 1; i < paths.Length; i++) {
+				for (int i = 1; i < paths.Length; i++) {
 					str += "/" + paths[i];
 				}
 			}
