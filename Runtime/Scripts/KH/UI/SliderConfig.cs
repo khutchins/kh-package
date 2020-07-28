@@ -17,5 +17,33 @@ namespace KH.UI {
 			DefaultValue = defaultValue;
 			Handler = handler;
 		}
+
+		public new class Builder : PanelObjectConfig.Builder {
+			private string _displayText;
+			private SliderUpdatedHandler _handler;
+			private float _minValue;
+			private float _maxValue;
+			private float _defaultValue;
+
+			public Builder(string key, float minValue, float maxValue, float defaultValue) : base(key) {
+				_minValue = minValue;
+				_maxValue = maxValue;
+				_defaultValue = defaultValue;
+			}
+
+			public Builder SetDisplayText(string displayText) {
+				_displayText = displayText;
+				return this;
+			}
+
+			public Builder SetSliderUpdatedHandler(SliderUpdatedHandler handler) {
+				_handler = handler;
+				return this;
+			}
+
+			public SliderConfig Build() {
+				return new SliderConfig(_key, _displayText, _minValue, _maxValue, _defaultValue, _creationCallback, _handler);
+			}
+		}
 	}
 }

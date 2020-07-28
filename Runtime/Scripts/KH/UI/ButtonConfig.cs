@@ -11,5 +11,27 @@ namespace KH.UI {
 			DisplayText = displayText;
 			Handler = handler;
 		}
+
+		public new class Builder : PanelObjectConfig.Builder {
+			private string _displayText;
+			private ButtonPressedHandler _handler;
+
+			public Builder(string key) : base(key) {
+			}
+
+			public Builder SetDisplayText(string displayText) {
+				_displayText = displayText;
+				return this;
+			}
+
+			public Builder SetButtonPressedHandler(ButtonPressedHandler handler) {
+				_handler = handler;
+				return this;
+			}
+
+			public ButtonConfig Build() {
+				return new ButtonConfig(_key, _displayText, _creationCallback, _handler);
+			}
+		}
 	}
 }
