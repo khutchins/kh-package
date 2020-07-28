@@ -24,6 +24,8 @@ namespace KH.UI {
 		private PanelManager _activeMenu;
 		private UIElementManager _activeDefaultInput;
 		private float _cachedTime = 1;
+		private CursorLockMode _cachedLockMode;
+		private bool _cachedVisible;
 
 		public KH.Input.InputMediator InputMediator;
 
@@ -38,14 +40,16 @@ namespace KH.UI {
 			BG.SetActive(Active);
 			Paused?.SetValue(up);
 			if (Active) {
+				_cachedLockMode = Cursor.lockState;
 				Cursor.lockState = CursorLockMode.None;
+				_cachedVisible = Cursor.visible;
 				Cursor.visible = true;
 				_cachedTime = Time.timeScale;
 				Time.timeScale = MenuConfig.MenuPausesGame ? 0 : _cachedTime;
 				ActivateMenu(MenuConfig.MainPanelKey);
 			} else { // Out of Menu
-				Cursor.lockState = CursorLockMode.Locked;
-				Cursor.visible = false;
+				Cursor.lockState = _cachedLockMode;
+				Cursor.visible = _cachedVisible;
 				Time.timeScale = _cachedTime;
 				ActivateMenu(null);
 			}

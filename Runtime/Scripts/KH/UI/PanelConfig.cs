@@ -11,17 +11,19 @@ namespace KH.UI {
 		public string Key;
 		public string DefaultSelectableKey;
 		public bool HideMenuDecoration;
+		public bool HorizontalMenu;
 
 		public PanelObjectConfig[] PanelObjects;
 		[HideInInspector]
 		public GameObject[] SupplementalObjects;
 
-		public PanelConfig(string key, string defaultSelectableKey, PanelObjectConfig[] panelObjects, GameObject[] supplementalObjects = null, bool hideMenuDecoration = false) {
+		public PanelConfig(string key, string defaultSelectableKey, PanelObjectConfig[] panelObjects, GameObject[] supplementalObjects = null, bool hideMenuDecoration = false, bool horizontalMenu = false) {
 			Key = key;
 			DefaultSelectableKey = defaultSelectableKey;
 			PanelObjects = panelObjects;
 			HideMenuDecoration = hideMenuDecoration;
 			SupplementalObjects = supplementalObjects;
+			HorizontalMenu = horizontalMenu;
 		}
 	}
 }

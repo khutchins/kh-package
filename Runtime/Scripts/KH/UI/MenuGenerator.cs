@@ -75,10 +75,17 @@ namespace KH.UI {
 				// Make new one to avoid potential property strangeness.
 				Navigation navigation = new Navigation();
 				navigation.mode = Navigation.Mode.Explicit;
-				navigation.selectOnUp = i > 0 ? selectableObjects[i - 1] : null;
-				navigation.selectOnDown = i < selectableObjects.Count - 1? selectableObjects[i + 1] : null;
-				navigation.selectOnLeft = null;
-				navigation.selectOnRight = null;
+				if (config.HorizontalMenu) {
+					navigation.selectOnLeft = i > 0 ? selectableObjects[i - 1] : null;
+					navigation.selectOnRight = i < selectableObjects.Count - 1 ? selectableObjects[i + 1] : null;
+					navigation.selectOnUp = null;
+					navigation.selectOnDown = null;
+				} else {
+					navigation.selectOnUp = i > 0 ? selectableObjects[i - 1] : null;
+					navigation.selectOnDown = i < selectableObjects.Count - 1 ? selectableObjects[i + 1] : null;
+					navigation.selectOnLeft = null;
+					navigation.selectOnRight = null;
+				}
 				selectableObjects[i].navigation = navigation;
 			}
 
