@@ -50,7 +50,7 @@ public class InGameMenu : MenuGenerator {
 					_manager.PopMenu();
 				})
 			}, new GameObject[] { CreditsPrefab }, true),
-			MenuConfigHelper.StandardOptionsPanel(MENU_KEY_OPTIONS, _manager),
+			MenuConfigHelper.StandardOptionsPanel(MENU_KEY_OPTIONS, _manager).Build(),
 		}, MenuDecoration);
 
 		CreateMenu(_manager, config);

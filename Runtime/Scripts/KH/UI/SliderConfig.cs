@@ -41,7 +41,7 @@ namespace KH.UI {
 				return this;
 			}
 
-			public SliderConfig Build() {
+			public override PanelObjectConfig Build() {
 				return new SliderConfig(_key, _displayText, _minValue, _maxValue, _defaultValue, _creationCallback, _handler);
 			}
 		}

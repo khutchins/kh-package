@@ -3,6 +3,7 @@ using KH.UI;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Emit;
 using UnityEngine;
 
 /// <summary>
@@ -29,11 +30,11 @@ public static class MenuConfigHelper {
 	/// <returns>Resolution panel object config</returns>
 	public static PanelObjectConfig ResolutionConfig() {
 
+		
 		Resolution[] filteredResolutions = Screen.resolutions.Where(res => Mathf.Abs(res.refreshRate - Screen.currentResolution.refreshRate) <= 1).ToArray();
 		Resolution playerResolution = new Resolution();
 		playerResolution.width = Screen.width;
 		playerResolution.height = Screen.height;
-		Debug.Log("Startup resolution " + playerResolution);
 		int idx = filteredResolutions.Length - 1;
 		for (int i = 0; i < filteredResolutions.Length; i++) {
 			if (filteredResolutions[i].width == playerResolution.width && filteredResolutions[i].height == playerResolution.height) {
@@ -41,36 +42,57 @@ public static class MenuConfigHelper {
 				break;
 			}
 		}
-		string[] resolutionStrings = filteredResolutions.Select(x => x.width + " x " + x.height).ToArray();
+		IEnumerable<string> resolutionStrings = filteredResolutions.Select(x => x.width + " x " + x.height);
 
-		return new DropdownConfig(KEY_RESOLUTION, "Resolution", resolutionStrings, idx, null, delegate (DropdownManager manager, int newIndex, string optionString) {
-			Resolution res = filteredResolutions[newIndex];
-			Screen.SetResolution(res.width, res.height, Screen.fullScreenMode);
-			Debug.Log("Setting resolution to " + res);
-		});
+		return new DropdownConfig.Builder("resolution")
+			.SetDisplayText("Resolution")
+			.AddOptionStrings(resolutionStrings)
+			.SetDefaultOptionIndex(idx)
+			.SetDropdownChosenHandler(delegate (DropdownManager manager, int newIndex, string optionString) {
+				Resolution res = filteredResolutions[newIndex];
+				Screen.SetResolution(res.width, res.height, Screen.fullScreenMode);
+				Debug.Log("Setting resolution to " + res);
+			}).Build();
 	}
 
-	public static PanelConfig StandardOptionsPanel(string key, MenuHelper menuHelper) {
-		List<PanelObjectConfig> list = new List<PanelObjectConfig>();
-		list.Add(new ButtonConfig(KEY_BACK, "Back", null, delegate (ButtonManager manager) {
-			menuHelper.PopMenu();
-		}));
-		list.Add(new SliderConfig(KEY_SLIDER_LOOK, "Look Speed", 0.1f, 3, 1 /* Get look sensitivity */, null, delegate (SliderManager manager, float newValue) {
-			// Handle sensitivity
-		}));
-		list.Add(new SliderConfig(KEY_SLIDER_VOLUME, "Volume", 0F, 1F, 1 /* Get volume value */, null, delegate (SliderManager manager, float newValue) {
-			// Handle volume
-		}));
-		list.Add(new DropdownConfig(KEY_QUALITY, "Quality", QualitySettings.names, QualitySettings.GetQualityLevel(), null, delegate (DropdownManager manager, int newIndex, string optionString) {
-			QualitySettings.SetQualityLevel(newIndex);
-		}));
+	public static PanelConfig.Builder StandardOptionsPanel(string key, MenuHelper menuHelper) {
+
+		PanelConfig.Builder builder = new PanelConfig.Builder(key);
+
+		builder.AddPanelObject(new ButtonConfig.Builder("back")
+			.SetDisplayText("Back")
+			.SetButtonPressedHandler(delegate (ButtonManager manager) {
+				menuHelper.PopMenu();
+			}));
+		builder.AddPanelObject(new SliderConfig.Builder("sliderlook", 0.1f, 3f, 1f)
+			.SetDisplayText("Look Speed")
+			.SetSliderUpdatedHandler(delegate (SliderManager manager, float newValue) {
+				// Handle sensitivity
+			}));
+		builder.AddPanelObject(new SliderConfig.Builder("slidervolume", 0.1f, 3f, 1f)
+			.SetDisplayText("Volume")
+			.SetSliderUpdatedHandler(delegate (SliderManager manager, float newValue) {
+				// Handle sensitivity
+			}));
+		builder.AddPanelObject(new DropdownConfig.Builder("quality")
+			.SetDisplayText("Quality")
+			.AddOptionStrings(QualitySettings.names)
+			.SetDefaultOptionIndex(QualitySettings.GetQualityLevel())
+			.SetDropdownChosenHandler(delegate (DropdownManager manager, int newIndex, string optionString) {
+				QualitySettings.SetQualityLevel(newIndex);
+			}));
+
 		// No point in showing resolution config in WebGL - It does nothing.
 		if (Application.platform != RuntimePlatform.WebGLPlayer) {
-			list.Add(ResolutionConfig());
+			builder.AddPanelObject(ResolutionConfig());
 		}
-		list.Add(new ToggleConfig(KEY_FULLSCREEN, "Fullscreen", Screen.fullScreen, null, delegate (ToggleManager manager, bool newValue) {
-			Screen.fullScreen = newValue;
-		}));
-		return new PanelConfig(key, KEY_BACK, list.ToArray());
+
+		builder.AddPanelObject(new ToggleConfig.Builder("fullscreen")
+			.SetIsOn(Screen.fullScreen)
+			.SetTogglePressedHandler(delegate (ToggleManager manager, bool newValue) {
+				Screen.fullScreen = newValue;
+			}));
+
+		return builder;
 	}
 }

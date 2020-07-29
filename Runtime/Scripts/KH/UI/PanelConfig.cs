@@ -52,8 +52,34 @@ namespace KH.UI {
 				return this;
 			}
 
-			public Builder AddPanelObject(PanelObjectConfig config, bool defaultObject) {
+			public Builder AddPanelObject(PanelObjectConfig config, bool defaultObject = false) {
 				_panelObjectConfigs.Add(config);
+				if (defaultObject) {
+					_defaultSelectableKey = config.Key;
+				}
+				return this;
+			}
+
+			public Builder AddPanelObject(PanelObjectConfig.Builder configBuilder, bool defaultObject = false) {
+				PanelObjectConfig config = configBuilder.Build();
+				_panelObjectConfigs.Add(config);
+				if (defaultObject) {
+					_defaultSelectableKey = config.Key;
+				}
+				return this;
+			}
+
+			public Builder InsertPanelObject(PanelObjectConfig config, int index, bool defaultObject = false) {
+				_panelObjectConfigs.Insert(index, config);
+				if (defaultObject) {
+					_defaultSelectableKey = config.Key;
+				}
+				return this;
+			}
+
+			public Builder InsertPanelObject(PanelObjectConfig.Builder configBuilder, int index, bool defaultObject = false) {
+				PanelObjectConfig config = configBuilder.Build();
+				_panelObjectConfigs.Insert(index, config);
 				if (defaultObject) {
 					_defaultSelectableKey = config.Key;
 				}
@@ -76,6 +102,9 @@ namespace KH.UI {
 			}
 
 			public PanelConfig Build() {
+				if (_defaultSelectableKey == null) {
+					_defaultSelectableKey = _panelObjectConfigs[0].Key;
+				}
 				return new PanelConfig(_key, _defaultSelectableKey, 
 					_panelObjectConfigs.ToArray(), _supplementalObjects.ToArray(), 
 					_hideMenuDecoration, _isHorizontal, _prefabOverride);

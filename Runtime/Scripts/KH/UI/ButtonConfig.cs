@@ -29,7 +29,7 @@ namespace KH.UI {
 				return this;
 			}
 
-			public ButtonConfig Build() {
+			public override PanelObjectConfig Build() {
 				return new ButtonConfig(_key, _displayText, _creationCallback, _handler);
 			}
 		}

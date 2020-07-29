@@ -37,6 +37,8 @@ namespace KH.UI {
 				_creationCallback = creationCallback;
 				return this;
 			}
+
+			public abstract PanelObjectConfig Build();
 		}
 	}
 }

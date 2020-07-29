@@ -36,7 +36,8 @@ namespace KH.UI {
 		}
 
 		public PanelManager CreatePanel(GameObject parent, PanelConfig config, MenuConfig menuConfig) {
-			GameObject obj = Instantiate(MenuObjectPrefab, parent.transform);
+			GameObject prefab = config.PrefabOverride == null ? MenuObjectPrefab : config.PrefabOverride;
+			GameObject obj = Instantiate(prefab, parent.transform);
 			obj.name = config.Key;
 			PanelManager manager = obj.AddComponent<PanelManager>();
 			manager.Key = config.Key;
@@ -107,7 +108,8 @@ namespace KH.UI {
 		}
 
 		public GameObject CreateButton(GameObject parent, ButtonConfig config) {
-			GameObject go = Instantiate(ButtonPrefab, parent.transform);
+			GameObject prefab = config.PrefabOverride == null ? ButtonPrefab : config.PrefabOverride;
+			GameObject go = Instantiate(prefab, parent.transform);
 			go.name = config.Key;
 			ButtonManager manager = go.GetComponent<ButtonManager>();
 			if (manager == null) {
@@ -120,7 +122,8 @@ namespace KH.UI {
 		}
 
 		public GameObject CreateSlider(GameObject parent, SliderConfig config) {
-			GameObject go = Instantiate(SliderPefab, parent.transform);
+			GameObject prefab = config.PrefabOverride == null ? SliderPefab : config.PrefabOverride;
+			GameObject go = Instantiate(prefab, parent.transform);
 			go.name = config.Key;
 			SliderManager manager = go.GetComponent<SliderManager>();
 			if (manager == null) {
@@ -135,7 +138,8 @@ namespace KH.UI {
 		}
 
 		public GameObject CreateToggle(GameObject parent, ToggleConfig config) {
-			GameObject go = Instantiate(TogglePrefab, parent.transform);
+			GameObject prefab = config.PrefabOverride == null ? TogglePrefab : config.PrefabOverride;
+			GameObject go = Instantiate(prefab, parent.transform);
 			go.name = config.Key;
 			ToggleManager manager = go.GetComponent<ToggleManager>();
 			if (manager == null) {
@@ -149,7 +153,8 @@ namespace KH.UI {
 		}
 
 		public GameObject CreateDropdown(GameObject parent, DropdownConfig config) {
-			GameObject go = Instantiate(DropdownPrefab, parent.transform);
+			GameObject prefab = config.PrefabOverride == null ? DropdownPrefab : config.PrefabOverride;
+			GameObject go = Instantiate(prefab, parent.transform);
 			go.name = config.Key;
 			DropdownManager manager = go.GetComponent<DropdownManager>();
 			if (manager == null) {
