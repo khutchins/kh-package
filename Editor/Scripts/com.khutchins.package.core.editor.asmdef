@@ -1,3 +1,15 @@
-﻿{
-	"name": "com.khutchins.package.core.editor"
+{
+    "name": "com.khutchins.package.core.editor",
+    "references": [
+        "GUID:abb7ec0141697974e81937cf637c3faf"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
 }
