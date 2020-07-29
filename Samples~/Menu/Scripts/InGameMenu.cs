@@ -24,35 +24,45 @@ public class InGameMenu : MenuGenerator {
 	public readonly static string KEY_FULLSCREEN = "fullscreen";
 
 	public GameObject CreditsPrefab;
+	public GameObject HorizonalPanel;
 
 	private MenuHelper _manager;
 
 	void Awake() {
 		_manager = GetComponent<MenuHelper>();
 
-		MenuConfig config = new MenuConfig(true, true, MENU_KEY_MAIN, PaletteConfig, new PanelConfig[] {
-			new PanelConfig(MENU_KEY_MAIN, KEY_RESUME, new PanelObjectConfig[] {
-				new ButtonConfig(KEY_RESUME, "Resume", null, delegate(ButtonManager manager) {
-					_manager.ExitMenu();
-				}),
-				new ButtonConfig(KEY_OPTIONS, "Options", null, delegate(ButtonManager manager) {
-					_manager.PushMenu(MENU_KEY_OPTIONS);
-				}),
-				new ButtonConfig("Restart", "Restart", null, delegate(ButtonManager manager) {
-					_manager.NewMap();
-				}),
-				new ButtonConfig(KEY_EXIT, "Exit", null, delegate(ButtonManager manager) {
-					_manager.ExitGame();
-				})
-			}),
-			new PanelConfig(MENU_KEY_CREDITS, KEY_BACK, new PanelObjectConfig[] {
-				new ButtonConfig(KEY_BACK, "Back", null, delegate (ButtonManager manager) {
-					_manager.PopMenu();
-				})
-			}, new GameObject[] { CreditsPrefab }, true),
-			MenuConfigHelper.StandardOptionsPanel(MENU_KEY_OPTIONS, _manager).Build(),
-		}, MenuDecoration);
+		MenuConfig.Builder builder = new MenuConfig.Builder(true, true, PaletteConfig);
 
-		CreateMenu(_manager, config);
+		builder.AddPanelConfig(new PanelConfig.Builder("main")
+			.AddPanelObject(
+				new ButtonConfig.Builder("resume")
+					.SetDisplayText("Resume")
+					.SetButtonPressedHandler(delegate (ButtonManager manager) {
+						_manager.ExitMenu();
+					}))
+			.AddPanelObject(
+				new ButtonConfig.Builder("options")
+					.SetDisplayText("Options")
+					.SetButtonPressedHandler(delegate (ButtonManager manager) {
+						_manager.PushMenu(MENU_KEY_OPTIONS);
+					}))
+			.AddPanelObject(
+				new ButtonConfig.Builder("restart")
+					.SetDisplayText("Restart")
+					.SetButtonPressedHandler(delegate (ButtonManager manager) {
+						_manager.NewMap();
+					}))
+			.AddPanelObject(
+				new ButtonConfig.Builder("exit")
+					.SetDisplayText("Exit")
+					.SetButtonPressedHandler(delegate (ButtonManager manager) {
+						_manager.ExitGame();
+					}))
+			.SetPrefabOverride(HorizonalPanel).SetIsHorizontalMenu(true), true);
+
+		builder.AddPanelConfig(MenuConfigHelper.StandardOptionsPanel(MENU_KEY_OPTIONS, _manager));
+		builder.AddMenuDecorations(MenuDecoration);
+
+		CreateMenu(_manager, builder.Build());
 	}
 }

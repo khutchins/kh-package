@@ -88,6 +88,7 @@ public static class MenuConfigHelper {
 		}
 
 		builder.AddPanelObject(new ToggleConfig.Builder("fullscreen")
+			.SetDisplayText("Fullscreen")
 			.SetIsOn(Screen.fullScreen)
 			.SetTogglePressedHandler(delegate (ToggleManager manager, bool newValue) {
 				Screen.fullScreen = newValue;
