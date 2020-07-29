@@ -24,8 +24,8 @@ namespace KH.UI {
 		private PanelManager _activeMenu;
 		private UIElementManager _activeDefaultInput;
 		private float _cachedTime = 1;
-		private CursorLockMode _cachedLockMode;
-		private bool _cachedVisible;
+		private CursorLockMode _cachedLockMode = CursorLockMode.Locked;
+		private bool _cachedVisible = false;
 
 		public KH.Input.InputMediator InputMediator;
 
