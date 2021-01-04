@@ -17,5 +17,11 @@ namespace KH.Audio {
 
 			events[Random.Range(0, events.Length)].Play(source);
 		}
+
+		public override void PlayClipAtPoint(Vector3 position) {
+			if (events.Length == 0) return;
+
+			events[Random.Range(0, events.Length)].PlayClipAtPoint(position);
+		}
 	}
 }

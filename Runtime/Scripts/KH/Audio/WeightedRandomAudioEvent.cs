@@ -14,6 +14,14 @@ namespace KH.Audio {
 		public CompositeEntry[] Entries;
 
 		public override void Play(AudioSource source) {
+			SelectedEvent()?.Play(source);
+		}
+
+		public override void PlayClipAtPoint(Vector3 position) {
+			SelectedEvent()?.PlayClipAtPoint(position);
+		}
+
+		AudioEvent SelectedEvent() {
 			float totalWeight = 0;
 			for (int i = 0; i < Entries.Length; i++) {
 				totalWeight += Entries[i].Weight;
@@ -26,9 +34,9 @@ namespace KH.Audio {
 					continue;
 				}
 
-				Entries[i].Event.Play(source);
-				return;
+				return Entries[i].Event;
 			}
+			return null;
 		}
 	}
 }

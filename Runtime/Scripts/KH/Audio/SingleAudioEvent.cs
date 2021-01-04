@@ -20,5 +20,11 @@ namespace KH.Audio {
 			source.pitch = Random.Range(pitch.minValue, pitch.maxValue);
 			source.Play();
 		}
+
+		public override void PlayClipAtPoint(Vector3 position) {
+			if (clip == null) return;
+
+			ASHelper.PlayClipAtPoint(clip, position, Random.Range(volume.minValue, volume.maxValue), Random.Range(pitch.minValue, pitch.maxValue));
+		}
 	}
 }
