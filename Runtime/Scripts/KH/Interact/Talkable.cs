@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using KH.Input;
-using KH.Text;
+using KH.Texts;
 
 namespace KH.Interact {
 	public class Talkable : TalkableBase {

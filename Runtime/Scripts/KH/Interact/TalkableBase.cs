@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using KH.Text;
+using KH.Texts;
 using KH.Input;
 
 namespace KH.Interact {
