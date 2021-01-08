@@ -43,7 +43,7 @@ namespace KH.Texts {
 			string invisibleMarkupEnd = "</color>";
 			string strippedText = _parser.GetTextWithoutMarkup();
 
-			yield return new TextUpdate(_parser.GetStringInsertingTagOpenAtIndex(stripIdx, invisibleMarkup, invisibleMarkupEnd), 0, false, null);
+			yield return new TextUpdate(_parser.GetStringInsertingTagOpenAtIndex(stripIdx, invisibleMarkup, invisibleMarkupEnd), 0, false, new List<TextToken>());
 
 			while (stripIdx < strippedText.Length + 1) {
 				string newText = _parser.GetStringInsertingTagOpenAtIndex(stripIdx, invisibleMarkup, invisibleMarkupEnd);
@@ -77,12 +77,12 @@ namespace KH.Texts {
 				char curr = stripIdx - 1 < strippedText.Length && stripIdx >= 1 ? strippedText[stripIdx - 1] : '\0';
 				char next = stripIdx < strippedText.Length ? strippedText[stripIdx] : '\0';
 				// TODO: Hook into settings for modifier
-				float delay = TimeForCharacter(uniform, prev, curr, next) * (1F);
+				float delay = TimeForCharacter(uniform, prev, curr, next) * (1F / SettingsWrapper.TextSpeed);
 				float actualDelay = delay / percentMod + addMod;
 				stripIdx++;
 				if (actualDelay > 0F) {
 					bool blip = curr != '\0' && delay > 0 && ShouldPlaySound(curr);
-					yield return new TextUpdate(newText, delay, blip, unrecognizedTokens);
+					yield return new TextUpdate(newText, actualDelay, blip, unrecognizedTokens);
 				}
 			}
 
