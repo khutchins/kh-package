@@ -9,6 +9,9 @@ namespace KH.Texts {
 	public delegate void TextFinishedHandler(bool shouldPlayNextText);
 	public delegate void TextAnimateOutFinishedHandler();
 
+	/// <summary>
+	/// Handles the animation of text and related behaviors in the conversation box.
+	/// </summary>
 	public class TextAnimator : MonoBehaviour {
 
 		public enum AnimationTypes {

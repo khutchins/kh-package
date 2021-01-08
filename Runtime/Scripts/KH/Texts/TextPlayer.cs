@@ -1,9 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 
-public delegate void TextFinishedHandler(bool shouldPlayNextText);
-public delegate void TextAnimateOutFinishedHandler();
-
 namespace KH.Texts {
 	public class TextUpdate {
 		public string NewString;
@@ -21,6 +18,9 @@ namespace KH.Texts {
 		}
 	}
 
+	/// <summary>
+	/// A class that, given a line of text, enumerates all of the states that it should be in.
+	/// </summary>
 	public class TextPlayer : IEnumerable<TextUpdate> {
 
 		private readonly TokenizedText _parser;
