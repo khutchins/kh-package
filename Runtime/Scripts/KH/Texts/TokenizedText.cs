@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace KH.Text {
+namespace KH.Texts {
 	/// <summary>
 	/// Parses text into its components with tags to more easily insert tags
 	/// into the text without breaking Unity's rich text formatting. This

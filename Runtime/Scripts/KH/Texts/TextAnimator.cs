@@ -5,7 +5,7 @@ using TMPro;
 using UnityAtoms.BaseAtoms;
 using UnityEngine;
 
-namespace KH.Text {
+namespace KH.Texts {
 	public delegate void TextFinishedHandler(bool shouldPlayNextText);
 	public delegate void TextAnimateOutFinishedHandler();
 

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using UnityEngine;
 
-namespace KH.Text {
+namespace KH.Texts {
 	public class TextBreaker {
 
 		public readonly int TotalLines;

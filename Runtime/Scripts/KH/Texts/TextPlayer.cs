@@ -4,7 +4,7 @@ using System.Collections.Generic;
 public delegate void TextFinishedHandler(bool shouldPlayNextText);
 public delegate void TextAnimateOutFinishedHandler();
 
-namespace KH.Text {
+namespace KH.Texts {
 	public class TextUpdate {
 		public string NewString;
 		public float Delay;
