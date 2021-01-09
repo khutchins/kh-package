@@ -17,6 +17,7 @@ namespace KH.Interact {
 		private Renderer _renderer;
 		private Interactor _currentInteractor;
 		private int _timesInteracted;
+		private float _lastInteractionStop;
 
 		void Awake() {
 			_renderer = GetComponentInChildren<Renderer>();
@@ -53,6 +54,8 @@ namespace KH.Interact {
 			if (ForbidInteraction) return false;
 			if (interactor.Locked) return false;
 			if (MaxInteractionTimes >= 0 && _timesInteracted >= MaxInteractionTimes) return false;
+			// Prevent retriggering an interactable if the interact button is used to stop interacting.
+			if (Time.unscaledTime == _lastInteractionStop) return false;
 			bool allowInteract = StartInteractingInner(interactor);
 			if (allowInteract) {
 				if (LocksMouse()) {
@@ -83,6 +86,7 @@ namespace KH.Interact {
 			if (ExclusiveInteraction()) {
 				interactor.Locked = false;
 			}
+			_lastInteractionStop = Time.unscaledTime;
 			StopInteractingInner(interactor);
 			FinishedInteracting?.Invoke(interactor);
 		}
