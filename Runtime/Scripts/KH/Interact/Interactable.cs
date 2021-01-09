@@ -59,30 +59,43 @@ namespace KH.Interact {
 			}
 		}
 
-		public bool StartInteracting(Interactor interactor) {
+		/// <summary>
+		/// Whether or not the interactor can interact with the given interactable.
+		/// </summary>
+		/// <param name="interactor">The interactor which wishes to interact.</param>
+		/// <returns></returns>
+		public bool CanInteract(Interactor interactor) {
 			if (ForbidInteraction) return false;
 			if (interactor.Locked) return false;
 			if (MaxInteractionTimes >= 0 && _timesInteracted >= MaxInteractionTimes) return false;
 			// Prevent retriggering an interactable if the interact button is used to stop interacting.
 			if (Time.unscaledTime == _lastInteractionStop) return false;
+			return ShouldAllowInteraction(interactor);
+		}
 
-			bool allowInteract = ShouldAllowInteraction(interactor);
-			if (allowInteract) {
-				if (LocksMouse()) {
-					interactor.LockMouse();
-				}
-				if (LocksMovement()) {
-					interactor.LockMovement();
-				}
-				if (ExclusiveInteraction()) {
-					interactor.Locked = true;
-				}
-				_currentInteractor = interactor;
-				_timesInteracted++;
-				StartInteractingInner(interactor);
+		/// <summary>
+		/// Begins interacting with this interactable. Check if the object can interact
+		/// with CanInteract before calling this method.
+		/// </summary>
+		/// <param name="interactor"></param>
+		public void StartInteracting(Interactor interactor) {
+			if (!CanInteract(interactor)) {
+				Debug.LogError("Call to StartInteracting without checking CanInteract first.");
+				return;
 			}
 
-			return allowInteract;
+			if (LocksMouse()) {
+				interactor.LockMouse();
+			}
+			if (LocksMovement()) {
+				interactor.LockMovement();
+			}
+			if (ExclusiveInteraction()) {
+				interactor.Locked = true;
+			}
+			_currentInteractor = interactor;
+			_timesInteracted++;
+			StartInteractingInner(interactor);
 		}
 
 		public void StopInteracting(Interactor interactor) {
