@@ -6,7 +6,7 @@ namespace KH.Interact {
 	public delegate void FinishedInteractingHandler(Interactor interactor);
 
 	public abstract class Interactable : MonoBehaviour {
-		protected abstract bool StartInteractingInner(Interactor interactor);
+		protected abstract void StartInteractingInner(Interactor interactor);
 		protected abstract void StopInteractingInner(Interactor interactor);
 
 		public event FinishedInteractingHandler FinishedInteracting;
@@ -21,6 +21,15 @@ namespace KH.Interact {
 
 		void Awake() {
 			_renderer = GetComponentInChildren<Renderer>();
+		}
+
+		/// <summary>
+		/// Whether or not the interactor should allow an interaction.
+		/// NOTE: This method does not have to account for MaxIterationTimes.
+		/// </summary>
+		/// <returns></returns>
+		public virtual bool ShouldAllowInteraction(Interactor interactor) {
+			return true;
 		}
 
 		public virtual bool LocksMouse() {
@@ -56,7 +65,8 @@ namespace KH.Interact {
 			if (MaxInteractionTimes >= 0 && _timesInteracted >= MaxInteractionTimes) return false;
 			// Prevent retriggering an interactable if the interact button is used to stop interacting.
 			if (Time.unscaledTime == _lastInteractionStop) return false;
-			bool allowInteract = StartInteractingInner(interactor);
+
+			bool allowInteract = ShouldAllowInteraction(interactor);
 			if (allowInteract) {
 				if (LocksMouse()) {
 					interactor.LockMouse();
@@ -68,10 +78,10 @@ namespace KH.Interact {
 					interactor.Locked = true;
 				}
 				_currentInteractor = interactor;
-			}
-			if (allowInteract) {
 				_timesInteracted++;
+				StartInteractingInner(interactor);
 			}
+
 			return allowInteract;
 		}
 

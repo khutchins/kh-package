@@ -22,13 +22,16 @@ namespace KH.Interact {
 			return LockPlayer;
 		}
 
-		protected override bool StartInteractingInner(Interactor interactor) {
+		public override bool ShouldAllowInteraction(Interactor interator) {
+			return Action != null;
+		}
+
+		protected override void StartInteractingInner(Interactor interactor) {
 			if (Action != null) {
 				Action.FinishedAction += Action_FinishedAction;
 				Action.Begin();
-				return true;
 			} else {
-				return false;
+				ForceStopInteraction();
 			}
 		}
 
@@ -38,7 +41,7 @@ namespace KH.Interact {
 		}
 
 		protected override void StopInteractingInner(Interactor interactor) {
-			
+
 		}
 	}
 }

@@ -66,20 +66,23 @@ namespace KH.Interact {
 			return line;
 		}
 
-		protected override bool StartInteractingInner(Interactor interactor) {
+		public override bool ShouldAllowInteraction(Interactor interactor) {
+			return GetTalkLine(_currentTalkLine) != null;
+		}
+
+		protected override void StartInteractingInner(Interactor interactor) {
 			_textFinished = false;
 			_allowClose = false;
 			_interactor = interactor;
 
 			string talkLine = GetTalkLine();
 			if (talkLine == null) {
-				return false;
+				ForceStopInteraction();
+				return;
 			}
 			textAnimator.SoundLocation = this.transform;
 			textAnimator.PlayText(null, Color.white, talkLine);
 			textAnimator.TextFinished += TextFinishedListener;
-
-			return true;
 		}
 
 		protected override void StopInteractingInner(Interactor interactor) {
