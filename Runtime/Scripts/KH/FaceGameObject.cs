@@ -12,6 +12,11 @@ namespace KH {
 
 			Vector3 dir = ObjectReference.Value.transform.position - this.transform.position;
 			dir.y = 0;
+
+			// Don't face game object if they are overlapping: it makes Unity sad.
+			if (dir.sqrMagnitude == 0) {
+				return;
+			}
 			this.transform.rotation = Quaternion.LookRotation(-dir);
 		}
 	}
