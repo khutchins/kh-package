@@ -64,14 +64,14 @@ namespace KH {
 		}
 
 		public void SetLevelState(string level, string key, object value) {
-			if (_levelStates.ContainsKey(level)) {
+			if (!_levelStates.ContainsKey(level)) {
 				_levelStates[level] = new Dictionary<string, object>();
 			}
 			_levelStates[level][key] = value;
 		}
 
 		public object GetLevelState(string level, string key, object defaultValue) {
-			if (_levelStates.ContainsKey(level)) {
+			if (!_levelStates.ContainsKey(level)) {
 				Debug.LogWarning("Invalid level: " + level);
 				return defaultValue;
 			}
