@@ -45,6 +45,13 @@ namespace KH {
 
 		public void SetActiveLevel(string level) {
 			_activeLevel = level;
+			MakeLevelState(level);
+		}
+
+		private void MakeLevelState(string level) {
+			if (!_levelStates.ContainsKey(level)) {
+				_levelStates[level] = new Dictionary<string, object>();
+			}
 		}
 
 		public void SetActiveLevelState(string key, object value) {
@@ -64,9 +71,7 @@ namespace KH {
 		}
 
 		public void SetLevelState(string level, string key, object value) {
-			if (!_levelStates.ContainsKey(level)) {
-				_levelStates[level] = new Dictionary<string, object>();
-			}
+			MakeLevelState(level);
 			_levelStates[level][key] = value;
 		}
 
