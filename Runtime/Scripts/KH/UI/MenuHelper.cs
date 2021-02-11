@@ -9,57 +9,45 @@ using System.Linq;
 using UnityAtoms.BaseAtoms;
 
 namespace KH.UI {
-	public class MenuHelper : MonoBehaviour {
+	public class MenuHelper : MonoBehaviour, IMenu {
 
-		private bool Active;
+		private bool _active;
 		public BoolVariable Paused;
 
 		public GameObject BG;
 		public PanelManager[] Panels;
 		public MenuConfig MenuConfig;
 
-		public Stack<string> MenuStack = new Stack<string>();
+		protected Stack<string> _menuStack = new Stack<string>();
 
 		public EventSystem EventSystem;
-		private PanelManager _activeMenu;
 		private UIElementManager _activeDefaultInput;
-		private float _cachedTime = 1;
-		private CursorLockMode _cachedLockMode = CursorLockMode.Locked;
-		private bool _cachedVisible = false;
 
 		public KH.Input.InputMediator InputMediator;
 
 		private void Start() {
 			// Read Closeable in Start so that other scripts
 			// can set it in Awake.
-			SetMenuUp(!MenuConfig.Closeable);
+			if (!MenuConfig.Closeable) {
+				MenuStack.Shared.PushAndShowMenu(this);
+			}
 		}
 
-		void SetMenuUp(bool up) {
-			Active = up;
-			BG.SetActive(Active);
-			Paused?.SetValue(up);
-			if (Active) {
-				_cachedLockMode = Cursor.lockState;
-				Cursor.lockState = CursorLockMode.None;
-				_cachedVisible = Cursor.visible;
-				Cursor.visible = true;
-				_cachedTime = Time.timeScale;
-				Time.timeScale = MenuConfig.MenuPausesGame ? 0 : _cachedTime;
-				ActivateMenu(MenuConfig.MainPanelKey);
-			} else { // Out of Menu
-				Cursor.lockState = _cachedLockMode;
-				Cursor.visible = _cachedVisible;
-				Time.timeScale = _cachedTime;
-				ActivateMenu(null);
-			}
+		public MenuAttributes GetMenuAttributes() {
+			return MenuConfig.MenuPausesGame ? MenuAttributes.StandardPauseMenu() : MenuAttributes.StandardNonPauseMenu();
+		}
+
+		void IMenu.SetMenuUp(bool newUp) {
+			_active = newUp;
+			BG.SetActive(_active);
+			ActivateMenu(_active ? MenuConfig.MainPanelKey : null);
 		}
 
 		void ToggleMenu() {
 			if (!MenuConfig.Closeable) {
 				return;
 			}
-			SetMenuUp(!Active);
+			MenuStack.Shared.ToggleMenu(this);
 		}
 
 		private void ActivateMenu(string key) {
@@ -69,13 +57,12 @@ namespace KH.UI {
 		private void ActivateMenu(string key, PanelConfig config) {
 			PanelManager active = null;
 			EventSystem.SetSelectedGameObject(null);
-			foreach(PanelManager manager in Panels) {
+			foreach (PanelManager manager in Panels) {
 				manager.SetPanelActive(key == manager.Key);
 				if (key == manager.Key) {
 					active = manager;
 				}
 			}
-			_activeMenu = active;
 			if (active != null) {
 				_activeDefaultInput = active.DefaultInput;
 				if (_activeDefaultInput != null && _activeDefaultInput.SelectableObject != null) {
@@ -120,7 +107,7 @@ namespace KH.UI {
 		public void PushMenu(string key) {
 			foreach (PanelManager panel in Panels) {
 				if (panel.Key == key) {
-					MenuStack.Push(key);
+					_menuStack.Push(key);
 					GoToMenu(key);
 					return;
 				}
@@ -129,22 +116,22 @@ namespace KH.UI {
 		}
 
 		private bool IsAtRoot() {
-			return MenuStack.Count == 0;
+			return _menuStack.Count == 0;
 		}
 
 		public void PopMenu() {
-			if (MenuStack.Count > 0) {
-				MenuStack.Pop();
+			if (_menuStack.Count > 0) {
+				_menuStack.Pop();
 			}
-			if (MenuStack.Count == 0) {
+			if (_menuStack.Count == 0) {
 				GoToMenu(MenuConfig.MainPanelKey);
 			} else {
-				GoToMenu(MenuStack.Last());
+				GoToMenu(_menuStack.Last());
 			}
 		}
 
 		public void ExitMenu() {
-			if (!Active)
+			if (!_active)
 				return;
 			ToggleMenu();
 		}
