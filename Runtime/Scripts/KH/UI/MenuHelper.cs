@@ -25,6 +25,10 @@ namespace KH.UI {
 
 		public KH.Input.InputMediator InputMediator;
 
+		private void Awake() {
+			SetMenuUp(false);
+		}
+
 		private void Start() {
 			// Read Closeable in Start so that other scripts
 			// can set it in Awake.
@@ -37,7 +41,7 @@ namespace KH.UI {
 			return MenuConfig.MenuPausesGame ? MenuAttributes.StandardPauseMenu() : MenuAttributes.StandardNonPauseMenu();
 		}
 
-		void IMenu.SetMenuUp(bool newUp) {
+		public void SetMenuUp(bool newUp) {
 			_active = newUp;
 			BG.SetActive(_active);
 			ActivateMenu(_active ? MenuConfig.MainPanelKey : null);
