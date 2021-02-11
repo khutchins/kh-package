@@ -101,6 +101,17 @@ namespace KH.UI {
 			}
 		}
 
+        public bool IsMenuAtTop(IMenu menu) {
+            return _menuStack.Peek() == menu;
+		}
+
+        public bool IsMenuUp(IMenu thisMenu) {
+            foreach(IMenu menu in _menuStack) {
+                if (thisMenu == menu) return true;
+			}
+            return false;
+		}
+
         void CacheCurrentMenuAttributes() {
             MenuAttributes attributes = new MenuAttributes();
             attributes.cursorLockMode = Cursor.lockState;
