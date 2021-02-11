@@ -49,6 +49,9 @@ namespace KH.UI {
     public class MenuStack : MonoBehaviour {
         public static MenuStack Shared;
 
+        public CursorLockMode DefaultLockMode = CursorLockMode.Locked;
+        public bool CursorVisible = false;
+
         private Stack<IMenu> _menuStack = new Stack<IMenu>();
         private Stack<MenuAttributes> _cachedMenuAttributes = new Stack<MenuAttributes>();
 
@@ -56,7 +59,9 @@ namespace KH.UI {
 
 		void Awake() {
             Shared = this;
-		}
+            Cursor.lockState = DefaultLockMode;
+            Cursor.visible = CursorVisible;
+        }
 
         public void ToggleMenu(IMenu menu) {
             if (!_menuStack.Contains(menu)) {
