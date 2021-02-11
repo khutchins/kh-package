@@ -101,6 +101,10 @@ namespace KH.UI {
 			}
 		}
 
+        public int StackSize() {
+            return _menuStack.Count;
+		}
+
         public bool IsMenuAtTop(IMenu menu) {
             return _menuStack.Peek() == menu;
 		}
