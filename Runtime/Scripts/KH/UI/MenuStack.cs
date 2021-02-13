@@ -71,15 +71,20 @@ namespace KH.UI {
 			}
 		}
 
-        public void PushAndShowMenu(IMenu menu) {
+        public bool PushAndShowMenu(IMenu menu) {
             if (menu == null) {
                 Debug.LogWarning("Attempting to push a null menu!");
-            }
+                return false;
+            } else if (_menuStack.Contains(menu)) {
+                Debug.LogWarning("Attempting to push menu already in stack.");
+                return false;
+			}
 
             CacheCurrentMenuAttributes();
             _menuStack.Push(menu);
             ApplyMenuAttributes(menu.GetMenuAttributes());
             menu.SetMenuUp(true);
+            return true;
         }
 
         public void PopAndPushNewMenu(IMenu current, IMenu newMenu) {
@@ -87,22 +92,27 @@ namespace KH.UI {
             PushAndShowMenu(newMenu);
 		}
 
-        public void PopAndCloseMenu(IMenu menu) {
+        public bool PopAndCloseMenu(IMenu menu) {
             if (_menuStack.Count == 0) {
                 Debug.LogWarning("Attempting to pop menu but stack is empty!");
-                return;
+                return false;
             } else if (_menuStack.Peek() != menu) {
                 Debug.LogWarning("Attempting to pop menu not on top of stack!");
-                return;
+                return false;
             }
             PopAndApplyMenuAttributes();
             if (_menuStack.Count > 0) {
                 _menuStack.Pop().SetMenuUp(false);
 			}
+            return true;
 		}
 
         public int StackSize() {
             return _menuStack.Count;
+		}
+
+        public bool IsMenuInStack(IMenu menu) {
+            return _menuStack.Contains(menu);
 		}
 
         public bool IsMenuAtTop(IMenu menu) {
