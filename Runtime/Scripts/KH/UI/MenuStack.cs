@@ -62,6 +62,7 @@ namespace KH.UI {
             Cursor.lockState = DefaultLockMode;
             Cursor.visible = CursorVisible;
             PauseReference?.SetValue(false);
+            Time.timeScale = 1f;
         }
 
         public void ToggleMenu(IMenu menu) {
