@@ -19,13 +19,7 @@ Add these lines before dependencies:
         "url": "https://registry.npmjs.org",
         "scopes": [
             "com.mambojambostudios.unity-atoms-core",
-            "com.mambojambostudios.unity-atoms-base-atoms",
-            "com.mambojambostudios.unity-atoms-fsm",
-            "com.mambojambostudios.unity-atoms-mobile",
-            "com.mambojambostudios.unity-atoms-mono-hooks",
-            "com.mambojambostudios.unity-atoms-tags",
-            "com.mambojambostudios.unity-atoms-scene-mgmt",
-            "com.mambojambostudios.unity-atoms-ui"
+            "com.mambojambostudios.unity-atoms-base-atoms"
         ]
     }
 ],
