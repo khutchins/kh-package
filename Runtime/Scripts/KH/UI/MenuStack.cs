@@ -44,6 +44,7 @@ namespace KH.UI {
     public interface IMenu {
         MenuAttributes GetMenuAttributes();
         void SetMenuUp(bool newUp);
+        void SetMenuOnTop(bool isTop);
 	}
 
     public class MenuStack : MonoBehaviour {
@@ -65,6 +66,12 @@ namespace KH.UI {
             Time.timeScale = 1f;
         }
 
+        /// <summary>
+		/// Toggles the menu.
+		/// 
+		/// NOTE: This will only show the menu if it's not currently in the stack, and will not hide the menu if it's on top of the stack.
+		/// </summary>
+		/// <param name="menu">Menu to toggle.</param>
         public void ToggleMenu(IMenu menu) {
             if (!_menuStack.Contains(menu)) {
                 PushAndShowMenu(menu);
@@ -83,11 +90,18 @@ namespace KH.UI {
 			}
 
             CacheCurrentMenuAttributes();
+            SetTopStatusOfTopOfStack(false);
             _menuStack.Push(menu);
             ApplyMenuAttributes(menu.GetMenuAttributes());
             menu.SetMenuUp(true);
+            menu.SetMenuOnTop(true);
             return true;
         }
+
+        private void SetTopStatusOfTopOfStack(bool newStatus) {
+            if (_menuStack.Count == 0) return;
+            _menuStack.Peek().SetMenuOnTop(newStatus);
+		}
 
         public void PopAndPushNewMenu(IMenu current, IMenu newMenu) {
             PopAndCloseMenu(current);
@@ -104,8 +118,11 @@ namespace KH.UI {
             }
             PopAndApplyMenuAttributes();
             if (_menuStack.Count > 0) {
-                _menuStack.Pop().SetMenuUp(false);
-			}
+                IMenu top = _menuStack.Pop();
+                top.SetMenuOnTop(false);
+                top.SetMenuUp(false);
+                SetTopStatusOfTopOfStack(true);
+            }
             return true;
 		}
 

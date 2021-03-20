@@ -47,6 +47,9 @@ namespace KH.UI {
 			ActivateMenu(_active ? MenuConfig.MainPanelKey : null);
 		}
 
+		public void SetMenuOnTop(bool newOnTop) {
+		}
+
 		void ToggleMenu() {
 			if (!MenuConfig.Closeable) {
 				return;
