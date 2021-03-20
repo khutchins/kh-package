@@ -4,10 +4,12 @@ using UnityEngine;
 using UnityEngine.Events;
 
 namespace KH.UI {
-	[RequireComponent(typeof(Canvas))]
     public class MenuHook : MonoBehaviour, IMenu {
 		[Header("General")]
 		public bool ShowOnStart = false;
+		[Tooltip("The canvas element. If this is set, this script will automatically hide/show the canvas when appropriate.")]
+		public Canvas Canvas;
+
 		[Header("Menu Attributes")]
 		public CursorLockMode CursorLockMode = CursorLockMode.None;
 		public bool CursorVisible = true;
@@ -25,11 +27,8 @@ namespace KH.UI {
 		[Tooltip("Callbacks for when the menu is no longer the top menu on the stack.")]
 		public UnityEvent OnMenuNotTop;
 
-		private Canvas _canvas;
-
 		void Awake() {
-			_canvas = GetComponent<Canvas>();
-			_canvas.enabled = false;
+			if (Canvas != null) Canvas.enabled = false;
 		}
 
 		void Start() {
@@ -49,7 +48,7 @@ namespace KH.UI {
 		}
 
 		public void SetMenuUp(bool newUp) {
-			_canvas.enabled = newUp;
+			if (Canvas != null) Canvas.enabled = newUp;
 			if (newUp) OnMenuOpen?.Invoke();
 			else OnMenuClose?.Invoke();
 		}
