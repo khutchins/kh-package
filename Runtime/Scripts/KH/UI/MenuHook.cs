@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
 namespace KH.UI {
 	[RequireComponent(typeof(Canvas))]
@@ -13,6 +14,16 @@ namespace KH.UI {
 		public bool PausesGame = true;
 		[Tooltip("Time scale to use when in menu. If negative, it will use the existing time scale.")]
 		public float TimeScale = 0;
+
+		[Header("Hooks")]
+		[Tooltip("Callbacks for when the menu is shown.")]
+		public UnityEvent OnMenuOpen;
+		[Tooltip("Callbacks for when the menu is hidden.")]
+		public UnityEvent OnMenuClose;
+		[Tooltip("Callbacks for when the menu has become the top menu on the stack.")]
+		public UnityEvent OnMenuTop;
+		[Tooltip("Callbacks for when the menu is no longer the top menu on the stack.")]
+		public UnityEvent OnMenuNotTop;
 
 		private Canvas _canvas;
 
@@ -39,11 +50,13 @@ namespace KH.UI {
 
 		public void SetMenuUp(bool newUp) {
 			_canvas.enabled = newUp;
-			Debug.Log("Up: " + newUp);
+			if (newUp) OnMenuOpen?.Invoke();
+			else OnMenuClose?.Invoke();
 		}
 
 		public void SetMenuOnTop(bool newOnTop) {
-			Debug.Log("Top: " + newOnTop);
+			if (newOnTop) OnMenuTop?.Invoke();
+			else OnMenuNotTop?.Invoke();
 		}
 
 		public void PushMenu() {
@@ -52,12 +65,6 @@ namespace KH.UI {
 
 		public void PopMenu() {
 			MenuStack.Shared.PopAndCloseMenu(this);
-		}
-
-		void Update() {
-			if (UnityEngine.Input.GetKeyDown(KeyCode.Escape)) {
-				MenuStack.Shared.ToggleMenu(this);
-			}
 		}
 
 	}
