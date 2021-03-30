@@ -19,43 +19,57 @@ namespace KH.Texts {
 			Instant
 		}
 
-		public AudioClip blipSound;
-		public RectTransform rectToShake;
+		public static Dictionary<string, TextAnimator> Animators = new Dictionary<string, TextAnimator>();
+		public static TextAnimator SharedAnimator;
+
+		[Header("Components")]
 		public TextMeshProUGUI conversationText;
 		public TextMeshProUGUI speaker;
 		public GameObject activeTextBox;
-		public GameObjectReference PlayerRef;
-		public bool TextAnimating;
+		public InputMediator InputMediator;
+
+		[Header("Config")]
 		public string AnimatorKey;
-		public static Dictionary<string, TextAnimator> Animators = new Dictionary<string, TextAnimator>();
-		public static TextAnimator SharedAnimator;
-		public Transform SoundLocation;
-		public bool PlayAtAudioListener;
-
-		public RectTransform[] RectsToAnimate;
-		private Vector2[] StandardRectPositions;
-		public AnimationTypes AnimationType;
-
+		[Tooltip("Whether or not the player can skip text by pressing the interact button again.")]
 		public bool AllowSkipping = true;
 
+		[Header("Audio")]
+		[Tooltip("If true, audio will play at the player's location.")]
+		public bool PlayAtAudioListener;
+		[Tooltip("A reference to the player object. Used to determine the player's location.")]
+		public GameObjectReference PlayerRef;
+		[Tooltip("The location at which the audio will be played, if PlayAtAudioListener is false.")]
+		public Transform SoundLocation;
+		[Tooltip("Audio event specifying the sound to use playing text.")]
+		public AudioClip blipSound;
+
+		[Header("Animation")]
+		[Tooltip("The rect to shake when a shake command is in the text. If unset, will not shake.")]
+		public RectTransform rectToShake;
+		[Tooltip("Rects that will be animated in/out.")]
+		public RectTransform[] RectsToAnimate;
+		public AnimationTypes AnimationType;
+		
+		public bool TextAnimating => _textAnimating;
+
+		private Vector2[] _standardRectPositions;
 		private TextPlayer _currentText;
 		private Coroutine _textCoroutine;
 		private Vector3 _textBoxBasePosition;
 
 		private float _timeStarted;
 		private bool _doneNextUpdate;
+		private bool _textAnimating;
 
 		public event TextFinishedHandler TextFinished;
 		public event TextAnimateOutFinishedHandler TextAnimateOutFinished;
-
-		public InputMediator InputMediator;
 
 		void Awake() {
 			Animators[AnimatorKey] = this;
 			if (AnimatorKey == "Shared") {
 				SharedAnimator = this;
 			}
-			TextAnimating = false;
+			_textAnimating = false;
 			activeTextBox.SetActive(false);
 		}
 
@@ -65,7 +79,7 @@ namespace KH.Texts {
 				Vector2 pos = RectsToAnimate[i].anchoredPosition;
 				poses.Add(pos);
 			}
-			StandardRectPositions = poses.ToArray();
+			_standardRectPositions = poses.ToArray();
 		}
 
 		public void PlayText(string speakerName, Color nameColor, string rawText, float speedMod = .8F) {
@@ -85,7 +99,7 @@ namespace KH.Texts {
 				conversationText.text = _currentText.GetFinalString();
 			}
 			rectToShake.anchoredPosition = _textBoxBasePosition;
-			TextAnimating = false;
+			_textAnimating = false;
 			_currentText = null;
 		}
 
@@ -100,7 +114,7 @@ namespace KH.Texts {
 
 				List<Vector2> endPositions = new List<Vector2>();
 				for (int i = 0; i < RectsToAnimate.Length; i++) {
-					endPositions.Add(StandardRectPositions[i]);
+					endPositions.Add(_standardRectPositions[i]);
 
 					// Make sure they're offscreen
 					RectsToAnimate[i].anchoredPosition = new Vector2(0, -1000);
@@ -138,7 +152,7 @@ namespace KH.Texts {
 
 				List<Vector2> endPositions = new List<Vector2>();
 				for (int i = 0; i < RectsToAnimate.Length; i++) {
-					endPositions.Add(StandardRectPositions[i]);
+					endPositions.Add(_standardRectPositions[i]);
 				}
 
 				// Have to yield here to make sure we get the correct text box heights.
@@ -176,7 +190,7 @@ namespace KH.Texts {
 
 		IEnumerator AnimateText(string rawText, float baseSpeedMod) {
 			activeTextBox.SetActive(true);
-			TextAnimating = true;
+			_textAnimating = true;
 			_currentText = new TextPlayer(rawText, baseSpeedMod);
 
 			conversationText.text = "";
@@ -266,13 +280,13 @@ namespace KH.Texts {
 			bool sameFrame = _timeStarted == Time.time;
 			if (!_doneNextUpdate) {
 				if (AllowSkipping && !sameFrame && InputMediator.Interact()) {
-					if (TextAnimating) {
+					if (_textAnimating) {
 						_doneNextUpdate = true;
 					}
 				}
 			} else {
 				_doneNextUpdate = false;
-				if (TextAnimating) {
+				if (_textAnimating) {
 					StopText();
 					TextFinished?.Invoke(false);
 				}
