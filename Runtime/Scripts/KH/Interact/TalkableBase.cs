@@ -6,11 +6,6 @@ using KH.Input;
 
 namespace KH.Interact {
 	public abstract class TalkableBase : Interactable {
-		public enum TalkCycleType {
-			StopAfterLast,
-			RepeatLast,
-			Repeat
-		};
 
 		public InputMediator InputMediator;
 		public string TextAnimatorKey = "Shared";

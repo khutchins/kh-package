@@ -1,22 +1,20 @@
-﻿using System.Collections;
+using KH.Texts;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using KH.Texts;
 
-namespace KH.Interact {
-	public class TalkableSO : TalkableBase {
-
+namespace KH.Actions {
+	public class ActionTalkableSO : ActionTalkableBase {
 		public TalkSpec TalkSpec;
 
 		public override TalkCycleType TalkCycle => TalkSpec.TalkCycle;
 
 		public override string[] TalkLines => TalkSpec.TalkLines;
 
-		public new void Start() {
+		public void OnEnable() {
 			if (TalkSpec == null) {
 				Debug.LogWarning("No TalkSpec set on " + gameObject.name + "!");
 			}
-			base.Start();
 		}
 	}
 }

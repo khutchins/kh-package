@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using static KH.Interact.TalkableBase;
 
-namespace KH.Interact {
-	[CreateAssetMenu]
+namespace KH.Texts {
+	[CreateAssetMenu(menuName = "Text/Talk Spec")]
 	public class TalkSpec : ScriptableObject {
 
 		public TalkCycleType TalkCycle = TalkCycleType.RepeatLast;
