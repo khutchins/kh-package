@@ -19,9 +19,6 @@ namespace KH.UI {
 		[Tooltip("Palette to be used for overriding selected, highlighted, etc. elements states.")]
 		public PaletteConfig PaletteConfig;
 
-		[Tooltip("Already extant menu elements that should be disabled if the PanelConfig has HideMenuDecoration set to true.")]
-		public GameObject[] MenuDecoration;
-
 		public Dictionary<string, GameObject> PanelDictionary = new Dictionary<string, GameObject>();
 		public Dictionary<string, Dictionary<string, GameObject>> PanelObjectDictionary = new Dictionary<string, Dictionary<string, GameObject>>();
 

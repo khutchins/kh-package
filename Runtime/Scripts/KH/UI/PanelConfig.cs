@@ -11,7 +11,6 @@ namespace KH.UI {
 		/// </summary>
 		public readonly string Key;
 		public readonly string DefaultSelectableKey;
-		public readonly bool HideMenuDecoration;
 		public readonly bool HorizontalMenu;
 		public readonly GameObject PrefabOverride;
 
@@ -19,11 +18,10 @@ namespace KH.UI {
 		[HideInInspector]
 		public readonly GameObject[] SupplementalObjects;
 
-		public PanelConfig(string key, string defaultSelectableKey, PanelObjectConfig[] panelObjects, GameObject[] supplementalObjects = null, bool hideMenuDecoration = false, bool horizontalMenu = false, GameObject prefabOverride = null) {
+		public PanelConfig(string key, string defaultSelectableKey, PanelObjectConfig[] panelObjects, GameObject[] supplementalObjects = null, bool horizontalMenu = false, GameObject prefabOverride = null) {
 			Key = key;
 			DefaultSelectableKey = defaultSelectableKey;
 			PanelObjects = panelObjects;
-			HideMenuDecoration = hideMenuDecoration;
 			SupplementalObjects = supplementalObjects;
 			HorizontalMenu = horizontalMenu;
 			PrefabOverride = prefabOverride;
@@ -36,7 +34,6 @@ namespace KH.UI {
 			private string _key;
 			private string _defaultSelectableKey;
 			private bool _isHorizontal;
-			private bool _hideMenuDecoration;
 
 			public Builder(string key) {
 				_key = key;
@@ -96,18 +93,13 @@ namespace KH.UI {
 				return this;
 			}
 
-			public Builder SetHideMenuDecoration(bool hideMenuDecoration) {
-				_hideMenuDecoration = hideMenuDecoration;
-				return this;
-			}
-
 			public PanelConfig Build() {
 				if (_defaultSelectableKey == null) {
 					_defaultSelectableKey = _panelObjectConfigs[0].Key;
 				}
 				return new PanelConfig(_key, _defaultSelectableKey, 
 					_panelObjectConfigs.ToArray(), _supplementalObjects.ToArray(), 
-					_hideMenuDecoration, _isHorizontal, _prefabOverride);
+					_isHorizontal, _prefabOverride);
 			}
 		}
 	}

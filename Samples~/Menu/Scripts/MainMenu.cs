@@ -23,8 +23,6 @@ public class MainMenu : MenuGenerator {
 	public readonly static string KEY_QUALITY = "quality";
 	public readonly static string KEY_FULLSCREEN = "fullscreen";
 
-	public GameObject CreditsPrefab;
-
 	private MenuHelper _manager;
 
 	void Awake() {
@@ -45,13 +43,8 @@ public class MainMenu : MenuGenerator {
 					_manager.ExitGame();
 				})
 			}),
-			new PanelConfig(MENU_KEY_CREDITS, KEY_BACK, new PanelObjectConfig[] {
-				new ButtonConfig(KEY_BACK, "Back", null, delegate (ButtonManager manager) {
-					_manager.PopMenu();
-				})
-			}, new GameObject[] { CreditsPrefab }, true),
 			MenuConfigHelper.StandardOptionsPanel(MENU_KEY_OPTIONS, _manager).Build(),
-		}, MenuDecoration);
+		});
 
 		CreateMenu(_manager, config);
 	}

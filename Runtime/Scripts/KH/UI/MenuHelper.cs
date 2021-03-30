@@ -25,11 +25,9 @@ namespace KH.UI {
 
 		public KH.Input.InputMediator InputMediator;
 
-		private void Awake() {
-			SetMenuUp(false);
-		}
-
 		private void Start() {
+			SetMenuUp(false);
+
 			// Read Closeable in Start so that other scripts
 			// can set it in Awake.
 			if (!MenuConfig.Closeable) {
@@ -74,12 +72,6 @@ namespace KH.UI {
 				_activeDefaultInput = active.DefaultInput;
 				if (_activeDefaultInput != null && _activeDefaultInput.SelectableObject != null) {
 					EventSystem.SetSelectedGameObject(_activeDefaultInput.SelectableObject);
-				}
-
-				if (MenuConfig.MenuDecoration != null && config != null) {
-					foreach (GameObject obj in MenuConfig.MenuDecoration) {
-						obj.SetActive(!config.HideMenuDecoration);
-					}
 				}
 			} else {
 				_activeDefaultInput = null;

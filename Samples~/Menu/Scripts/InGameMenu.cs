@@ -23,9 +23,6 @@ public class InGameMenu : MenuGenerator {
 	public readonly static string KEY_QUALITY = "quality";
 	public readonly static string KEY_FULLSCREEN = "fullscreen";
 
-	public GameObject CreditsPrefab;
-	public GameObject HorizonalPanel;
-
 	private MenuHelper _manager;
 
 	void Awake() {
@@ -57,11 +54,9 @@ public class InGameMenu : MenuGenerator {
 					.SetDisplayText("Exit")
 					.SetButtonPressedHandler(delegate (ButtonManager manager) {
 						_manager.ExitGame();
-					}))
-			.SetPrefabOverride(HorizonalPanel).SetIsHorizontalMenu(true), true);
+					})), true);
 
 		builder.AddPanelConfig(MenuConfigHelper.StandardOptionsPanel(MENU_KEY_OPTIONS, _manager));
-		builder.AddMenuDecorations(MenuDecoration);
 
 		CreateMenu(_manager, builder.Build());
 	}
