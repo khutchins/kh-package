@@ -13,11 +13,11 @@ public class ActionUnityEvent : Action {
 	public override void Begin() {
 		Event?.Invoke(this);
 		if (FinishAfterTimeout) {
-
+			StartCoroutine(WaitCoroutine());
 		}
 	}
 
-	private IEnumerable WaitCoroutine() {
+	private IEnumerator WaitCoroutine() {
 		yield return new WaitForSeconds(TimeToWaitBeforeFinish);
 		Finished();
 	}
