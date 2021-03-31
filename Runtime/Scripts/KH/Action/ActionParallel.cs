@@ -10,9 +10,15 @@ namespace KH.Actions {
 		private List<Action> awaitingActions;
 
 		public override void Begin() {
+			if (Actions.Count == 0) {
+				Finished();
+				return;
+			}
+
 			awaitingActions = new List<Action>(Actions);
 			foreach (Action action in Actions) {
 				action.FinishedAction += ActionFinished;
+				action.Begin();
 			}
 		}
 
