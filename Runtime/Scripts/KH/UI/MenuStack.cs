@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityAtoms.BaseAtoms;
 using UnityEngine;
+using UnityEngine.Events;
 
 namespace KH.UI {
     public struct MenuAttributes {
@@ -56,13 +57,19 @@ namespace KH.UI {
         private Stack<IMenu> _menuStack = new Stack<IMenu>();
         private Stack<MenuAttributes> _cachedMenuAttributes = new Stack<MenuAttributes>();
 
-        public BoolVariable PauseReference;
+        [Tooltip("Callback for when a menu causes the game to go from unpaused to paused.")]
+        public UnityEvent OnPause;
+        [Tooltip("Callback for when a menu causes the game to go from paused to unpaused.")]
+        public UnityEvent OnUnpause;
 
-		void Awake() {
+        private bool _paused;
+
+        void Awake() {
             Shared = this;
             Cursor.lockState = DefaultLockMode;
             Cursor.visible = CursorVisible;
-            PauseReference?.SetValue(false);
+            _paused = false;
+            OnUnpause?.Invoke();
             Time.timeScale = 1f;
         }
 
@@ -145,12 +152,20 @@ namespace KH.UI {
             return false;
 		}
 
+        void UpdatePaused(bool newState) {
+            if (newState != _paused) {
+                _paused = newState;
+                if (_paused) OnPause?.Invoke();
+                else OnUnpause?.Invoke();
+			}
+		}
+
         void CacheCurrentMenuAttributes() {
             MenuAttributes attributes = new MenuAttributes();
             attributes.cursorLockMode = Cursor.lockState;
             attributes.cursorVisible = Cursor.visible;
             attributes.timeScale = Time.timeScale;
-            attributes.pauseGame = PauseReference != null ? PauseReference.Value : false;
+            attributes.pauseGame = _paused;
             _cachedMenuAttributes.Push(attributes);
         }
 
@@ -169,7 +184,7 @@ namespace KH.UI {
             if (attributes.timeScale >= 0) {
                 Time.timeScale = attributes.timeScale;
             }
-            PauseReference?.SetValue(attributes.pauseGame);
+            UpdatePaused(attributes.pauseGame);
         }
     }
 }
