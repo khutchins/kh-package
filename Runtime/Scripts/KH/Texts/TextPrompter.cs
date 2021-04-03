@@ -10,9 +10,9 @@ namespace KH.Texts {
 	/// </summary>
 	[RequireComponent(typeof(TextAnimator))]
     public class TextPrompter : MonoBehaviour {
-		[Header("The line spec queue the text prompter will read from. Must match that of the line spec sources.")]
+		[Tooltip("The line spec queue the text prompter will read from. Must match that of the line spec sources.")]
         public LineSpecQueue LineQueue;
-		[Header("An input mediator that has the Interact function set.")]
+		[Tooltip("An input mediator that has the Interact function set.")]
 		public InputMediator InputMediator;
 
         private TextAnimator _textAnimator;
