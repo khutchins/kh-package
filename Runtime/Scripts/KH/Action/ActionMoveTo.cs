@@ -1,11 +1,11 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
-using UnityAtoms.BaseAtoms;
 using UnityEngine;
+using KH.References;
 
 namespace KH.Actions {
 	public class ActionMoveTo : Action {
-		public GameObjectVariable ObjectToMove;
+		public GameObjectReference ObjectToMove;
 		public Transform Destination;
 		public float MoveSpeed;
 		public bool Blocking = true;

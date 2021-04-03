@@ -1,12 +1,13 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using KH.References;
 
 namespace KH.Actions {
     [CreateAssetMenu(menuName = "Actions/Conditional/Boolean", fileName = "ConditionalBoolean")]
     public class ConditionalBoolean : Conditional {
 
-        public UnityAtoms.BaseAtoms.BoolReference BoolCondition;
+        public BoolReference BoolCondition;
 
         public bool Not;
 

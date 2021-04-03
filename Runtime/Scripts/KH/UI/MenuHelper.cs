@@ -2,17 +2,13 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using UnityEngine.UI;
-using KH;
 using UnityEngine.EventSystems;
 using System.Linq;
-using UnityAtoms.BaseAtoms;
 
 namespace KH.UI {
 	public class MenuHelper : MonoBehaviour, IMenu {
 
 		private bool _active;
-		public BoolVariable Paused;
 
 		public GameObject BG;
 		public PanelManager[] Panels;

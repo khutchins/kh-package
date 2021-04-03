@@ -3,6 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 
 namespace KH.References {
-	[CreateAssetMenu(menuName = "Reference/Bool")]
+	[CreateAssetMenu(menuName = "KH/Reference/Bool")]
 	public class BoolReference : ValueReference<bool> { }
 }

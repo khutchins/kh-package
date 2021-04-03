@@ -3,6 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 
 namespace KH.References {
-	[CreateAssetMenu(menuName = "Reference/Int")]
+	[CreateAssetMenu(menuName = "KH/Reference/Int")]
 	public class IntReference : ValueReference<int> { }
 }

@@ -2,8 +2,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
-using UnityAtoms.BaseAtoms;
 using UnityEngine;
+using KH.References;
 
 namespace KH.Texts {
 	public delegate void TextFinishedHandler(bool shouldPlayNextText);

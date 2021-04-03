@@ -1,16 +1,15 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
-using KH;
-using UnityAtoms.BaseAtoms;
+using KH.References;
 
 namespace KH.UI {
 	/// <summary>
 	/// Modifies the alpha of an image based on a float event. Can be used for fade to blacks, etc.
 	/// </summary>
 	[RequireComponent(typeof(Image))]
-	public class Fader : MonoBehaviour, UnityAtoms.IAtomListener<float> {
+	public class Fader : MonoBehaviour {
 
-		public FloatEvent FaderRef;
+		public FloatReference FaderRef;
 		public Color Color;
 		private Image image;
 
@@ -19,14 +18,14 @@ namespace KH.UI {
 		}
 
 		void OnEnable() {
-			FaderRef.RegisterListener(this);
+			FaderRef.ValueChanged += UpdateFade;
 		}
 
 		void OnDisable() {
-			FaderRef.UnregisterListener(this);
+			FaderRef.ValueChanged -= UpdateFade;
 		}
 
-		public void OnEventRaised(float item) {
+		public void UpdateFade(float item) {
 			if (image != null) {
 				image.color = new Color(Color.r, Color.g, Color.b, item);
 			}

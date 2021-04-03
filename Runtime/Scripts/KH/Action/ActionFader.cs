@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityAtoms.BaseAtoms;
+using KH.References;
 
 namespace KH.Actions {
 	public class ActionFader : Action {
@@ -11,7 +11,7 @@ namespace KH.Actions {
 			FadeOut
 		}
 
-		public FloatVariable FaderRef;
+		public FloatReference FaderRef;
 		public FaderAction FaderActionToTake;
 		public float FadeDuration = 1F;
 
@@ -34,7 +34,7 @@ namespace KH.Actions {
 			yield return StartCoroutine(ActionCoroutine(this, FaderRef, FaderActionToTake, FadeDuration));
 		}
 
-		public static IEnumerator ActionCoroutine(MonoBehaviour coroutineObject, FloatVariable fader, FaderAction action, float duration) {
+		public static IEnumerator ActionCoroutine(MonoBehaviour coroutineObject, FloatReference fader, FaderAction action, float duration) {
 			if (fader == null) {
 				Debug.LogWarning("No Fader present for ActionFadeOutFader");
 				yield break;
@@ -45,10 +45,10 @@ namespace KH.Actions {
 			float start = Time.time;
 
 			while (start + duration > Time.time) {
-				fader.BaseValue = from + ((Time.time - start) / duration) * (to - from);
+				fader.Value = from + ((Time.time - start) / duration) * (to - from);
 				yield return null;
 			}
-			fader.BaseValue = to;
+			fader.Value = to;
 		}
 	}
 }

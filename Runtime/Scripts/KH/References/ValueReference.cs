@@ -17,9 +17,17 @@ namespace KH.References {
                 return _value;
             }
             set {
-                _value = value;
-                ValueChanged?.Invoke(Value);
+                SetValue(value);
             }
         }
+
+        /// <summary>
+        /// Identical to using the property.
+        /// </summary>
+        /// <param name="newValue">The new value</param>
+        public void SetValue(T newValue) {
+            _value = newValue;
+            ValueChanged?.Invoke(Value);
+		}
     }
 }

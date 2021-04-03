@@ -1,19 +1,20 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using KH.References;
 
 namespace KH.Actions {
     [CreateAssetMenu(menuName = "Actions/Conditional/Int", fileName = "ConditionalInt")]
     public class ConditionalInt : Conditional {
 
         [SerializeField]
-        public UnityAtoms.BaseAtoms.IntReference IntReference1;
+        public IntReference IntReference1;
 
         [SerializeField]
         public Comparator Comparison;
 
         [SerializeField]
-        public UnityAtoms.BaseAtoms.IntReference IntReference2;
+        public IntReference IntReference2;
 
         public override bool isTrue() {
             switch (Comparison) {

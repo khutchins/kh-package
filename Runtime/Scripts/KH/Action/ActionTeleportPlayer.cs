@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityAtoms.BaseAtoms;
+using KH.References;
 
 namespace KH.Actions {
 	public class ActionTeleportPlayer : Action {

@@ -1,8 +1,8 @@
 ﻿using KH;
 using System.Collections;
 using System.Collections.Generic;
-using UnityAtoms.BaseAtoms;
 using UnityEngine;
+using KH.References;
 
 namespace KH.Input {
 	[CreateAssetMenu(menuName = "Input Mediator/Pausable")]

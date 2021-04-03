@@ -1,13 +1,13 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
-using UnityAtoms.BaseAtoms;
 using UnityEngine;
+using KH.References;
 
 public class RegisterGameObject : MonoBehaviour {
-    public GameObjectVariable Variable;
+    public GameObjectReference Variable;
 
     // Start is called before the first frame update
     void Awake() {
-        Variable.SetValue(this.gameObject);
+        Variable.Value = this.gameObject;
     }
 }

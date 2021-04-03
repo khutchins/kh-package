@@ -1,16 +1,17 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using KH.References;
 
 namespace KH.Actions {
     [CreateAssetMenu(menuName = "Actions/Conditional/Float", fileName = "ConditionalFloat")]
     public class ConditionalFloat : Conditional {
 
-        public UnityAtoms.BaseAtoms.FloatReference FloatReference1;
+        public FloatReference FloatReference1;
 
         public Comparator Comparison;
 
-        public UnityAtoms.BaseAtoms.FloatReference FloatReference2;
+        public FloatReference FloatReference2;
 
         public override bool isTrue() {
             switch (Comparison) {
