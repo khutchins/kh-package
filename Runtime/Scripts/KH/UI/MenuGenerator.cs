@@ -7,15 +7,19 @@ using UnityEngine.UI;
 namespace KH.UI {
 	public class MenuGenerator : MonoBehaviour {
 
+		[Header("Container")]
 		[Tooltip("Canvas element to be used as the container for panels.")]
 		public GameObject Parent;
+
+		[Header("Prefabs")]
 		[Tooltip("Panel prefab that menu prefabs are placed in.")]
-		public GameObject MenuObjectPrefab;
+		public GameObject PanelPrefab;
 		public GameObject ButtonPrefab;
 		public GameObject SliderPefab;
 		public GameObject TogglePrefab;
 		public GameObject DropdownPrefab;
 
+		[Header("Appearance")]
 		[Tooltip("Palette to be used for overriding selected, highlighted, etc. elements states.")]
 		public PaletteConfig PaletteConfig;
 
@@ -33,7 +37,7 @@ namespace KH.UI {
 		}
 
 		public PanelManager CreatePanel(GameObject parent, PanelConfig config, MenuConfig menuConfig) {
-			GameObject prefab = config.PrefabOverride == null ? MenuObjectPrefab : config.PrefabOverride;
+			GameObject prefab = config.PrefabOverride == null ? PanelPrefab : config.PrefabOverride;
 			GameObject obj = Instantiate(prefab, parent.transform);
 			obj.name = config.Key;
 			PanelManager manager = obj.AddComponent<PanelManager>();

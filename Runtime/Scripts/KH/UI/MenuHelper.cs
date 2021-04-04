@@ -10,29 +10,37 @@ namespace KH.UI {
 
 		private bool _active;
 
+		[Tooltip("Background element.")]
 		public GameObject BG;
+		[HideInInspector]
 		public PanelManager[] Panels;
 		public MenuConfig MenuConfig;
 
-		protected Stack<string> _menuStack = new Stack<string>();
+		protected Stack<string> _panelStack = new Stack<string>();
 
 		public EventSystem EventSystem;
 		private UIElementManager _activeDefaultInput;
 
 		public MenuInputMediator InputMediator;
 
+		private bool _disabled;
+
 		private void Start() {
 			SetMenuUp(false);
+			if (MenuStack.Shared == null) {
+				Debug.LogError("No MenuStack in scene. Menu disabled.");
+				_disabled = true;
+				return;
+			} else if (InputMediator == null) {
+				Debug.LogError("No input mediator set on MenuHelper. Menu disabled.");
+				_disabled = true;
+				return;
+			}
 
 			// Read Closeable in Start so that other scripts
 			// can set it in Awake.
 			if (!MenuConfig.Closeable) {
-				if (MenuStack.Shared != null) {
-					MenuStack.Shared.PushAndShowMenu(this);
-				} else {
-					Debug.Log("MenuStack isn't in the scene. Switching to self-managed mode.");
-					SetMenuUp(true);
-				}
+				MenuStack.Shared.PushAndShowMenu(this);
 			}
 		}
 
@@ -50,14 +58,10 @@ namespace KH.UI {
 		}
 
 		void ToggleMenu() {
-			if (!MenuConfig.Closeable) {
+			if (!MenuConfig.Closeable || _disabled) {
 				return;
 			}
-			if (MenuStack.Shared != null) {
-				MenuStack.Shared.ToggleMenu(this);
-			} else {
-				SetMenuUp(!_active);
-			}
+			MenuStack.Shared.ToggleMenu(this);
 		}
 
 		private void ActivateMenu(string key) {
@@ -84,6 +88,7 @@ namespace KH.UI {
 		}
 
 		private void Update() {
+			if (_disabled) return;
 			if (InputMediator.PauseDown()) {
 				ToggleMenu();
 			} else if (InputMediator.UICancelDown()) {
@@ -111,7 +116,7 @@ namespace KH.UI {
 		public void PushMenu(string key) {
 			foreach (PanelManager panel in Panels) {
 				if (panel.Key == key) {
-					_menuStack.Push(key);
+					_panelStack.Push(key);
 					GoToMenu(key);
 					return;
 				}
@@ -120,17 +125,17 @@ namespace KH.UI {
 		}
 
 		private bool IsAtRoot() {
-			return _menuStack.Count == 0;
+			return _panelStack.Count == 0;
 		}
 
 		public void PopMenu() {
-			if (_menuStack.Count > 0) {
-				_menuStack.Pop();
+			if (_panelStack.Count > 0) {
+				_panelStack.Pop();
 			}
-			if (_menuStack.Count == 0) {
+			if (_panelStack.Count == 0) {
 				GoToMenu(MenuConfig.MainPanelKey);
 			} else {
-				GoToMenu(_menuStack.Last());
+				GoToMenu(_panelStack.Last());
 			}
 		}
 
