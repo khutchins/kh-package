@@ -404,11 +404,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6fa4581cd507bf54982d2f3afa0e7a23, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Paused: {fileID: 0}
   BG: {fileID: 5976342453531572715}
   Panels: []
   EventSystem: {fileID: 4580024585881174822}
-  InputMediator: {fileID: 0}
+  InputMediator: {fileID: 11400000, guid: cdd9a3a9b4d24954689b8b4dffd99725, type: 2}
 --- !u!114 &4580024585881174822
 MonoBehaviour:
   m_ObjectHideFlags: 0

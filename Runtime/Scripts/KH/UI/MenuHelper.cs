@@ -19,7 +19,7 @@ namespace KH.UI {
 		public EventSystem EventSystem;
 		private UIElementManager _activeDefaultInput;
 
-		public KH.Input.InputMediator InputMediator;
+		public MenuInputMediator InputMediator;
 
 		private void Start() {
 			SetMenuUp(false);
