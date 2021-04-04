@@ -27,7 +27,12 @@ namespace KH.UI {
 			// Read Closeable in Start so that other scripts
 			// can set it in Awake.
 			if (!MenuConfig.Closeable) {
-				MenuStack.Shared.PushAndShowMenu(this);
+				if (MenuStack.Shared != null) {
+					MenuStack.Shared.PushAndShowMenu(this);
+				} else {
+					Debug.Log("MenuStack isn't in the scene. Switching to self-managed mode.");
+					SetMenuUp(true);
+				}
 			}
 		}
 
@@ -48,7 +53,11 @@ namespace KH.UI {
 			if (!MenuConfig.Closeable) {
 				return;
 			}
-			MenuStack.Shared.ToggleMenu(this);
+			if (MenuStack.Shared != null) {
+				MenuStack.Shared.ToggleMenu(this);
+			} else {
+				SetMenuUp(!_active);
+			}
 		}
 
 		private void ActivateMenu(string key) {
