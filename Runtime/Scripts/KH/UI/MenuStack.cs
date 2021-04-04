@@ -50,26 +50,38 @@ namespace KH.UI {
     public class MenuStack : MonoBehaviour {
         public static MenuStack Shared;
 
+        [Header("Default Settings")]
         public CursorLockMode DefaultLockMode = CursorLockMode.Locked;
         public bool CursorVisible = false;
 
-        private Stack<IMenu> _menuStack = new Stack<IMenu>();
-        private Stack<MenuAttributes> _cachedMenuAttributes = new Stack<MenuAttributes>();
+        [Header("Disable Functionality")]
+        [Tooltip("Disables this script from modifying the cursor lock mode and visibility.")]
+        public bool DisableCursorManagement = false;
+        [Tooltip("Disables this script from modifying the time scale.")]
+        public bool DisableTimeManagement = false;
 
+        [Header("Callbacks")]
         [Tooltip("Callback for when a menu causes the game to go from unpaused to paused.")]
         public UnityEvent OnPause;
         [Tooltip("Callback for when a menu causes the game to go from paused to unpaused.")]
         public UnityEvent OnUnpause;
 
+        private Stack<IMenu> _menuStack = new Stack<IMenu>();
+        private Stack<MenuAttributes> _cachedMenuAttributes = new Stack<MenuAttributes>();
+
         private bool _paused;
 
         void Awake() {
             Shared = this;
-            Cursor.lockState = DefaultLockMode;
-            Cursor.visible = CursorVisible;
+            if (!DisableCursorManagement) {
+                Cursor.lockState = DefaultLockMode;
+                Cursor.visible = CursorVisible;
+            }
+            if (!DisableTimeManagement) {
+                Time.timeScale = 1f;
+            }
             _paused = false;
             OnUnpause?.Invoke();
-            Time.timeScale = 1f;
         }
 
         /// <summary>
@@ -178,9 +190,11 @@ namespace KH.UI {
         }
 
         void ApplyMenuAttributes(MenuAttributes attributes) {
-            Cursor.lockState = attributes.cursorLockMode;
-            Cursor.visible = attributes.cursorVisible;
-            if (attributes.timeScale >= 0) {
+            if (!DisableCursorManagement) {
+                Cursor.lockState = attributes.cursorLockMode;
+                Cursor.visible = attributes.cursorVisible;
+            }
+            if (!DisableTimeManagement && attributes.timeScale >= 0) {
                 Time.timeScale = attributes.timeScale;
             }
             UpdatePaused(attributes.pauseGame);
