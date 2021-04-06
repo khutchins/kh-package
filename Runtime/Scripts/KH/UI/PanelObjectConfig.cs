@@ -9,28 +9,26 @@ namespace KH.UI {
 		/// Key that uniquely identifies an object within
 		/// a panel. Should be unique within that scope.
 		/// </summary>
-		public string Key;
-		public Action<GameObject> CreationCallback;
-		public GameObject PrefabOverride;
+		public readonly string Key;
+		public readonly Action<GameObject> CreationCallback;
+		public readonly GameObject Prefab;
 
-		public PanelObjectConfig(string key, Action<GameObject> creationCallback, GameObject prefabOverride = null) {
+		public PanelObjectConfig(string key, GameObject prefab, Action<GameObject> creationCallback) {
 			Key = key;
 			CreationCallback = creationCallback;
-			PrefabOverride = prefabOverride;
+			Prefab = prefab;
 		}
+
+		public abstract GameObject Create(GameObject parent);
 
 		public abstract class Builder {
 			protected string _key;
 			protected System.Action<GameObject> _creationCallback;
-			protected GameObject _prefabOverride;
+			protected GameObject _prefab;
 
-			public Builder(string key) {
+			public Builder(string key, GameObject prefab) {
 				_key = key;
-			}
-
-			public Builder SetPrefabOverride(GameObject prefabOverride) {
-				_prefabOverride = prefabOverride;
-				return this;
+				_prefab = prefab;
 			}
 
 			public Builder SetCreationCallback(System.Action<GameObject> creationCallback) {

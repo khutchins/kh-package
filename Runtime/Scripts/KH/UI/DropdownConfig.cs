@@ -1,6 +1,5 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
 using UnityEngine;
 
 namespace KH.UI {
@@ -10,11 +9,26 @@ namespace KH.UI {
 		public readonly int DefaultIndex;
 		public readonly DropdownChosenHandler Handler;
 
-		public DropdownConfig(string key, string displayText, string[] optionStrings, int defaultIndex, System.Action<GameObject> creationCallback, DropdownChosenHandler handler) : base(key, creationCallback) {
+		public DropdownConfig(string key, GameObject prefab, string displayText, string[] optionStrings, int defaultIndex, System.Action<GameObject> creationCallback, DropdownChosenHandler handler) 
+				: base(key, prefab, creationCallback) {
 			DisplayText = displayText;
 			OptionStrings = optionStrings;
 			DefaultIndex = defaultIndex;
 			Handler = handler;
+		}
+
+		public override GameObject Create(GameObject parent) {
+			GameObject go = Object.Instantiate(Prefab, parent.transform);
+			go.name = Key;
+			DropdownManager manager = go.GetComponent<DropdownManager>();
+			if (manager == null) {
+				Debug.LogWarning("Dropdown prefab does not contain DropdownManager. Menu generation will not proceed normally!");
+			} else {
+				manager.SetText(DisplayText);
+				manager.SetOptions(OptionStrings, DefaultIndex);
+				manager.DropdownChosen += Handler;
+			}
+			return go;
 		}
 
 		public new class Builder : PanelObjectConfig.Builder {
@@ -23,7 +37,7 @@ namespace KH.UI {
 			private int _defaultIndex;
 			private DropdownChosenHandler _handler;
 
-			public Builder(string key) : base(key) {
+			public Builder(string key, GameObject prefab) : base(key, prefab) {
 			}
 
 			public Builder SetDisplayText(string displayText) {
@@ -56,7 +70,7 @@ namespace KH.UI {
 			}
 
 			public override PanelObjectConfig Build() {
-				return new DropdownConfig(_key, _displayText, _optionStrings.ToArray(), _defaultIndex, _creationCallback, _handler);
+				return new DropdownConfig(_key, _prefab, _displayText, _optionStrings.ToArray(), _defaultIndex, _creationCallback, _handler);
 			}
 		}
 	}

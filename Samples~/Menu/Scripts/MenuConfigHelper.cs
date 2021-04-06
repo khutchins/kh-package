@@ -28,9 +28,8 @@ public static class MenuConfigHelper {
 	/// Standard resolution dropdown. Filters out Hz values.
 	/// </summary>
 	/// <returns>Resolution panel object config</returns>
-	public static PanelObjectConfig ResolutionConfig() {
+	public static PanelObjectConfig ResolutionConfig(GameObject dropdownPrefab) {
 
-		
 		Resolution[] filteredResolutions = Screen.resolutions.Where(res => Mathf.Abs(res.refreshRate - Screen.currentResolution.refreshRate) <= 1).ToArray();
 		Resolution playerResolution = new Resolution();
 		playerResolution.width = Screen.width;
@@ -44,7 +43,7 @@ public static class MenuConfigHelper {
 		}
 		IEnumerable<string> resolutionStrings = filteredResolutions.Select(x => x.width + " x " + x.height);
 
-		return new DropdownConfig.Builder("resolution")
+		return new DropdownConfig.Builder("resolution", dropdownPrefab)
 			.SetDisplayText("Resolution")
 			.AddOptionStrings(resolutionStrings)
 			.SetDefaultOptionIndex(idx)
@@ -55,26 +54,27 @@ public static class MenuConfigHelper {
 			}).Build();
 	}
 
-	public static PanelConfig.Builder StandardOptionsPanel(string key, MenuHelper menuHelper) {
+	public static PanelConfig.Builder StandardOptionsPanel(string key, MenuHelper menuHelper, GameObject buttonPrefab, 
+			GameObject sliderPrefab, GameObject dropdownPrefab, GameObject togglePrefab) {
 
 		PanelConfig.Builder builder = new PanelConfig.Builder(key);
 
-		builder.AddPanelObject(new ButtonConfig.Builder("back")
+		builder.AddPanelObject(new ButtonConfig.Builder("back", buttonPrefab)
 			.SetDisplayText("Back")
 			.SetButtonPressedHandler(delegate (ButtonManager manager) {
 				menuHelper.PopMenu();
 			}));
-		builder.AddPanelObject(new SliderConfig.Builder("sliderlook", 0.1f, 3f, 1f)
+		builder.AddPanelObject(new SliderConfig.Builder("sliderlook", sliderPrefab, 0.1f, 3f, 1f)
 			.SetDisplayText("Look Speed")
 			.SetSliderUpdatedHandler(delegate (SliderManager manager, float newValue) {
 				// Handle sensitivity
 			}));
-		builder.AddPanelObject(new SliderConfig.Builder("slidervolume", 0.1f, 3f, 1f)
+		builder.AddPanelObject(new SliderConfig.Builder("slidervolume", sliderPrefab, 0f, 1f, 1f)
 			.SetDisplayText("Volume")
 			.SetSliderUpdatedHandler(delegate (SliderManager manager, float newValue) {
 				// Handle sensitivity
 			}));
-		builder.AddPanelObject(new DropdownConfig.Builder("quality")
+		builder.AddPanelObject(new DropdownConfig.Builder("quality", dropdownPrefab)
 			.SetDisplayText("Quality")
 			.AddOptionStrings(QualitySettings.names)
 			.SetDefaultOptionIndex(QualitySettings.GetQualityLevel())
@@ -84,10 +84,10 @@ public static class MenuConfigHelper {
 
 		// No point in showing resolution config in WebGL - It does nothing.
 		if (Application.platform != RuntimePlatform.WebGLPlayer) {
-			builder.AddPanelObject(ResolutionConfig());
+			builder.AddPanelObject(ResolutionConfig(dropdownPrefab));
 		}
 
-		builder.AddPanelObject(new ToggleConfig.Builder("fullscreen")
+		builder.AddPanelObject(new ToggleConfig.Builder("fullscreen", togglePrefab)
 			.SetDisplayText("Fullscreen")
 			.SetIsOn(Screen.fullScreen)
 			.SetTogglePressedHandler(delegate (ToggleManager manager, bool newValue) {

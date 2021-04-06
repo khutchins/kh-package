@@ -32,32 +32,32 @@ public class InGameMenu : MenuGenerator {
 
 		builder.AddPanelConfig(new PanelConfig.Builder("main")
 			.AddPanelObject(
-				new ButtonConfig.Builder("resume")
+				new ButtonConfig.Builder("resume", ButtonPrefab)
 					.SetDisplayText("Resume")
 					.SetButtonPressedHandler(delegate (ButtonManager manager) {
 						_manager.ExitMenu();
 					}))
 			.AddPanelObject(
-				new ButtonConfig.Builder("options")
+				new ButtonConfig.Builder("options", ButtonPrefab)
 					.SetDisplayText("Options")
 					.SetButtonPressedHandler(delegate (ButtonManager manager) {
 						_manager.PushMenu(MENU_KEY_OPTIONS);
 					}))
 			.AddPanelObject(
-				new ButtonConfig.Builder("restart")
+				new ButtonConfig.Builder("restart", ButtonPrefab)
 					.SetDisplayText("Restart")
 					.SetButtonPressedHandler(delegate (ButtonManager manager) {
 						_manager.NewMap();
 					}))
 			.AddPanelObject(
-				new ButtonConfig.Builder("exit")
+				new ButtonConfig.Builder("exit", ButtonPrefab)
 					.SetDisplayText("Exit")
 					.SetButtonPressedHandler(delegate (ButtonManager manager) {
 						_manager.ExitGame();
 					})), true);
 
-		builder.AddPanelConfig(MenuConfigHelper.StandardOptionsPanel(MENU_KEY_OPTIONS, _manager));
+		builder.AddPanelConfig(MenuConfigHelper.StandardOptionsPanel(MENU_KEY_OPTIONS, _manager, ButtonPrefab, SliderPefab, DropdownPrefab, TogglePrefab));
 
-		CreateMenu(_manager, builder.Build());
+		CreateMenu(_manager, builder);
 	}
 }

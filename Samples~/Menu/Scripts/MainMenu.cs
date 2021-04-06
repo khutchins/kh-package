@@ -30,20 +30,20 @@ public class MainMenu : MenuGenerator {
 
 		MenuConfig config = new MenuConfig(false, false, MENU_KEY_MAIN, PaletteConfig, new PanelConfig[] {
 			new PanelConfig(MENU_KEY_MAIN, KEY_RESUME, new PanelObjectConfig[] {
-				new ButtonConfig(KEY_RESUME, "Play Game", null, delegate(ButtonManager manager) {
+				new ButtonConfig(KEY_RESUME, ButtonPrefab, "Play Game", null, delegate(ButtonManager manager) {
 					_manager.NewMap();
 				}),
-				new ButtonConfig(KEY_OPTIONS, "Options", null, delegate(ButtonManager manager) {
+				new ButtonConfig(KEY_OPTIONS, ButtonPrefab, "Options", null, delegate(ButtonManager manager) {
 					_manager.PushMenu(MENU_KEY_OPTIONS);
 				}),
-				new ButtonConfig(KEY_CREDITS, "Credits", null, delegate(ButtonManager manager) {
+				new ButtonConfig(KEY_CREDITS, ButtonPrefab, "Credits", null, delegate(ButtonManager manager) {
 					_manager.PushMenu(MENU_KEY_CREDITS);
 				}),
-				new ButtonConfig(KEY_EXIT, "Exit", null, delegate(ButtonManager manager) {
+				new ButtonConfig(KEY_EXIT, ButtonPrefab, "Exit", null, delegate(ButtonManager manager) {
 					_manager.ExitGame();
 				})
 			}),
-			MenuConfigHelper.StandardOptionsPanel(MENU_KEY_OPTIONS, _manager).Build(),
+			MenuConfigHelper.StandardOptionsPanel(MENU_KEY_OPTIONS, _manager, ButtonPrefab, SliderPefab, DropdownPrefab, TogglePrefab).Build(),
 		});
 
 		CreateMenu(_manager, config);

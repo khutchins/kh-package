@@ -10,12 +10,28 @@ namespace KH.UI {
 		public float DefaultValue;
 		public SliderUpdatedHandler Handler;
 
-		public SliderConfig(string key, string displayText, float minValue, float maxValue, float defaultValue, System.Action<GameObject> creationCallback, SliderUpdatedHandler handler) : base(key, creationCallback) {
+		public SliderConfig(string key, GameObject prefab, string displayText, float minValue, float maxValue, float defaultValue, System.Action<GameObject> creationCallback, SliderUpdatedHandler handler) 
+				: base(key, prefab, creationCallback) {
 			DisplayText = displayText;
 			MinValue = minValue;
 			MaxValue = maxValue;
 			DefaultValue = defaultValue;
 			Handler = handler;
+		}
+
+		public override GameObject Create(GameObject parent) {
+			GameObject go = Object.Instantiate(Prefab, parent.transform);
+			go.name = Key;
+			SliderManager manager = go.GetComponent<SliderManager>();
+			if (manager == null) {
+				Debug.LogWarning("Slider prefab does not contain SliderManager. Menu generation will not proceed normally!");
+			} else {
+				manager.SetRange(MinValue, MaxValue);
+				manager.SetValue(DefaultValue);
+				manager.SetText(DisplayText);
+				manager.SliderUpdated += Handler;
+			}
+			return go;
 		}
 
 		public new class Builder : PanelObjectConfig.Builder {
@@ -25,7 +41,7 @@ namespace KH.UI {
 			private float _maxValue;
 			private float _defaultValue;
 
-			public Builder(string key, float minValue, float maxValue, float defaultValue) : base(key) {
+			public Builder(string key, GameObject prefab, float minValue, float maxValue, float defaultValue) : base(key, prefab) {
 				_minValue = minValue;
 				_maxValue = maxValue;
 				_defaultValue = defaultValue;
@@ -42,7 +58,7 @@ namespace KH.UI {
 			}
 
 			public override PanelObjectConfig Build() {
-				return new SliderConfig(_key, _displayText, _minValue, _maxValue, _defaultValue, _creationCallback, _handler);
+				return new SliderConfig(_key, _prefab, _displayText, _minValue, _maxValue, _defaultValue, _creationCallback, _handler);
 			}
 		}
 	}

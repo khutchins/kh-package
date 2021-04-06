@@ -26,6 +26,10 @@ namespace KH.UI {
 		public Dictionary<string, GameObject> PanelDictionary = new Dictionary<string, GameObject>();
 		public Dictionary<string, Dictionary<string, GameObject>> PanelObjectDictionary = new Dictionary<string, Dictionary<string, GameObject>>();
 
+		public void CreateMenu(MenuHelper helper, MenuConfig.Builder menuConfigBuilder) {
+			CreateMenu(helper, menuConfigBuilder.Build());
+		}
+
 		public void CreateMenu(MenuHelper helper, MenuConfig menuConfig) {
 			helper.MenuConfig = menuConfig;
 			List<PanelManager> panels = new List<PanelManager>();
@@ -38,11 +42,11 @@ namespace KH.UI {
 
 		public PanelManager CreatePanel(GameObject parent, PanelConfig config, MenuConfig menuConfig) {
 			GameObject prefab = config.PrefabOverride == null ? PanelPrefab : config.PrefabOverride;
-			GameObject obj = Instantiate(prefab, parent.transform);
-			obj.name = config.Key;
-			PanelManager manager = obj.AddComponent<PanelManager>();
+			GameObject panel = Instantiate(prefab, parent.transform);
+			panel.name = config.Key;
+			PanelManager manager = panel.AddComponent<PanelManager>();
 			manager.Key = config.Key;
-			PanelDictionary.Add(config.Key, obj);
+			PanelDictionary.Add(config.Key, panel);
 
 			if (config.SupplementalObjects != null) {
 				List<GameObject> supplementalObjects = new List<GameObject>();
@@ -59,7 +63,7 @@ namespace KH.UI {
 			List<Selectable> selectableObjects = new List<Selectable>();
 
 			foreach (PanelObjectConfig objConfig in config.PanelObjects) {
-				GameObject go = CreatePanelObject(obj, objConfig);
+				GameObject go = objConfig.Create(panel);
 				UIElementManager elementManager = go.GetComponentInChildren<UIElementManager>();
 				elementManager.SetColors(menuConfig.PaletteConfig);
 				if (elementManager.SelectableObject != null && elementManager.SelectableObject.GetComponent<Selectable>() != null) {
@@ -96,76 +100,7 @@ namespace KH.UI {
 		}
 
 		protected GameObject CreatePanelObject(GameObject panel, PanelObjectConfig config) {
-			if (config is ButtonConfig) {
-				return CreateButton(panel, (ButtonConfig) config);
-			} else if (config is SliderConfig) {
-				return CreateSlider(panel, (SliderConfig) config);
-			} else if (config is ToggleConfig) {
-				return CreateToggle(panel, (ToggleConfig) config);
-			} else if (config is DropdownConfig) {
-				return CreateDropdown(panel, (DropdownConfig)config);
-			}
-			return null;
-		}
-
-		public GameObject CreateButton(GameObject parent, ButtonConfig config) {
-			GameObject prefab = config.PrefabOverride == null ? ButtonPrefab : config.PrefabOverride;
-			GameObject go = Instantiate(prefab, parent.transform);
-			go.name = config.Key;
-			ButtonManager manager = go.GetComponent<ButtonManager>();
-			if (manager == null) {
-				Debug.LogWarning("Button prefab does not contain ButtonManager. Menu generation will not proceed normally!");
-			} else {
-				manager.SetText(config.DisplayText);
-				manager.ButtonPressed += config.Handler;
-			}
-			return go;
-		}
-
-		public GameObject CreateSlider(GameObject parent, SliderConfig config) {
-			GameObject prefab = config.PrefabOverride == null ? SliderPefab : config.PrefabOverride;
-			GameObject go = Instantiate(prefab, parent.transform);
-			go.name = config.Key;
-			SliderManager manager = go.GetComponent<SliderManager>();
-			if (manager == null) {
-				Debug.LogWarning("Slider prefab does not contain SliderManager. Menu generation will not proceed normally!");
-			} else {
-				manager.SetRange(config.MinValue, config.MaxValue);
-				manager.SetValue(config.DefaultValue);
-				manager.SetText(config.DisplayText);
-				manager.SliderUpdated += config.Handler;
-			}
-			return go;
-		}
-
-		public GameObject CreateToggle(GameObject parent, ToggleConfig config) {
-			GameObject prefab = config.PrefabOverride == null ? TogglePrefab : config.PrefabOverride;
-			GameObject go = Instantiate(prefab, parent.transform);
-			go.name = config.Key;
-			ToggleManager manager = go.GetComponent<ToggleManager>();
-			if (manager == null) {
-				Debug.LogWarning("Toggle prefab does not contain ToggleManager. Menu generation will not proceed normally!");
-			} else {
-				manager.SetToggled(config.IsOn);
-				manager.SetText(config.DisplayText);
-				manager.TogglePressed += config.Handler;
-			}
-			return go;
-		}
-
-		public GameObject CreateDropdown(GameObject parent, DropdownConfig config) {
-			GameObject prefab = config.PrefabOverride == null ? DropdownPrefab : config.PrefabOverride;
-			GameObject go = Instantiate(prefab, parent.transform);
-			go.name = config.Key;
-			DropdownManager manager = go.GetComponent<DropdownManager>();
-			if (manager == null) {
-				Debug.LogWarning("Dropdown prefab does not contain DropdownManager. Menu generation will not proceed normally!");
-			} else {
-				manager.SetText(config.DisplayText);
-				manager.SetOptions(config.OptionStrings, config.DefaultIndex);
-				manager.DropdownChosen += config.Handler;
-			}
-			return go;
+			return config.Create(panel);
 		}
 	}
 }

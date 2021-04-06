@@ -8,10 +8,25 @@ namespace KH.UI {
 		public readonly bool IsOn;
 		public readonly TogglePressedHandler Handler;
 
-		public ToggleConfig(string key, string displayText, bool isOn, System.Action<GameObject> creationCallback, TogglePressedHandler handler) : base(key, creationCallback) {
+		public ToggleConfig(string key, GameObject prefab, string displayText, bool isOn, System.Action<GameObject> creationCallback, TogglePressedHandler handler) 
+				: base(key, prefab, creationCallback) {
 			DisplayText = displayText;
 			IsOn = isOn;
 			Handler = handler;
+		}
+
+		public override GameObject Create(GameObject parent) {
+			GameObject go = Object.Instantiate(Prefab, parent.transform);
+			go.name = Key;
+			ToggleManager manager = go.GetComponent<ToggleManager>();
+			if (manager == null) {
+				Debug.LogWarning("Toggle prefab does not contain ToggleManager. Menu generation will not proceed normally!");
+			} else {
+				manager.SetToggled(IsOn);
+				manager.SetText(DisplayText);
+				manager.TogglePressed += Handler;
+			}
+			return go;
 		}
 
 		public new class Builder : PanelObjectConfig.Builder {
@@ -19,7 +34,7 @@ namespace KH.UI {
 			private TogglePressedHandler _handler;
 			private bool _isOn;
 
-			public Builder(string key) : base(key) {
+			public Builder(string key, GameObject prefab) : base(key, prefab) {
 			}
 
 			public Builder SetDisplayText(string displayText) {
@@ -38,7 +53,7 @@ namespace KH.UI {
 			}
 
 			public override PanelObjectConfig Build() {
-				return new ToggleConfig(_key, _displayText, _isOn, _creationCallback, _handler);
+				return new ToggleConfig(_key, _prefab, _displayText, _isOn, _creationCallback, _handler);
 			}
 		}
 	}
