@@ -2,9 +2,17 @@
 using System.Collections.Generic;
 using System.Reflection.Emit;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace KH.UI {
 	public class PanelConfig {
+
+		public enum NavigationType {
+			Vertical,
+			Horizontal,
+			Custom
+		};
+
 		/// <summary>
 		/// Used to reference the panels from other panels or do
 		/// lookups in the panel dictionary.
@@ -13,17 +21,21 @@ namespace KH.UI {
 		public readonly string DefaultSelectableKey;
 		public readonly bool HorizontalMenu;
 		public readonly GameObject PrefabOverride;
+		public readonly NavigationType Navigation;
+		public readonly System.Action<List<Selectable>> NavigationCallback;
 
 		public readonly PanelObjectConfig[] PanelObjects;
 		[HideInInspector]
 		public readonly GameObject[] SupplementalObjects;
 
-		public PanelConfig(string key, string defaultSelectableKey, PanelObjectConfig[] panelObjects, GameObject[] supplementalObjects = null, bool horizontalMenu = false, GameObject prefabOverride = null) {
+		public PanelConfig(string key, string defaultSelectableKey, PanelObjectConfig[] panelObjects, GameObject[] supplementalObjects = null, NavigationType navigation = NavigationType.Vertical, System.Action<List<Selectable>> navigationCallback = null, GameObject prefabOverride = null) {
 			Key = key;
 			DefaultSelectableKey = defaultSelectableKey;
 			PanelObjects = panelObjects;
 			SupplementalObjects = supplementalObjects;
-			HorizontalMenu = horizontalMenu;
+			Navigation = navigation;
+			NavigationCallback = navigationCallback;
+
 			PrefabOverride = prefabOverride;
 		}
 
@@ -33,7 +45,8 @@ namespace KH.UI {
 			private GameObject _prefabOverride;
 			private string _key;
 			private string _defaultSelectableKey;
-			private bool _isHorizontal;
+			private NavigationType _navigation;
+			private System.Action<List<Selectable>> _navigationCallback;
 
 			public Builder(string key) {
 				_key = key;
@@ -88,8 +101,29 @@ namespace KH.UI {
 				return this;
 			}
 
-			public Builder SetIsHorizontalMenu(bool isHorizontal) {
-				_isHorizontal = isHorizontal;
+			/// <summary>
+			/// Specifies that navigation between selectable elements will use the left/right inputs.
+			/// </summary>
+			public Builder SetHorizontalNavigation() {
+				_navigation = NavigationType.Horizontal;
+				return this;
+			}
+
+			/// <summary>
+			/// Specifies that navigation between selectable elements will use the up/down inputs.
+			/// </summary>
+			public Builder SetVerticalNavigation() {
+				_navigation = NavigationType.Vertical;
+				return this;
+			}
+
+			/// <summary>
+			/// Allows the selectables to have their navigation specified by the provided callback.
+			/// The selectable list is the order in which the panel objects were added, ignoring unselectable elements.
+			/// </summary>
+			public Builder SetCustomNavigation(System.Action<List<Selectable>> navigationCallback) {
+				_navigation = NavigationType.Custom;
+				_navigationCallback = navigationCallback;
 				return this;
 			}
 
@@ -99,7 +133,7 @@ namespace KH.UI {
 				}
 				return new PanelConfig(_key, _defaultSelectableKey, 
 					_panelObjectConfigs.ToArray(), _supplementalObjects.ToArray(), 
-					_isHorizontal, _prefabOverride);
+					_navigation, _navigationCallback, _prefabOverride);
 			}
 		}
 	}

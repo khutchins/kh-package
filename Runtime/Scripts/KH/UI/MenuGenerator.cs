@@ -77,22 +77,26 @@ namespace KH.UI {
 			}
 
 			// Hook up navigation with elements with selectable objects.
-			for (int i = 0; i < selectableObjects.Count; i++) {
-				// Make new one to avoid potential property strangeness.
-				Navigation navigation = new Navigation();
-				navigation.mode = Navigation.Mode.Explicit;
-				if (config.HorizontalMenu) {
-					navigation.selectOnLeft = i > 0 ? selectableObjects[i - 1] : null;
-					navigation.selectOnRight = i < selectableObjects.Count - 1 ? selectableObjects[i + 1] : null;
-					navigation.selectOnUp = null;
-					navigation.selectOnDown = null;
-				} else {
-					navigation.selectOnUp = i > 0 ? selectableObjects[i - 1] : null;
-					navigation.selectOnDown = i < selectableObjects.Count - 1 ? selectableObjects[i + 1] : null;
-					navigation.selectOnLeft = null;
-					navigation.selectOnRight = null;
+			if (config.Navigation == PanelConfig.NavigationType.Custom) {
+				config.NavigationCallback?.Invoke(selectableObjects);
+			} else {
+				for (int i = 0; i < selectableObjects.Count; i++) {
+					// Make new one to avoid potential property strangeness.
+					Navigation navigation = new Navigation();
+					navigation.mode = Navigation.Mode.Explicit;
+					if (config.Navigation == PanelConfig.NavigationType.Horizontal) {
+						navigation.selectOnUp = null;
+						navigation.selectOnDown = null;
+						navigation.selectOnLeft = i > 0 ? selectableObjects[i - 1] : null;
+						navigation.selectOnRight = i < selectableObjects.Count - 1 ? selectableObjects[i + 1] : null;
+					} else {
+						navigation.selectOnUp = i > 0 ? selectableObjects[i - 1] : null;
+						navigation.selectOnDown = i < selectableObjects.Count - 1 ? selectableObjects[i + 1] : null;
+						navigation.selectOnLeft = null;
+						navigation.selectOnRight = null;
+					}
+					selectableObjects[i].navigation = navigation;
 				}
-				selectableObjects[i].navigation = navigation;
 			}
 
 			PanelObjectDictionary[config.Key] = dict;
