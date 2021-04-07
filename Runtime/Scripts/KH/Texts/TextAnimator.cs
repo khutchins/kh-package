@@ -229,7 +229,7 @@ namespace KH.Texts {
 					}
 				}
 
-				if (blipSound) {
+				if (blipSound && update.Delay > 0) {
 					Transform position = null;
 					if (PlayAtAudioListener && PlayerRef != null && PlayerRef.Value != null) {
 						position = PlayerRef.Value.transform;
