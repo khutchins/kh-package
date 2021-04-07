@@ -16,6 +16,10 @@ namespace KH.Texts {
 			UnrecognizedTags = unrecognizedTags;
 			BypassKeypress = bypassKeypress;
 		}
+
+		public override string ToString() {
+			return NewString;
+		}
 	}
 
 	/// <summary>
@@ -26,7 +30,7 @@ namespace KH.Texts {
 		private readonly TokenizedText _parser;
 		private readonly float _baseSpeedMod;
 
-		public TextPlayer(string rawText, float baseSpeedMod) {
+		public TextPlayer(string rawText, float baseSpeedMod = 1f) {
 			_parser = new TokenizedText(rawText);
 			_baseSpeedMod = baseSpeedMod;
 		}
@@ -43,10 +47,10 @@ namespace KH.Texts {
 			string invisibleMarkupEnd = "</color>";
 			string strippedText = _parser.GetTextWithoutMarkup();
 
-			yield return new TextUpdate(_parser.GetStringInsertingTagOpenAtIndex(stripIdx, invisibleMarkup, invisibleMarkupEnd), 0, false, new List<TextToken>());
+			yield return new TextUpdate(_parser.GetStringInsertingTagOpenBeforeIndex(stripIdx, invisibleMarkup, invisibleMarkupEnd), 0, false, new List<TextToken>());
 
-			while (stripIdx < strippedText.Length + 1) {
-				string newText = _parser.GetStringInsertingTagOpenAtIndex(stripIdx, invisibleMarkup, invisibleMarkupEnd);
+			while (stripIdx < strippedText.Length) {
+				string newText = _parser.GetStringInsertingTagOpenBeforeIndex(stripIdx + 1, invisibleMarkup, invisibleMarkupEnd);
 
 				List<TextToken> tokens = _parser.TokensForIndex(stripIdx);
 				float percentMod = _baseSpeedMod;

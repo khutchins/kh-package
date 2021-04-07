@@ -1,0 +1,13 @@
+{
+	"name": "com.khutchins.package.core.tests",
+	"references": [
+		"com.khutchins.package.core"
+	],
+	"optionalUnityReferences": [
+		"TestAssemblies"
+	],
+	"includePlatforms": [
+		"Editor"
+	],
+	"excludePlatforms": []
+}

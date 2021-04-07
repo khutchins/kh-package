@@ -199,7 +199,7 @@ namespace KH.Texts {
 			return new TokenizedText(this.tokens.Concat(textToAppend.tokens).ToList());
 		}
 
-		public string GetStringInsertingTagOpenAtIndex(int idx, string open, string close) {
+		public string GetStringInsertingTagOpenBeforeIndex(int idx, string open, string close) {
 			List<TextToken> tokensWithTag = new List<TextToken>();
 			int currentIdx = 0;
 			bool insertedTag = false;
@@ -277,7 +277,7 @@ namespace KH.Texts {
 		}
 	}
 
-	public class TextToken {
+	public class TextToken : IEquatable<TextToken> {
 		public readonly string text;
 		public readonly bool isTag = false;
 		public readonly bool isClosingTag = false;
@@ -339,6 +339,24 @@ namespace KH.Texts {
 
 		public override string ToString() {
 			return text;
+		}
+
+		public override bool Equals(object obj) {
+			return Equals(obj as TextToken);
+		}
+
+		public bool Equals(TextToken other) {
+			return other != null &&
+				   text == other.text &&
+				   isTag == other.isTag &&
+				   isClosingTag == other.isClosingTag &&
+				   requiresMatch == other.requiresMatch &&
+				   allowAfterInsert == other.allowAfterInsert &&
+				   closingTag == other.closingTag &&
+				   key == other.key &&
+				   value == other.value &&
+				   hasValue == other.hasValue &&
+				   outputText == other.outputText;
 		}
 	}
 }
