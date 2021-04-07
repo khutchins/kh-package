@@ -220,7 +220,10 @@ namespace KH.Texts {
 							break;
 
 						case "pitch":
-							if (!float.TryParse(token.value, out float fl)) fl = 1f;
+							if (!float.TryParse(token.value, out float fl)) {
+								Debug.LogWarning("Unsupported pitch parameter: " + token.value);
+								fl = 1f;
+							}
 							pitch = fl;
 							break;
 					}
