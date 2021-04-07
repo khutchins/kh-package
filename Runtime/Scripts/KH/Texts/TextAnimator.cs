@@ -98,13 +98,17 @@ namespace KH.Texts {
 			if (_currentText != null) {
 				conversationText.text = _currentText.GetFinalString();
 			}
-			rectToShake.anchoredPosition = _textBoxBasePosition;
+			if (rectToShake != null) {
+				rectToShake.anchoredPosition = _textBoxBasePosition;
+			}
 			_textAnimating = false;
 			_currentText = null;
 		}
 
 		public void RemoveText() {
-			rectToShake.anchoredPosition = _textBoxBasePosition;
+			if (rectToShake != null) {
+				rectToShake.anchoredPosition = _textBoxBasePosition;
+			}
 			StopAllCoroutines();
 			StartCoroutine(AnimateOut());
 		}
@@ -197,7 +201,9 @@ namespace KH.Texts {
 
 			yield return StartCoroutine(AnimateIn());
 
-			_textBoxBasePosition = rectToShake.anchoredPosition;
+			if (rectToShake != null) {
+				_textBoxBasePosition = rectToShake.anchoredPosition;
+			}
 
 			bool bypassKeypress = false;
 
@@ -260,15 +266,17 @@ namespace KH.Texts {
 		}
 
 		IEnumerator Shake(float duration) {
-			float startTime = Time.time;
-			float magnitude = 5;
-			while (Time.time - startTime < duration) {
-				float rand = Random.Range(0F, (float)(2F * System.Math.PI));
-				rectToShake.anchoredPosition = _textBoxBasePosition + new Vector3((float)(magnitude * System.Math.Sin(rand)), (float)(magnitude * System.Math.Cos(rand)), 0);
-				yield return new WaitForSeconds(0.02F);
-			}
+			if (rectToShake != null) {
+				float startTime = Time.time;
+				float magnitude = 5;
+				while (Time.time - startTime < duration) {
+					float rand = Random.Range(0F, (float)(2F * System.Math.PI));
+					rectToShake.anchoredPosition = _textBoxBasePosition + new Vector3((float)(magnitude * System.Math.Sin(rand)), (float)(magnitude * System.Math.Cos(rand)), 0);
+					yield return new WaitForSeconds(0.02F);
+				}
 
-			rectToShake.anchoredPosition = _textBoxBasePosition;
+				rectToShake.anchoredPosition = _textBoxBasePosition;
+			}
 		}
 
 		void Update() {
