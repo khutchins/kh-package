@@ -73,22 +73,28 @@ namespace KH.Texts {
 					}
 				}
 
-				char prev = stripIdx - 2 < strippedText.Length && stripIdx >= 2 ? strippedText[stripIdx - 2] : '\0';
-				char curr = stripIdx - 1 < strippedText.Length && stripIdx >= 1 ? strippedText[stripIdx - 1] : '\0';
-				char next = stripIdx < strippedText.Length ? strippedText[stripIdx] : '\0';
-				// TODO: Hook into settings for modifier
+				char prev = GetCharAtIndex(strippedText, stripIdx - 1, '\0');
+				char curr = GetCharAtIndex(strippedText, stripIdx, '\0');
+				char next = GetCharAtIndex(strippedText, stripIdx + 1, '\0');
+
 				float delay = TimeForCharacter(uniform, prev, curr, next) * (1F / SettingsWrapper.TextSpeed);
 				float actualDelay = delay / percentMod + addMod;
-				stripIdx++;
+
 				if (actualDelay > 0F) {
 					bool blip = curr != '\0' && delay > 0 && ShouldPlaySound(curr);
 					yield return new TextUpdate(newText, actualDelay, blip, unrecognizedTokens);
 				}
+
+				stripIdx++;
 			}
 
 			if (shouldNotWaitForKeypress) {
 				yield return new TextUpdate(_parser.GetString(), 1.5f, false, new List<TextToken>(), true);
 			}
+		}
+
+		private char GetCharAtIndex(string text, int idx, char defaultValue) {
+			return idx < text.Length && idx >= 0 ? text[idx] : defaultValue;
 		}
 
 		IEnumerator IEnumerable.GetEnumerator() {
@@ -137,12 +143,13 @@ namespace KH.Texts {
 						return 0.015F;
 				}
 			}
+			// It looks odd to have extra time for a closing brace or quote,
+			// so apply the previous time (which was skipped) to play them
+			// together.
 			if (curr == ')' || curr == '"') {
 				return TimeForCharacter(uniform, '\0', prev, ' ');
 			}
 			switch (next) {
-				case '\0':
-					return 0F;
 				case ')':
 					return 0F;
 				case '"':

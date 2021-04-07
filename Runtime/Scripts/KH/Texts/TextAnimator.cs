@@ -229,7 +229,7 @@ namespace KH.Texts {
 					}
 				}
 
-				if (blipSound && update.Delay > 0) {
+				if (blipSound && update.PlayBlip) {
 					Transform position = null;
 					if (PlayAtAudioListener && PlayerRef != null && PlayerRef.Value != null) {
 						position = PlayerRef.Value.transform;
@@ -240,6 +240,7 @@ namespace KH.Texts {
 						ASHelper.PlayClipAtPoint(blipSound, position.position, 1, pitch);
 					}
 				}
+
 
 				if (update.Delay > 0) {
 					yield return new WaitForSeconds(update.Delay);
