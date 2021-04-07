@@ -212,10 +212,16 @@ namespace KH.Texts {
 				if (_doneNextUpdate) break;
 
 				conversationText.text = update.NewString;
+				float pitch = 1f;
 				foreach (TextToken token in update.UnrecognizedTags) {
 					switch (token.key) {
 						case "shake":
 							StartCoroutine(Shake(OptParse(token.value, .1F)));
+							break;
+
+						case "pitch":
+							if (!float.TryParse(token.value, out float fl)) fl = 1f;
+							pitch = fl;
 							break;
 					}
 				}
@@ -228,7 +234,7 @@ namespace KH.Texts {
 						position = SoundLocation;
 					}
 					if (position != null) {
-						AudioSource.PlayClipAtPoint(blipSound, position.position);
+						ASHelper.PlayClipAtPoint(blipSound, position.position, 1, pitch);
 					}
 				}
 
