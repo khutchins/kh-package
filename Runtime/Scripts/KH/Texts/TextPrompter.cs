@@ -54,7 +54,7 @@ namespace KH.Texts {
 		}
 
 		private void Update() {
-			if (_waitingForInput && InputMediator.Interact()) {
+			if (_waitingForInput && InputMediator != null && InputMediator.Interact()) {
 				DoneWithLine();
 			}
 		}
