@@ -358,5 +358,20 @@ namespace KH.Texts {
 				   hasValue == other.hasValue &&
 				   outputText == other.outputText;
 		}
+
+		public override int GetHashCode() {
+			int hashCode = -979268291;
+			hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(text);
+			hashCode = hashCode * -1521134295 + isTag.GetHashCode();
+			hashCode = hashCode * -1521134295 + isClosingTag.GetHashCode();
+			hashCode = hashCode * -1521134295 + requiresMatch.GetHashCode();
+			hashCode = hashCode * -1521134295 + allowAfterInsert.GetHashCode();
+			hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(closingTag);
+			hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(key);
+			hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(value);
+			hashCode = hashCode * -1521134295 + hasValue.GetHashCode();
+			hashCode = hashCode * -1521134295 + outputText.GetHashCode();
+			return hashCode;
+		}
 	}
 }
