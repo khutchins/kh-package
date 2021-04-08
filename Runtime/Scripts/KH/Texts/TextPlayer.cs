@@ -40,16 +40,15 @@ namespace KH.Texts {
 		}
 
 		public IEnumerator<TextUpdate> GetEnumerator() {
-			int stripIdx = 0;
-
 			bool shouldNotWaitForKeypress = false;
 			string invisibleMarkup = "<color=#00000000>";
 			string invisibleMarkupEnd = "</color>";
 			string strippedText = _parser.GetTextWithoutMarkup();
 
-			yield return new TextUpdate(_parser.GetStringInsertingTagOpenBeforeIndex(stripIdx, invisibleMarkup, invisibleMarkupEnd), 0, false, new List<TextToken>());
+			yield return new TextUpdate(_parser.GetStringInsertingTagOpenBeforeIndex(0, invisibleMarkup, invisibleMarkupEnd), 0, false, new List<TextToken>());
 
-			while (stripIdx < strippedText.Length) {
+			// This goes to length + 1 as tags can occur after the last character, and we will miss them otherwise.
+			for (int stripIdx = 0; stripIdx < strippedText.Length + 1; stripIdx++) {
 				string newText = _parser.GetStringInsertingTagOpenBeforeIndex(stripIdx + 1, invisibleMarkup, invisibleMarkupEnd);
 
 				List<TextToken> tokens = _parser.TokensForIndex(stripIdx);
@@ -88,8 +87,6 @@ namespace KH.Texts {
 					bool blip = curr != '\0' && delay > 0 && ShouldPlaySound(curr);
 					yield return new TextUpdate(newText, actualDelay, blip, unrecognizedTokens);
 				}
-
-				stripIdx++;
 			}
 
 			if (shouldNotWaitForKeypress) {
@@ -160,6 +157,7 @@ namespace KH.Texts {
 					return 0F;
 			}
 			switch (curr) {
+				case '\0':
 				case ' ':
 				case '(':
 				case '\n':

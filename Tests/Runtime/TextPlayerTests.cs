@@ -15,6 +15,7 @@ namespace KH.Texts {
             TextUpdateExpectation[] expected = {
                 new TextUpdateExpectation.Builder().SetString("", "t").Build(),
                 new TextUpdateExpectation.Builder().SetString("t", "").Build(),
+                new TextUpdateExpectation.Builder().SetString("t", "").Build(),
             };
 
             AssertMatches(expected, player);
@@ -30,6 +31,7 @@ namespace KH.Texts {
                 new TextUpdateExpectation.Builder().SetString("te", "st").Build(),
                 new TextUpdateExpectation.Builder().SetString("tes", "t").Build(),
                 new TextUpdateExpectation.Builder().SetString("test", "").Build(),
+                new TextUpdateExpectation.Builder().SetString("test", "").Build(),
             };
 
             AssertMatches(expected, player);
@@ -42,6 +44,7 @@ namespace KH.Texts {
             TextUpdateExpectation[] expected = {
                 new TextUpdateExpectation.Builder().SetString("", "a b").Build(),
                 new TextUpdateExpectation.Builder().SetString("a", " b").Build(),
+                new TextUpdateExpectation.Builder().SetString("a b", "").Build(),
                 new TextUpdateExpectation.Builder().SetString("a b", "").Build(),
             };
 
@@ -56,6 +59,7 @@ namespace KH.Texts {
                 new TextUpdateExpectation.Builder().SetString("", "a b").SetPlayBlip(false).Build(),
                 new TextUpdateExpectation.Builder().SetString("a", " b").SetPlayBlip(true).Build(),
                 new TextUpdateExpectation.Builder().SetString("a b", "").SetPlayBlip(true).Build(),
+                new TextUpdateExpectation.Builder().SetString("a b", "").SetPlayBlip(false).Build(),
             };
 
             AssertMatches(expected, player);
@@ -70,6 +74,21 @@ namespace KH.Texts {
                 new TextUpdateExpectation.Builder().SetString("a", "! (b)").SetDelay(0.015f).Build(),
                 new TextUpdateExpectation.Builder().SetString("a!", " (b)").SetDelay(0.2f).Build(),
                 new TextUpdateExpectation.Builder().SetString("a! (b)", "").SetDelay(0.015f).Build(),
+                new TextUpdateExpectation.Builder().SetString("a! (b)", "").SetDelay(0).Build(),
+            };
+
+            AssertMatches(expected, player);
+        }
+
+        [Test]
+        public void TestBypassTokenAtEnd() {
+            TextPlayer player = new TextPlayer("a<bypass/>");
+
+            TextUpdateExpectation[] expected = {
+                new TextUpdateExpectation.Builder().SetString("", "a").SetBypassKeypress(false).Build(),
+                new TextUpdateExpectation.Builder().SetString("a", "").SetBypassKeypress(false).Build(),
+                new TextUpdateExpectation.Builder().SetString("a", "").SetBypassKeypress(true).Build(),
+                new TextUpdateExpectation.Builder().SetString("a", "").SetBypassKeypress(true).SetDelay(1.5f).Build(),
             };
 
             AssertMatches(expected, player);
@@ -93,10 +112,10 @@ namespace KH.Texts {
 
         void AssertMatch(TextUpdateExpectation expectation, TextUpdate actual) {
             if (expectation.NewString != null) Assert.AreEqual(expectation.NewString, actual.NewString);
-            if (expectation.Delay != null) Assert.AreEqual((float)expectation.Delay, actual.Delay, "Expected delay of {0} but was {1}", expectation.Delay, actual.Delay);
-            if (expectation.PlayBlip != null) Assert.AreEqual((bool)expectation.PlayBlip, actual.PlayBlip);
-            if (expectation.BypassKeypress != null) Assert.AreEqual((bool)expectation.BypassKeypress, actual.BypassKeypress);
-            if (expectation.UnrecognizedTags != null) CollectionAssert.AreEqual(expectation.UnrecognizedTags, actual.UnrecognizedTags);
+            if (expectation.Delay != null) Assert.AreEqual((float)expectation.Delay, actual.Delay, "Incorrect delay");
+            if (expectation.PlayBlip != null) Assert.AreEqual((bool)expectation.PlayBlip, actual.PlayBlip, "Incorrect PlayBlip");
+            if (expectation.BypassKeypress != null) Assert.AreEqual((bool)expectation.BypassKeypress, actual.BypassKeypress, "Incorrect BypassKeypress");
+            if (expectation.UnrecognizedTags != null) CollectionAssert.AreEqual(expectation.UnrecognizedTags, actual.UnrecognizedTags, "Incorrect tokens");
         }
 
         class TextUpdateExpectation {
