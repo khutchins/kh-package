@@ -4,5 +4,5 @@ using UnityEngine;
 using UnityEngine.Events;
 
 namespace KH.References {
-	public class StringEvent : ValueEvent<int, StringReference> { }
+	public class StringEvent : ValueEvent<string, StringReference> { }
 }
