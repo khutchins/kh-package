@@ -26,7 +26,7 @@ namespace KH.Texts {
 		public TextMeshProUGUI conversationText;
 		public TextMeshProUGUI speaker;
 		public GameObject activeTextBox;
-		public InputMediator InputMediator;
+		public SingleInputMediator InteractMediator;
 
 		[Header("Config")]
 		public string AnimatorKey;
@@ -297,7 +297,7 @@ namespace KH.Texts {
 			// so disallow it.
 			bool sameFrame = _timeStarted == Time.time;
 			if (!_doneNextUpdate) {
-				if (AllowSkipping && !sameFrame && InputMediator.Interact()) {
+				if (AllowSkipping && !sameFrame && InteractMediator.InputJustDown()) {
 					if (_textAnimating) {
 						_doneNextUpdate = true;
 					}
