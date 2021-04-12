@@ -13,7 +13,7 @@ namespace KH.Texts {
 		[Tooltip("The line spec queue the text prompter will read from. Must match that of the line spec sources.")]
         public LineSpecQueue LineQueue;
 		[Tooltip("An input mediator that has the Interact function set.")]
-		public InputMediator InputMediator;
+		public SingleInputMediator InteractMediator;
 
         private TextAnimator _textAnimator;
 		private LineSpec _current;
@@ -54,7 +54,7 @@ namespace KH.Texts {
 		}
 
 		private void Update() {
-			if (_waitingForInput && InputMediator != null && InputMediator.Interact()) {
+			if (_waitingForInput && InteractMediator != null && InteractMediator.InputJustDown()) {
 				DoneWithLine();
 			}
 		}
