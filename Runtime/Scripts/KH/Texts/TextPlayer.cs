@@ -80,7 +80,7 @@ namespace KH.Texts {
 				char curr = GetCharAtIndex(strippedText, stripIdx, '\0');
 				char next = GetCharAtIndex(strippedText, stripIdx + 1, '\0');
 
-				float delay = TimeForCharacter(uniform, prev, curr, next) * (1F / SettingsWrapper.TextSpeed);
+				float delay = TimeForCharacter(uniform, prev, curr, next);
 				float actualDelay = delay / percentMod + addMod;
 
 				if (actualDelay > 0F) {

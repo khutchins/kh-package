@@ -14,6 +14,8 @@ namespace KH.Texts {
         public LineSpecQueue LineQueue;
 		[Tooltip("An input mediator that has the Interact function set.")]
 		public SingleInputMediator InteractMediator;
+		[Tooltip("What percent speed to play the text at.")]
+		public float SpeedModifier = 1f;
 
         private TextAnimator _textAnimator;
 		private LineSpec _current;
@@ -42,7 +44,7 @@ namespace KH.Texts {
 			if (_waitingForInput) return;
 
 			_current = nextLine;
-			_textAnimator.PlayText(nextLine.Speaker, Color.white, nextLine.Line);
+			_textAnimator.PlayText(nextLine.Speaker, Color.white, nextLine.Line, SpeedModifier);
 		}
 
 		private void _textAnimator_TextFinished(bool shouldPlayNextText) {
