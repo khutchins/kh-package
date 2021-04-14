@@ -73,12 +73,15 @@ namespace KH.UI {
 			PanelManager active = null;
 			EventSystem.SetSelectedGameObject(null);
 			string oldKey = _activeKey;
-			_activeKey = null;
+
+			if (key == null) {
+				_activeKey = null;
+			}
 			foreach (PanelManager manager in Panels) {
 				manager.SetPanelActive(key == manager.Key);
 				if (key == manager.Key) {
 					active = manager;
-					_activeKey = oldKey;
+					_activeKey = key;
 				}
 			}
 			if (active != null) {
@@ -90,8 +93,10 @@ namespace KH.UI {
 				_activeDefaultInput = null;
 			}
 
-			foreach (System.Action<string, string> action in MenuConfig.PanelChangeCallbacks) {
-				action.Invoke(oldKey, _activeKey);
+			if (oldKey != _activeKey) {
+				foreach (System.Action<string, string> action in MenuConfig.PanelChangeCallbacks) {
+					action.Invoke(oldKey, _activeKey);
+				}
 			}
 		}
 
