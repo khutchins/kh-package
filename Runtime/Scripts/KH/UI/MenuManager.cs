@@ -6,7 +6,7 @@ using UnityEngine.EventSystems;
 using System.Linq;
 
 namespace KH.UI {
-	public class MenuHelper : MonoBehaviour, IMenu {
+	public class MenuManager : MonoBehaviour, IMenu {
 
 		private bool _active;
 
@@ -24,6 +24,7 @@ namespace KH.UI {
 		public MenuInputMediator InputMediator;
 
 		private bool _disabled;
+		private string _activeKey;
 
 		private void Start() {
 			SetMenuUp(false);
@@ -32,7 +33,7 @@ namespace KH.UI {
 				_disabled = true;
 				return;
 			} else if (InputMediator == null) {
-				Debug.LogError("No input mediator set on MenuHelper. Menu disabled.");
+				Debug.LogError("No input mediator set on MenuManager. Menu disabled.");
 				_disabled = true;
 				return;
 			}
@@ -71,10 +72,13 @@ namespace KH.UI {
 		private void ActivateMenu(string key, PanelConfig config) {
 			PanelManager active = null;
 			EventSystem.SetSelectedGameObject(null);
+			string oldKey = _activeKey;
+			_activeKey = null;
 			foreach (PanelManager manager in Panels) {
 				manager.SetPanelActive(key == manager.Key);
 				if (key == manager.Key) {
 					active = manager;
+					_activeKey = oldKey;
 				}
 			}
 			if (active != null) {
@@ -84,6 +88,10 @@ namespace KH.UI {
 				}
 			} else {
 				_activeDefaultInput = null;
+			}
+
+			foreach (System.Action<string, string> action in MenuConfig.PanelChangeCallbacks) {
+				action.Invoke(oldKey, _activeKey);
 			}
 		}
 
@@ -143,10 +151,6 @@ namespace KH.UI {
 			if (!_active)
 				return;
 			ToggleMenu();
-		}
-
-		public void NewMap() {
-			SceneManager.LoadScene("GameScene");
 		}
 
 		public void ExitGame() {

@@ -10,15 +10,17 @@ public class MenuConfig {
 	public readonly string MainPanelKey;
 	public readonly PaletteConfig PaletteConfig;
 	public readonly PanelConfig[] PanelConfigs;
+	public List<System.Action<string, string>> PanelChangeCallbacks;
 
 	public readonly Color NormalColor;
 
-	public MenuConfig(bool closeable, bool menuPausesGame, string mainPanelKey, PaletteConfig paletteConfig, PanelConfig[] panelConfigs) {
+	public MenuConfig(bool closeable, bool menuPausesGame, string mainPanelKey, PaletteConfig paletteConfig, PanelConfig[] panelConfigs, List<System.Action<string, string>> panelChangeCallbacks = null) {
 		Closeable = closeable;
 		MenuPausesGame = menuPausesGame;
 		MainPanelKey = mainPanelKey;
 		PaletteConfig = paletteConfig;
 		PanelConfigs = panelConfigs;
+		PanelChangeCallbacks = panelChangeCallbacks ?? new List<System.Action<string, string>>();
 	}
 
 	public class Builder {
@@ -27,6 +29,7 @@ public class MenuConfig {
 		private string _mainPanelKey = null;
 		private PaletteConfig _paletteConfig;
 		private List<PanelConfig> _panelConfigs = new List<PanelConfig>();
+		private List<System.Action<string, string>> _panelChangeCallbacks = new List<System.Action<string, string>>();
 
 		public Builder(bool closeable, bool menuPausesGame, PaletteConfig paletteConfig) {
 			_closeable = closeable;
@@ -68,11 +71,21 @@ public class MenuConfig {
 			return this;
 		}
 
+		/// <summary>
+		/// Adds a callback that will be invoked whenever the active panel changes (including to and from null).
+		/// The first parameter is the old panel (null if menu wasn't active), and the second is the new panel
+		/// (null if menu is going away).
+		/// </summary>
+		public Builder AddPanelChangeCallback(System.Action<string, string> callback) {
+			_panelChangeCallbacks.Add(callback);
+			return this;
+		}
+
 		public MenuConfig Build() {
 			if (_mainPanelKey == null) {
 				_mainPanelKey = _panelConfigs[0].Key;
 			}
-			return new MenuConfig(_closeable, _menuPausesGame, _mainPanelKey, _paletteConfig, _panelConfigs.ToArray());
+			return new MenuConfig(_closeable, _menuPausesGame, _mainPanelKey, _paletteConfig, _panelConfigs.ToArray(), _panelChangeCallbacks);
 		}
 	}
 }

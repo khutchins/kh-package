@@ -26,11 +26,11 @@ namespace KH.UI {
 		public Dictionary<string, GameObject> PanelDictionary = new Dictionary<string, GameObject>();
 		public Dictionary<string, Dictionary<string, GameObject>> PanelObjectDictionary = new Dictionary<string, Dictionary<string, GameObject>>();
 
-		public void CreateMenu(MenuHelper helper, MenuConfig.Builder menuConfigBuilder) {
+		public void CreateMenu(MenuManager helper, MenuConfig.Builder menuConfigBuilder) {
 			CreateMenu(helper, menuConfigBuilder.Build());
 		}
 
-		public void CreateMenu(MenuHelper helper, MenuConfig menuConfig) {
+		public void CreateMenu(MenuManager helper, MenuConfig menuConfig) {
 			helper.MenuConfig = menuConfig;
 			List<PanelManager> panels = new List<PanelManager>();
 			foreach (PanelConfig panel in menuConfig.PanelConfigs) {
