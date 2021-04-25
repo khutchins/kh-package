@@ -1,17 +1,12 @@
 {
   "name": "com.khutchins.package.core",
   "displayName": "KH Package Core",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "unity": "2019.3",
   "description": "My core scripts.",
   "type": "library",
   "hideInEditor": false,
   "samples": [
-    {
-      "displayName": "Menu Generation",
-      "description": "Sample implementation of menu generation.",
-      "path": "Samples~/Menu"
-    },
     {
       "displayName": "Conversation Box",
       "description": "Sample implementation of conversation box.",
