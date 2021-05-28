@@ -12,7 +12,7 @@ namespace KH.Audio {
 		[MinMaxRange(0, 2)]
 		public RangedFloat pitch = RangedFloat.One();
 
-		public override void Play(AudioSource source) {
+		public override void Play(AudioSource source, float volumeMod = 1f, float pitchMod = 1f) {
 			if (clip == null) return;
 
 			source.clip = clip;
@@ -21,10 +21,10 @@ namespace KH.Audio {
 			source.Play();
 		}
 
-		public override void PlayClipAtPoint(Vector3 position) {
+		public override void PlayClipAtPoint(Vector3 position, float volumeMod = 1f, float pitchMod = 1f) {
 			if (clip == null) return;
 
-			ASHelper.PlayClipAtPoint(clip, position, Random.Range(volume.minValue, volume.maxValue), Random.Range(pitch.minValue, pitch.maxValue));
+			ASHelper.PlayClipAtPoint(clip, position, volumeMod * Random.Range(volume.minValue, volume.maxValue), pitchMod * Random.Range(pitch.minValue, pitch.maxValue));
 		}
 	}
 }

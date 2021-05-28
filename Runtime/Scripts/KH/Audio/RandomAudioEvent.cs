@@ -4,19 +4,12 @@ using Random = UnityEngine.Random;
 
 namespace KH.Audio {
 	[CreateAssetMenu(menuName = "KH/Audio Events/Random")]
-	public class RandomAudioEvent : AudioEvent {
+	public class RandomAudioEvent : MultipleAudioEvent {
 		public AudioEvent[] events;
 
-		public override void Play(AudioSource source) {
-			if (events.Length == 0) return;
-
-			events[Random.Range(0, events.Length)].Play(source);
-		}
-
-		public override void PlayClipAtPoint(Vector3 position) {
-			if (events.Length == 0) return;
-
-			events[Random.Range(0, events.Length)].PlayClipAtPoint(position);
+		internal override AudioEvent NextEvent() {
+			if (events.Length == 0) return null;
+			return events[Random.Range(0, events.Length)];
 		}
 	}
 }
