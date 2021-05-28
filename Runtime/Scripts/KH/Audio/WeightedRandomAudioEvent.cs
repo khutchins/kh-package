@@ -3,7 +3,7 @@ using UnityEngine;
 using Random = UnityEngine.Random;
 
 namespace KH.Audio {
-	[CreateAssetMenu(menuName = "Audio Events/WeightedRandom")]
+	[CreateAssetMenu(menuName = "KH/Audio Events/WeightedRandom")]
 	public class WeightedRandomAudioEvent : AudioEvent {
 		[Serializable]
 		public struct CompositeEntry {

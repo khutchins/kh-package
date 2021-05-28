@@ -3,7 +3,7 @@ using System.Collections;
 using Random = UnityEngine.Random;
 
 namespace KH.Audio {
-	[CreateAssetMenu(menuName = "Audio Events/Single")]
+	[CreateAssetMenu(menuName = "KH/Audio Events/Single")]
 	public class SingleAudioEvent : AudioEvent {
 		public AudioClip clip;
 
