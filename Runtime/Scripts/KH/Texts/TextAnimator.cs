@@ -237,7 +237,7 @@ namespace KH.Texts {
 						position = SoundLocation;
 					}
 					if (position != null) {
-						ASHelper.PlayClipAtPoint(blipSound, position.position, 1, pitch);
+						ASHelper.PlayClipAtPoint(blipSound, position.position, false, 1, pitch);
 					}
 				}
 

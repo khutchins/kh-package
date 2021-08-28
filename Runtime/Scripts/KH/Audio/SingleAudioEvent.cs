@@ -24,7 +24,13 @@ namespace KH.Audio {
 		public override void PlayClipAtPoint(Vector3 position, float volumeMod = 1f, float pitchMod = 1f) {
 			if (clip == null) return;
 
-			ASHelper.PlayClipAtPoint(clip, position, volumeMod * Random.Range(volume.minValue, volume.maxValue), pitchMod * Random.Range(pitch.minValue, pitch.maxValue));
+			ASHelper.PlayClipAtPoint(clip, position, false, volumeMod * Random.Range(volume.minValue, volume.maxValue), pitchMod * Random.Range(pitch.minValue, pitch.maxValue));
+		}
+
+		public override void PlayOneShot(float volumeMod = 1f, float pitchMod = 1f) {
+			if (clip == null) return;
+
+			ASHelper.PlayClipAtPoint(clip, Vector3.zero, true, volumeMod * Random.Range(volume.minValue, volume.maxValue), pitchMod * Random.Range(pitch.minValue, pitch.maxValue));
 		}
 	}
 }

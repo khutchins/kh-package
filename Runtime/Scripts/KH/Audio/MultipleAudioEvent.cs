@@ -12,5 +12,9 @@ public abstract class MultipleAudioEvent : AudioEvent {
 		NextEvent()?.PlayClipAtPoint(position, volumeMod, pitchMod);
 	}
 
+	public override void PlayOneShot(float volumeMod = 1f, float pitchMod = 1f) {
+		NextEvent()?.PlayOneShot(volumeMod, pitchMod);
+	}
+
 	internal abstract AudioEvent NextEvent();
 }
