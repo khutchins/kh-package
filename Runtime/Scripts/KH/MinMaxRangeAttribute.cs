@@ -1,5 +1,6 @@
 ﻿using System;
 
+// This file taken from https://www.youtube.com/watch?v=6vmRwLYWNRo.
 namespace KH {
 	public class MinMaxRangeAttribute : Attribute {
 		public MinMaxRangeAttribute(float min, float max) {
