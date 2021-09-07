@@ -12,7 +12,7 @@ public static class ASHelper {
 		audioSource.pitch = pitch;
 		audioSource.spatialBlend = is2D ? 0 : 1;
 		audioSource.Play();
-		UnityEngine.Object.Destroy(audioGameObject, clip.length);
+		UnityEngine.Object.Destroy(audioGameObject, clip.length / Mathf.Max(0.001f, pitch));
 		return audioSource;
 	}
 }
