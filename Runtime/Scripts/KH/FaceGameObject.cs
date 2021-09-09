@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using UnityEngine;
 using KH.References;
+using System;
 
 namespace KH {
+	[Obsolete("Not recommended. Use Billboard instead.", false)]
 	public class FaceGameObject : MonoBehaviour {
 		public GameObjectReference ObjectReference;
 
