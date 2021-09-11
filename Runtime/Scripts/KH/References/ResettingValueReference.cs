@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace KH.References {
 	/// <summary>
-	/// Value reference that resets to the default value on entering the scene.
+	/// Value reference that resets to the initial value on scene change.
 	/// </summary>
 	public class ResettingValueReference<T> : ValueReference<T>, ISerializationCallbackReceiver {
 		public T InitialValue;
