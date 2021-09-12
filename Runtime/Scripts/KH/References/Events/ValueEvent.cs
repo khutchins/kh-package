@@ -11,14 +11,35 @@ namespace KH.References {
 	/// <typeparam name="T">Underlying type, e.g. int in IntReference (or ValueReference\<int\>).</typeparam>
 	/// <typeparam name="U">Value reference type, e.g. IntReference</typeparam>
 	public class ValueEvent<T, U> : MonoBehaviour where U : ValueReference<T> {
-		public U Reference;
+		[SerializeField]
+		private U _reference;
 		public bool TriggerOnStart = false;
+
+		public U Reference {
+			get => _reference;
+			set {
+				UpdateReference(value);
+			}
+		}
 
 		public UnityEvent<T> Event;
 
 		private void Start() {
-			if (TriggerOnStart) {
-				ReferenceValueChanged(Reference.Value);
+			if (TriggerOnStart && _reference != null) {
+				ReferenceValueChanged(_reference.Value);
+			}
+		}
+
+		private void UpdateReference(U newReference) {
+			if (_reference != null) {
+				_reference.ValueChanged -= ReferenceValueChanged;
+			}
+			_reference = newReference;
+			if (_reference != null) {
+				if (TriggerOnStart) {
+					ReferenceValueChanged(_reference.Value);
+				}
+				_reference.ValueChanged += ReferenceValueChanged;
 			}
 		}
 
@@ -27,11 +48,15 @@ namespace KH.References {
 		}
 
 		private void OnEnable() {
-			Reference.ValueChanged += ReferenceValueChanged;
+			if (_reference != null) {
+				_reference.ValueChanged += ReferenceValueChanged;
+			}
 		}
 
 		private void OnDisable() {
-			Reference.ValueChanged -= ReferenceValueChanged;
+			if (_reference != null) {
+				_reference.ValueChanged -= ReferenceValueChanged;
+			}
 		}
 	}
 }
