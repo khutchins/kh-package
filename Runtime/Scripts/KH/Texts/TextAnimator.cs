@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using KH.References;
+using KH.Audio;
 
 namespace KH.Texts {
 	public delegate void TextFinishedHandler(bool shouldPlayNextText);
@@ -35,13 +36,11 @@ namespace KH.Texts {
 
 		[Header("Audio")]
 		[Tooltip("If true, audio will play at the player's location.")]
-		public bool PlayAtAudioListener;
-		[Tooltip("A reference to the player object. Used to determine the player's location.")]
-		public GameObjectReference PlayerRef;
+		public bool PlayAtLocation;
 		[Tooltip("The location at which the audio will be played, if PlayAtAudioListener is false.")]
 		public Transform SoundLocation;
 		[Tooltip("Audio event specifying the sound to use playing text.")]
-		public AudioClip blipSound;
+		public AudioEvent blipSound;
 
 		[Header("Animation")]
 		[Tooltip("The rect to shake when a shake command is in the text. If unset, will not shake.")]
@@ -229,15 +228,11 @@ namespace KH.Texts {
 					}
 				}
 
-				if (blipSound && update.PlayBlip) {
-					Transform position = null;
-					if (PlayAtAudioListener && PlayerRef != null && PlayerRef.Value != null) {
-						position = PlayerRef.Value.transform;
-					} else if (SoundLocation) {
-						position = SoundLocation;
-					}
-					if (position != null) {
-						ASHelper.PlayClipAtPoint(blipSound, position.position, false, 1, pitch);
+				if (update.PlayBlip) {
+					if (PlayAtLocation && SoundLocation) {
+						blipSound?.PlayClipAtPoint(SoundLocation.position, 1, pitch);
+					} else {
+						blipSound?.PlayOneShot(1, pitch);
 					}
 				}
 
