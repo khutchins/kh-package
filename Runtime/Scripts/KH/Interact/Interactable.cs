@@ -19,6 +19,12 @@ namespace KH.Interact {
 		private int _timesInteracted;
 		private float _lastInteractionStop;
 
+		public bool IsBeingInteractedWith {
+			get {
+				return _currentInteractor != null;
+			}
+		}
+
 		void Awake() {
 			_renderer = GetComponentInChildren<Renderer>();
 		}
