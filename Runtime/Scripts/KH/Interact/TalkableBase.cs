@@ -7,7 +7,7 @@ using KH.Input;
 namespace KH.Interact {
 	public abstract class TalkableBase : Interactable {
 
-		public InputMediator InputMediator;
+		public SingleInputMediator InputMediator;
 		public string TextAnimatorKey = "Shared";
 		private bool _textFinished = false;
 		private Interactor _interactor;
@@ -43,7 +43,7 @@ namespace KH.Interact {
 			// Don't process input if paused.
 			if (Time.deltaTime == 0) return;
 
-			if (_interactor != null && InputMediator.Interact() && _textFinished && _allowClose) {
+			if (_interactor != null && InputMediator.InputJustDown() && _textFinished && _allowClose) {
 				textAnimator.TextAnimateOutFinished += TextAnimator_TextAnimateOutFinished;
 				_allowClose = false;
 				textAnimator.RemoveText();
