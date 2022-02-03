@@ -11,6 +11,11 @@
       "displayName": "Conversation Box",
       "description": "Sample implementation of conversation box.",
       "path": "Samples~/TextBox"
+    },
+    {
+      "displayName": "Note System",
+      "description": "Sample implementation of a note reader.",
+      "path": "Samples~/Notes"
     }
   ],
   "dependencies": {
