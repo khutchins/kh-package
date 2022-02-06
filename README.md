@@ -6,12 +6,15 @@ This contains scripts that I have that don't depend on proprietary addons. This 
 
 If there's anything that you think is uniquely interesting and deserves its own library with a bit more of a guarantee (like my menu generation code, Menutee, [here](https://github.com/khutchins/menutee)) file an issue and I'll consider splitting it out.
 
+This depends on Menutee for the note and object reference menu add-ons, so that'll have to be installed as well if you want to use the whole package in your project.
+
 ## Installation
 
 ### Modify manifest.json
 
-Add this to the list of dependencies:
+Add these to the list of dependencies:
 
 ```
 "com.khutchins.package.core": "https://github.com/khutchins/kh-package.git",
+"com.khutchins.menutee": "https://github.com/khutchins/menutee.git",
 ```

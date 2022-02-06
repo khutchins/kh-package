@@ -1,7 +1,7 @@
 {
   "name": "com.khutchins.package.core",
   "displayName": "KH Package Core",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "unity": "2019.3",
   "description": "My core scripts.",
   "type": "library",
@@ -16,6 +16,11 @@
       "displayName": "Note System",
       "description": "Sample implementation of a note reader.",
       "path": "Samples~/Notes"
+    },
+    {
+      "displayName": "Menu Reference Extensions",
+      "description": "Base versions of menu prefabs that hook into references.",
+      "path": "Samples~/MenuRefExtensions"
     }
   ],
   "dependencies": {
