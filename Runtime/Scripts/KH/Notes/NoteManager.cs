@@ -19,6 +19,7 @@ namespace KH.Notes {
         public Image BackgroundImage;
         public BoolReference Paused;
         public NoteReference NoteReference;
+        public bool PausesGame = true;
 
         private Note _currentNote;
         private int _currentIdx;
@@ -116,7 +117,7 @@ namespace KH.Notes {
 		}
 
 		public MenuAttributes GetMenuAttributes() {
-            return MenuAttributes.StandardPauseMenu();
+            return PausesGame ? MenuAttributes.StandardPauseMenu() : MenuAttributes.StandardNonPauseMenu();
 		}
 
 		public void SetMenuUp(bool newUp) {
