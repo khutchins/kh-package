@@ -24,6 +24,7 @@ namespace KH.Notes {
         private Note _currentNote;
         private int _currentIdx;
         private GameObject _defaultObject;
+        private GameObject _cachedSelection;
         private Canvas _canvas;
         private bool _active;
 
@@ -125,6 +126,8 @@ namespace KH.Notes {
 		}
 
 		public void SetMenuOnTop(bool isTop) {
+            if (!isTop) _cachedSelection = EventSystem.current.currentSelectedGameObject;
+            if (isTop && _cachedSelection != null) EventSystem.current.SetSelectedGameObject(_cachedSelection);
             _active = isTop;
 		}
 	}
