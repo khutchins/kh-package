@@ -11,7 +11,7 @@ namespace KH.Interact {
 		[TextArea]
 		public string[] Lines;
 
-		public override TalkCycleType TalkCycle => TalkCycle;
+		public override TalkCycleType TalkCycle => CycleType;
 
 		public override string[] TalkLines => Lines;
 	}

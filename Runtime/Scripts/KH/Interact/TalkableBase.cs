@@ -7,12 +7,7 @@ using KH.Input;
 namespace KH.Interact {
 	public abstract class TalkableBase : Interactable {
 
-		public SingleInputMediator InputMediator;
-		public string TextAnimatorKey = "Shared";
-		private bool _textFinished = false;
-		private Interactor _interactor;
-		private bool _allowClose = false;
-		protected TextAnimator textAnimator;
+		public LineSpecQueue LineSpecQueue;
 
 		private int _currentTalkLine = 0;
 
@@ -32,27 +27,11 @@ namespace KH.Interact {
 		}
 
 		public void Start() {
-			textAnimator = TextAnimator.Animators.ContainsKey(TextAnimatorKey) ? TextAnimator.Animators[TextAnimatorKey] : null;
-			if (textAnimator == null) {
-				Debug.Log("No text animator exists for key " + TextAnimatorKey);
-			}
 			ForbidInteraction = TalkLines.Length == 0;
 		}
 
-		void LateUpdate() {
-			// Don't process input if paused.
-			if (Time.deltaTime == 0) return;
-
-			if (_interactor != null && InputMediator.InputJustDown() && _textFinished && _allowClose) {
-				textAnimator.TextAnimateOutFinished += TextAnimator_TextAnimateOutFinished;
-				_allowClose = false;
-				textAnimator.RemoveText();
-			}
-		}
-
-		private void TextAnimator_TextAnimateOutFinished() {
-			textAnimator.TextAnimateOutFinished -= TextAnimator_TextAnimateOutFinished;
-			ForceStopInteraction(_interactor);
+		void LinesFinished() {
+			ForceStopInteraction();
 		}
 
 		protected virtual string GetTalkLine() {
@@ -66,29 +45,17 @@ namespace KH.Interact {
 		}
 
 		protected override void StartInteractingInner(Interactor interactor) {
-			_textFinished = false;
-			_allowClose = false;
-			_interactor = interactor;
-
 			string talkLine = GetTalkLine();
 			if (talkLine == null) {
 				ForceStopInteraction();
 				return;
 			}
-			textAnimator.SoundLocation = this.transform;
-			textAnimator.PlayText(null, Color.white, talkLine);
-			textAnimator.TextFinished += TextFinishedListener;
+
+			LineSpecQueue.Enqueue(new LineSpec("", talkLine, LinesFinished));
 		}
 
 		protected override void StopInteractingInner(Interactor interactor) {
-			_interactor = null;
-			textAnimator.RemoveText();
-			textAnimator.TextFinished -= TextFinishedListener;
-		}
-
-		public void TextFinishedListener(bool shouldPlayNextText) {
-			_textFinished = true;
-			_allowClose = true;
+			
 		}
 
 		public string GetTalkLine(int idx) {
