@@ -3,18 +3,20 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public abstract class MultipleAudioEvent : AudioEvent {
-	public override void Play(AudioSource source, float volumeMod = 1f, float pitchMod = 1f) {
-		NextEvent()?.Play(source, volumeMod, pitchMod);
-	}
+namespace KH.Audio {
+	public abstract class MultipleAudioEvent : AudioEvent {
+		public override void Play(AudioSource source, float volumeMod = 1f, float pitchMod = 1f) {
+			NextEvent()?.Play(source, volumeMod, pitchMod);
+		}
 
-	public override void PlayClipAtPoint(Vector3 position, float volumeMod = 1f, float pitchMod = 1f) {
-		NextEvent()?.PlayClipAtPoint(position, volumeMod, pitchMod);
-	}
+		public override void PlayClipAtPoint(Vector3 position, float volumeMod = 1f, float pitchMod = 1f) {
+			NextEvent()?.PlayClipAtPoint(position, volumeMod, pitchMod);
+		}
 
-	public override void PlayOneShot(float volumeMod = 1f, float pitchMod = 1f) {
-		NextEvent()?.PlayOneShot(volumeMod, pitchMod);
-	}
+		public override void PlayOneShot(float volumeMod = 1f, float pitchMod = 1f) {
+			NextEvent()?.PlayOneShot(volumeMod, pitchMod);
+		}
 
-	internal abstract AudioEvent NextEvent();
+		internal abstract AudioEvent NextEvent();
+	}
 }
