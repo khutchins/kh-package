@@ -1,4 +1,5 @@
 using KH.Interact;
+using UnityEngine;
 
 namespace KH.Notes {
 	public class NoteInteractable : Interactable {
@@ -18,6 +19,11 @@ namespace KH.Notes {
 		}
 
 		protected override void StartInteractingInner(Interactor interactor) {
+			if (Note == null) {
+				Debug.LogWarning("No note on this interactable!");
+				ForceStopInteraction();
+				return;
+			}
 			ReadNote();
 			NoteManagerNote.ValueChanged += NoteChanged;
 		}
