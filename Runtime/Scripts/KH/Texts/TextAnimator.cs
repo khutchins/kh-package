@@ -5,6 +5,7 @@ using TMPro;
 using UnityEngine;
 using KH.References;
 using KH.Audio;
+using UnityEngine.Events;
 
 namespace KH.Texts {
 	public delegate void TextFinishedHandler(bool shouldPlayNextText);
@@ -63,13 +64,15 @@ namespace KH.Texts {
 		public event TextFinishedHandler TextFinished;
 		public event TextAnimateOutFinishedHandler TextAnimateOutFinished;
 
+		public BoolReference TextBoxVisible; 
+
 		void Awake() {
 			Animators[AnimatorKey] = this;
 			if (AnimatorKey == "Shared") {
 				SharedAnimator = this;
 			}
 			_textAnimating = false;
-			activeTextBox.SetActive(false);
+			SetTextBoxUp(false);
 		}
 
 		void Start() {
@@ -81,12 +84,17 @@ namespace KH.Texts {
 			_standardRectPositions = poses.ToArray();
 		}
 
+		private void SetTextBoxUp(bool isUp) {
+			activeTextBox.SetActive(isUp);
+			if (TextBoxVisible != null && TextBoxVisible.Value != isUp) TextBoxVisible.Value = isUp;
+		}
+
 		public void PlayText(string speakerName, Color nameColor, string rawText, float speedMod = .8F) {
 			if (speaker) {
 				speaker.text = speakerName;
 				speaker.color = nameColor;
 			}
-			activeTextBox.SetActive(true);
+			SetTextBoxUp(true);
 			StopAllCoroutines();
 			_timeStarted = Time.time;
 			_textCoroutine = StartCoroutine(AnimateText(rawText, speedMod));
@@ -186,13 +194,13 @@ namespace KH.Texts {
 				}
 			}
 
-			activeTextBox.SetActive(false);
+			SetTextBoxUp(false);
 
 			TextAnimateOutFinished?.Invoke();
 		}
 
 		IEnumerator AnimateText(string rawText, float baseSpeedMod) {
-			activeTextBox.SetActive(true);
+			SetTextBoxUp(true);
 			_textAnimating = true;
 			_currentText = new TextPlayer(rawText, baseSpeedMod);
 
