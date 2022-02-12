@@ -22,8 +22,9 @@ namespace KH {
 		}
 
 		public static class Curve {
-			static float PI = Mathf.PI;
-			static float PI_2 = Mathf.PI / 2f;
+			const float PI = Mathf.PI;
+			const float PI_2 = Mathf.PI / 2f;
+			const float PI_2_3 = Mathf.PI * 2f / 3f;
 
 			public static Func<float, float> Linear = (float t) => {
 				return t;
@@ -86,12 +87,34 @@ namespace KH {
 
 			public static Func<float, float> ElasticEaseIn = (float t) => {
 				t = Mathf.Clamp(t, 0, 1);
-				return Mathf.Sin(13 * PI_2 * t) * Mathf.Pow(2, 10 * (t - 1));
+				return -Mathf.Pow(2, 10 * t - 10) * Mathf.Sin((t * 10 - 10.75f) * PI_2_3);
 			};
 
 			public static Func<float, float> ElasticEaseOut = (float t) => {
 				t = Mathf.Clamp(t, 0, 1);
-				return -1 * Mathf.Sin(13 * PI_2 * (t + 1)) * Mathf.Pow(2, -10 * t) + 1;
+				return Mathf.Pow(2, -10 * t) * Mathf.Sin((t * 10 - 0.75f) * PI_2_3) + 1;
+			};
+
+			const float C1 = 1.70158f;
+			const float C2 = C1 * 1.525f;
+			const float C3 = C1 + 1;
+
+			public static Func<float, float> EaseInBack = (float t) => {
+				t = Mathf.Clamp(t, 0, 1);
+				return C3 * t * t * t - C1 * t * t;
+			};
+
+			public static Func<float, float> EaseOutBack = (float t) => {
+				t = 1 - Mathf.Clamp(t, 0, 1);
+				return 1 + C3 * t * t * t + C1 * t * t;
+			};
+
+			public static Func<float, float> EaseInOutBack = (float t) => {
+				return t < 0.5f
+					? (Mathf.Pow(2 * t, 2) * ((C2 + 1) * 2 * t - C2)) / 2f
+					: (Mathf.Pow(2 * t - 2, 2) * ((C2 + 1) * (t * 2 - 2) + C2) + 2) / 2f;
+				t = 1 - Mathf.Clamp(t, 0, 1);
+				return 1 + C3 * t * t * t + C1 * t * t;
 			};
 
 			public static Func<float, float> Bezier = (float t) => {
