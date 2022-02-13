@@ -113,8 +113,6 @@ namespace KH {
 				return t < 0.5f
 					? (Mathf.Pow(2 * t, 2) * ((C2 + 1) * 2 * t - C2)) / 2f
 					: (Mathf.Pow(2 * t - 2, 2) * ((C2 + 1) * (t * 2 - 2) + C2) + 2) / 2f;
-				t = 1 - Mathf.Clamp(t, 0, 1);
-				return 1 + C3 * t * t * t + C1 * t * t;
 			};
 
 			public static Func<float, float> Bezier = (float t) => {
