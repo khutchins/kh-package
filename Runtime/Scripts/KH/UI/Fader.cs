@@ -17,10 +17,11 @@ namespace KH.UI {
 		private Image image;
 
 		private void Awake() {
+			image = GetComponent<Image>();
 			// Set FaderRef to 0 on awake to avoid accidentally transfering fade across scenes.
 			// As such, setting the initial value of FaderRef should be done in Start().
 			FaderRef.Value = 0;
-			image = GetComponent<Image>();
+			UpdateFade(0);
 		}
 
 		void OnEnable() {
