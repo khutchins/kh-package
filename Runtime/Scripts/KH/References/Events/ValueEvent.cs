@@ -43,7 +43,7 @@ namespace KH.References {
 			}
 		}
 
-		private void ReferenceValueChanged(T newValue) {
+		protected virtual void ReferenceValueChanged(T newValue) {
 			Event?.Invoke(newValue);
 		}
 
