@@ -12,6 +12,9 @@ namespace KH.Actions {
 		}
 
 		public FloatReference FaderRef;
+		[Tooltip("Reference to color used on the fader. If null, will not set the fader's color.")]
+		public ColorReference FaderColorRef;
+		public Color Color;
 		public FaderAction FaderActionToTake;
 		public float FadeDuration = 1F;
 
@@ -22,19 +25,17 @@ namespace KH.Actions {
 				return;
 			}
 
+			if (FaderColorRef != null) FaderColorRef.Value = Color;
+
 			StartCoroutine(ActionCoroutineWithFinished());
 		}
 
 		private IEnumerator ActionCoroutineWithFinished() {
-			yield return StartCoroutine(ActionCoroutine(this, FaderRef, FaderActionToTake, FadeDuration));
+			yield return StartCoroutine(ActionCoroutine(FaderRef, FaderActionToTake, FadeDuration));
 			Finished();
 		}
 
-		public IEnumerator ActionCoroutine() {
-			yield return StartCoroutine(ActionCoroutine(this, FaderRef, FaderActionToTake, FadeDuration));
-		}
-
-		public static IEnumerator ActionCoroutine(MonoBehaviour coroutineObject, FloatReference fader, FaderAction action, float duration) {
+		public static IEnumerator ActionCoroutine(FloatReference fader, FaderAction action, float duration) {
 			if (fader == null) {
 				Debug.LogWarning("No Fader present for ActionFadeOutFader");
 				yield break;
