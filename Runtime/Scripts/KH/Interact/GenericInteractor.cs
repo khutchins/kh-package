@@ -10,6 +10,8 @@ namespace KH.Interact {
 
 		public BoolReference CanInteract;
 		public SingleInputMediator InteractMediator;
+		[Tooltip("How far to check for interactables.")]
+		public float RaycastDistance = 1.5f;
 
 		private Interactor _interactor;
 		private Interactable _focusedInteractable;
@@ -30,7 +32,7 @@ namespace KH.Interact {
 			if (Time.deltaTime == 0) return;
 
 			RaycastHit hit;
-			if (Physics.Raycast(cameraTransform.position, cameraTransform.forward, out hit, 1.5F)) {
+			if (Physics.Raycast(cameraTransform.position, cameraTransform.forward, out hit, RaycastDistance)) {
 				Interactable interactable = hit.transform.gameObject.GetComponentInChildren<Interactable>();
 				if (interactable != null) {
 					UpdateFocusedInteractable(interactable);
