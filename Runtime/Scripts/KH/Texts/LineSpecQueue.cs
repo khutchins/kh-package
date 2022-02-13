@@ -17,6 +17,12 @@ namespace KH.Texts {
             _lineSpecs.Clear();
 		}
 
+        public void EnqueueAll(IEnumerable<LineSpec> specs) {
+            foreach (LineSpec spec in specs) {
+                Enqueue(spec);
+			}
+		}
+
         public void Enqueue(LineSpec spec) {
             bool firstLine = _lineSpecs.Count == 0;
             _lineSpecs.Enqueue(spec);
