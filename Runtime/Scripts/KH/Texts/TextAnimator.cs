@@ -49,6 +49,10 @@ namespace KH.Texts {
 		[Tooltip("Rects that will be animated in/out.")]
 		public RectTransform[] RectsToAnimate;
 		public AnimationTypes AnimationType;
+
+		[Header("Misc")]
+		[Tooltip("Reference to the string being animated WITHOUT markup. Changing this value won't change the string being animated, but it will make other people using it sad.")]
+		public StringReference CurrentlyPlayingLine;
 		
 		public bool TextAnimating => _textAnimating;
 
@@ -116,6 +120,7 @@ namespace KH.Texts {
 			if (rectToShake != null) {
 				rectToShake.anchoredPosition = _textBoxBasePosition;
 			}
+			UpdateTextReference(null);
 			StopAllCoroutines();
 			StartCoroutine(AnimateOut());
 		}
@@ -199,12 +204,19 @@ namespace KH.Texts {
 			TextAnimateOutFinished?.Invoke();
 		}
 
+		private void UpdateTextReference(string text) {
+			if (CurrentlyPlayingLine != null) {
+				CurrentlyPlayingLine.SetValue(text);
+			}
+		}
+
 		IEnumerator AnimateText(string rawText, float baseSpeedMod) {
 			SetTextBoxUp(true);
 			_textAnimating = true;
 			_currentText = new TextPlayer(rawText, baseSpeedMod);
 
 			conversationText.text = "";
+			UpdateTextReference(_currentText.GetFinalStringWithoutMarkup());
 
 			yield return StartCoroutine(AnimateIn());
 

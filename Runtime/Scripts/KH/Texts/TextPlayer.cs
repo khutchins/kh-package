@@ -39,6 +39,10 @@ namespace KH.Texts {
 			return _parser.GetString();
 		}
 
+		public string GetFinalStringWithoutMarkup() {
+			return _parser.GetTextWithoutMarkup();
+		}
+
 		public IEnumerator<TextUpdate> GetEnumerator() {
 			bool shouldNotWaitForKeypress = false;
 			string invisibleMarkup = "<color=#00000000>";
