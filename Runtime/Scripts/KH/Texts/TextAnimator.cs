@@ -77,6 +77,7 @@ namespace KH.Texts {
 			}
 			_textAnimating = false;
 			SetTextBoxUp(false);
+			UpdateTextReference(null);
 		}
 
 		void Start() {
