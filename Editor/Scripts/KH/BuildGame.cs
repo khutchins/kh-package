@@ -249,7 +249,7 @@ namespace KH.Editor {
 			}
 
 			// Copy all the files & Replaces any files with the same name
-			foreach (string path in Directory.GetFiles(src, "*.*", SearchOption.TopDirectoryOnly)) {
+			foreach (string path in Directory.GetFiles(src, "*.*", SearchOption.AllDirectories)) {
 				Debug.Log("Path: " + path);
 				File.Copy(path, path.Replace(src, dest), true);
 			}
