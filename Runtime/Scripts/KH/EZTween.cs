@@ -22,6 +22,48 @@ namespace KH {
 		}
 
 		public static class Curve {
+
+			public enum Type {
+				Linear,
+				SinEaseOut,
+				SinEaseIn,
+				SinEaseInOut,
+				CubicEaseOut,
+				CubicEaseIn,
+				CubicEaseInOut,
+				QuinticEaseOut,
+				QuinticEaseIn,
+				QuinticEaseInOut,
+				ElasticEaseIn,
+				ElasticEaseOut,
+				EaseInBack,
+				EaseOutBack,
+				EaseInOutBack,
+				Bezier
+			}
+
+			public static Func<float, float> CurveForType(Type type) {
+				return type switch {
+					Type.Linear => Linear,
+					Type.SinEaseOut => SinEaseOut,
+					Type.SinEaseIn => SinEaseIn,
+					Type.SinEaseInOut => SinEaseInOut,
+					Type.CubicEaseOut => CubicEaseOut,
+					Type.CubicEaseIn => CubicEaseIn,
+					Type.CubicEaseInOut => CubicEaseInOut,
+					Type.QuinticEaseOut => QuinticEaseOut,
+					Type.QuinticEaseIn => QuinticEaseIn,
+					Type.QuinticEaseInOut => QuinticEaseInOut,
+					Type.ElasticEaseIn => ElasticEaseIn,
+					Type.ElasticEaseOut => ElasticEaseOut,
+					Type.EaseInBack => EaseInBack,
+					Type.EaseOutBack => EaseOutBack,
+					Type.EaseInOutBack => EaseInOutBack,
+					Type.Bezier => Bezier,
+					_ => Linear,
+				};
+			}
+
 			const float PI = Mathf.PI;
 			const float PI_2 = Mathf.PI / 2f;
 			const float PI_2_3 = Mathf.PI * 2f / 3f;
