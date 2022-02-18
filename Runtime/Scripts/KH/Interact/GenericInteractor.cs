@@ -23,7 +23,7 @@ namespace KH.Interact {
 		public bool LookLocked { get => LookLocks > 0; }
 		public bool MovementLocked { get => MoveLocks > 0; }
 
-		public void Awake() {
+		void Awake() {
 			_interactor = new Interactor(this.gameObject, this);
 		}
 
@@ -62,6 +62,20 @@ namespace KH.Interact {
 				_focusedInteractable.OnGainFocus();
 			}
 			CanInteract?.SetValue(target != null);
+		}
+
+		private void OnTriggerEnter(Collider other) {
+			Trigger trigger = other.gameObject.GetComponent<Trigger>();
+			if (trigger != null) {
+				trigger.PlayerEntered(this);
+			}
+		}
+
+		private void OnTriggerExit(Collider other) {
+			Trigger trigger = other.gameObject.GetComponent<Trigger>();
+			if (trigger != null) {
+				trigger.PlayerLeft(this);
+			}
 		}
 
 		public void StartInteracting(Interactable target) {
