@@ -45,7 +45,7 @@ namespace KH.Editor {
 			foreach (Platform target in targets) {
 				foreach (string service in ddServices) {
 					string path = PathForBuildTarget(target, service);
-					Debug.Log("Building " + target);
+					Debug.Log("Building " + target.Name);
 					BuildPlayerOptions options = new BuildPlayerOptions();
 					options.scenes = EditorBuildSettings.scenes.Select(x => x.path).ToArray();
 					options.locationPathName = Combine(path, PlayerSettings.productName);
