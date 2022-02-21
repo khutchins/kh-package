@@ -70,8 +70,8 @@ namespace KH.Editor {
 
             List<BuildGame.Platform> plats = new List<BuildGame.Platform>();
             if (settings.Windows) plats.Add(BuildGame.PLATFORM_WIN);
-            if (settings.Mac) plats.Add(BuildGame.PLATFORM_MAC);
             if (settings.Linux) plats.Add(BuildGame.PLATFORM_LINUX);
+            if (settings.Mac) plats.Add(BuildGame.PLATFORM_MAC);
             if (settings.WebGL) plats.Add(BuildGame.PLATFORM_WEBGL);
 
 

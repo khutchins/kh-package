@@ -43,10 +43,6 @@ namespace KH.Editor {
             return new SerializedObject(GetOrCreateSettings());
         }
 
-        public static bool IsSettingsAvailable() {
-            return File.Exists(k_ShoeBuildSettingsPath);
-        }
-
         public BuildGame.Platform PlatformForSelected(IEnumerable<BuildGame.Platform> platforms) {
             return platforms.Where(x => x.Name == SelectedPlatform).FirstOrDefault();
 		}
