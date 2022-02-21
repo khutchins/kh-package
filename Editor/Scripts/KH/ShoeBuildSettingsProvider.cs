@@ -10,11 +10,6 @@ namespace KH.Editor {
         private ShoeBuildSettings _settings;
         private SerializedObject _serializedSettings;
 
-        class Styles {
-            public static GUIContent number = new GUIContent("My Number");
-            public static GUIContent someString = new GUIContent("Some string");
-        }
-
         public ShoeBuildSettingsProvider(string path, SettingsScope scope = SettingsScope.User)
             : base(path, scope) { }
 
@@ -39,8 +34,6 @@ namespace KH.Editor {
 
             var provider = new ShoeBuildSettingsProvider("Project/ShoeBuild", SettingsScope.Project);
 
-			// Automatically extract all keywords from the Styles.
-			provider.keywords = GetSearchKeywordsFromGUIContentProperties<Styles>();
 			return provider;
         }
     }

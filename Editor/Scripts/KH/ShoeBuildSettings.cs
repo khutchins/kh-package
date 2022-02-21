@@ -16,7 +16,9 @@ namespace KH.Editor {
         public bool WebGL;
         public ShoeBuild.BuildFlavor[] Flavors;
 
+        [HideInInspector]
         public string SelectedPlatform;
+        [HideInInspector]
         public string SelectedFlavor;
 
         internal static ShoeBuildSettings GetOrCreateSettings() {
