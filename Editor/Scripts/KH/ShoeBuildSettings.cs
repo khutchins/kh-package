@@ -26,7 +26,7 @@ namespace KH.Editor {
             if (settings == null) {
                 settings = ScriptableObject.CreateInstance<ShoeBuildSettings>();
                 settings.Windows = true;
-                settings.SelectedPlatform = "win";
+                settings.SelectedPlatform = BuildGame.PLATFORM_WIN.Name;
                 settings.SelectedFlavor = "itchio";
                 settings.Flavors = new ShoeBuild.BuildFlavor[] {
                     new ShoeBuild.BuildFlavor() { Name = "itchio", Enabled = true },
