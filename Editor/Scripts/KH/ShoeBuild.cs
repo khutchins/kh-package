@@ -77,7 +77,12 @@ namespace KH.Editor {
 
             if (showBuildButtons) {
                 using (new GUILayout.VerticalScope(EditorStyles.helpBox)) {
-                    EditorGUILayout.LabelField("Builds will pull external files from all relevant directories in the Assets/Output/ folder. To only copy files for certain platforms or flavors, put them in subfolders with the name of the flavor or platform (e.g. lin, win, or mac for platforms and itchio or steam for flavors). These subfolders can be nested. Only files and subfolders of a folder named 'all' will be copied, so if you want a file to show up in all builds, put it in Assets/Output/all/file.txt. If you want it to only show up on Windows Steam builds, put it in Assets/Output/win/steam/file.txt or Assets/Output/steam/win/file.txt");
+                    GUIStyle textStyle = EditorStyles.label;
+                    textStyle.wordWrap = true;
+                    EditorGUILayout.LabelField(
+                        "Builds will pull external files from all relevant directories in the Assets/Output/ folder.\n\nTo only copy files for certain platforms or flavors, put them in subfolders with the name of the flavor or platform and a terminating 'all' folder.\n\ne.g. If you want a file to only show up on Steam builds on Windows, put it in Assets/Output/win/steam/all/ or Assets/Output/steam/win/all/.",
+                        textStyle
+                    );
                 }
 
                 GUILayout.Label("Build Everything");
