@@ -253,7 +253,7 @@ namespace KH.Texts {
 				}
 
 				if (update.PlayBlip) {
-					MaybePlayBlip();
+					MaybePlayBlip(pitch);
 				}
 
 				if (update.Delay > 0) {
@@ -269,7 +269,7 @@ namespace KH.Texts {
 			TextFinished?.Invoke(bypassKeypress);
 		}
 
-		private void MaybePlayBlip() {
+		private void MaybePlayBlip(float pitch = 1f) {
 			if (_lastBlip + MinSoundInterval > Time.unscaledTime) return;
 
 			if (PlayAtLocation && SoundLocation) {
