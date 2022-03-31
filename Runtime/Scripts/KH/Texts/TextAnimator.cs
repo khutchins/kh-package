@@ -42,6 +42,8 @@ namespace KH.Texts {
 		public Transform SoundLocation;
 		[Tooltip("Audio event specifying the sound to use playing text.")]
 		public AudioEvent blipSound;
+		[Tooltip("Minimum time since last text animation time to trigger another sound.")]
+		public float MinSoundInterval = 0f;
 
 		[Header("Animation")]
 		[Tooltip("The rect to shake when a shake command is in the text. If unset, will not shake.")]
@@ -64,6 +66,7 @@ namespace KH.Texts {
 		private float _timeStarted;
 		private bool _doneNextUpdate;
 		private bool _textAnimating;
+		private float _lastBlip;
 
 		public event TextFinishedHandler TextFinished;
 		public event TextAnimateOutFinishedHandler TextAnimateOutFinished;
@@ -250,13 +253,8 @@ namespace KH.Texts {
 				}
 
 				if (update.PlayBlip) {
-					if (PlayAtLocation && SoundLocation) {
-						blipSound?.PlayClipAtPoint(SoundLocation.position, 1, pitch);
-					} else {
-						blipSound?.PlayOneShot(1, pitch);
-					}
+					MaybePlayBlip();
 				}
-
 
 				if (update.Delay > 0) {
 					yield return new WaitForSeconds(update.Delay);
@@ -269,6 +267,17 @@ namespace KH.Texts {
 
 			StopText();
 			TextFinished?.Invoke(bypassKeypress);
+		}
+
+		private void MaybePlayBlip() {
+			if (_lastBlip + MinSoundInterval > Time.unscaledTime) return;
+
+			if (PlayAtLocation && SoundLocation) {
+				blipSound?.PlayClipAtPoint(SoundLocation.position, 1, pitch);
+			} else {
+				blipSound?.PlayOneShot(1, pitch);
+			}
+			_lastBlip = Time.unscaledTime;
 		}
 
 		static float OptParse(string str, float def) {
