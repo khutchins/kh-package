@@ -12,25 +12,27 @@ namespace KH.Audio {
 		[MinMaxRange(0, 2)]
 		public RangedFloat pitch = RangedFloat.One();
 
-		public override void Play(AudioSource source, float volumeMod = 1f, float pitchMod = 1f) {
-			if (clip == null) return;
+		public override AudioSource Play(AudioSource source, float volumeMod = 1f, float pitchMod = 1f) {
+			if (clip == null) return null;
 
 			source.clip = clip;
 			source.volume = Random.Range(volume.minValue, volume.maxValue);
 			source.pitch = Random.Range(pitch.minValue, pitch.maxValue);
 			source.Play();
+
+			return source;
 		}
 
-		public override void PlayClipAtPoint(Vector3 position, float volumeMod = 1f, float pitchMod = 1f) {
-			if (clip == null) return;
+		public override AudioSource PlayClipAtPoint(Vector3 position, float volumeMod = 1f, float pitchMod = 1f) {
+			if (clip == null) return null;
 
-			ASHelper.PlayClipAtPoint(clip, position, false, volumeMod * Random.Range(volume.minValue, volume.maxValue), pitchMod * Random.Range(pitch.minValue, pitch.maxValue));
+			return ASHelper.PlayClipAtPoint(clip, position, false, volumeMod * Random.Range(volume.minValue, volume.maxValue), pitchMod * Random.Range(pitch.minValue, pitch.maxValue));
 		}
 
-		public override void PlayOneShot(float volumeMod = 1f, float pitchMod = 1f) {
-			if (clip == null) return;
+		public override AudioSource PlayOneShot(float volumeMod = 1f, float pitchMod = 1f) {
+			if (clip == null) return null;
 
-			ASHelper.PlayClipAtPoint(clip, Vector3.zero, true, volumeMod * Random.Range(volume.minValue, volume.maxValue), pitchMod * Random.Range(pitch.minValue, pitch.maxValue));
+			return ASHelper.PlayClipAtPoint(clip, Vector3.zero, true, volumeMod * Random.Range(volume.minValue, volume.maxValue), pitchMod * Random.Range(pitch.minValue, pitch.maxValue));
 		}
 	}
 }
