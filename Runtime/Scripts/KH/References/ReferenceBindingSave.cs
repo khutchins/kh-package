@@ -48,7 +48,11 @@ namespace KH.References {
 		private readonly Dictionary<StringReference, Binding<string, StringReference, R>> _stringBindings = new Dictionary<StringReference, Binding<string, StringReference, R>>();
 		private float _delayableSaveTime;
 		private float _undelayableSaveTime;
-		private Coroutine _saveCoroutine;
+		private Coroutine _saveCoroutine = null;
+		// Theoretically this variable is redundant because I *should* be able
+		// to check if (_saveCoroutine != null), but a null coroutine was still
+		// going into the block. Probably Unity doing its weird fake null thing.
+		private bool _isCoroutineActive = false;
 
 		/// <summary>
 		/// Loads the initial state, creating a new instance if necessary.
@@ -118,7 +122,8 @@ namespace KH.References {
 		public void ScheduleSave() {
 			_delayableSaveTime = Time.unscaledTime + SaveDelay;
 			_undelayableSaveTime = Mathf.Min(Time.unscaledTime + MaxSaveDelay, _undelayableSaveTime);
-			if (_saveCoroutine != null) {
+			if (!_isCoroutineActive) {
+				_isCoroutineActive = true;
 				_saveCoroutine = StartCoroutine(SaveOptionsAfterDelay());
 			}
 		}
@@ -131,9 +136,11 @@ namespace KH.References {
 		}
 
 		public void SaveNow() {
-			if (_saveCoroutine != null) {
-				StopCoroutine(_saveCoroutine);
+			if (_isCoroutineActive) {
+				// Theoretically these should be in alignment, but just in case.
+				if (_saveCoroutine != null) StopCoroutine(_saveCoroutine);
 				_saveCoroutine = null;
+				_isCoroutineActive = false;
 			}
 			_undelayableSaveTime = float.MaxValue;
 			GetSave().Save();
