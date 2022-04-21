@@ -28,31 +28,34 @@ namespace KH.Notes {
         private Canvas _canvas;
         private bool _active;
 
-		private void Awake() {
+        private void Awake() {
             Previous.onClick.AddListener(PreviousPressed);
             Next.onClick.AddListener(NextPressed);
             Exit.onClick.AddListener(ExitPressed);
             _canvas = GetComponent<Canvas>();
-			_canvas.enabled = false;
+            _canvas.enabled = false;
         }
 
-		private void OnEnable() {
+        private void OnEnable() {
             NoteReference.ValueChanged += ShowNote;
-		}
+        }
 
-		private void OnDisable() {
+        private void OnDisable() {
             NoteReference.ValueChanged -= ShowNote;
-		}
+        }
 
         public void ShowNote(Note note) {
             _currentNote = note;
             if (_currentNote == null) {
+                if (_active) {
+                    MenuStack.Shared.PopAndCloseMenu(this);
+                }
                 return;
-			}
+            }
             MenuStack.Shared.PushAndShowMenu(this);
             _currentNote.PickUpAudio?.PlayOneShot();
             SetPage(0, false);
-		}
+        }
 
         private void SetPage(int idx, bool allowAudio = true) {
             if (idx >= _currentNote.Pages.Length) idx = _currentNote.Pages.Length - 1;
@@ -85,7 +88,7 @@ namespace KH.Notes {
                 // Make new one to avoid potential property strangeness.
                 Navigation navigation = new Navigation();
                 navigation.mode = Navigation.Mode.Explicit;
-                navigation.selectOnLeft = i > 0 ? objs[i-1] : null;
+                navigation.selectOnLeft = i > 0 ? objs[i - 1] : null;
                 navigation.selectOnRight = i < objs.Count - 1 ? objs[i + 1] : null;
                 objs[i].navigation = navigation;
             }
@@ -97,7 +100,7 @@ namespace KH.Notes {
 
         private void Update() {
             if (!_active) return;
-            if (_defaultObject != null && EventSystem.current.currentSelectedGameObject == null 
+            if (_defaultObject != null && EventSystem.current.currentSelectedGameObject == null
                 && (Mathf.Abs(InputMediator.UIX()) > 0.1 || Mathf.Abs(InputMediator.UIY()) > 0.1)) {
                 EventSystem.current.SetSelectedGameObject(_defaultObject);
             }
@@ -109,29 +112,29 @@ namespace KH.Notes {
 
         void PreviousPressed() {
             SetPage(_currentIdx - 1);
-		}
+        }
 
         void ExitPressed() {
             NoteReference.SetValue(null);
 
             MenuStack.Shared.PopAndCloseMenu(this);
-		}
+        }
 
-		public MenuAttributes GetMenuAttributes() {
+        public MenuAttributes GetMenuAttributes() {
             return PausesGame ? MenuAttributes.StandardPauseMenu() : MenuAttributes.StandardNonPauseMenu();
-		}
+        }
 
-		public void SetMenuUp(bool newUp) {
+        public void SetMenuUp(bool newUp) {
             _canvas.enabled = newUp;
-		}
+        }
 
-		public void SetMenuOnTop(bool isTop) {
+        public void SetMenuOnTop(bool isTop) {
             if (!isTop) {
                 _cachedSelection = EventSystem.current.currentSelectedGameObject;
                 EventSystem.current.SetSelectedGameObject(null);
             }
             if (isTop && _cachedSelection != null) EventSystem.current.SetSelectedGameObject(_cachedSelection);
             _active = isTop;
-		}
-	}
+        }
+    }
 }
