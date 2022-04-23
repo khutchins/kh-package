@@ -5,13 +5,14 @@ using UnityEngine;
 
 namespace KH.Interact {
 	public abstract class Trigger : MonoBehaviour {
+		[Tooltip("Maximum number of times the trigger can be triggered. If negative, there is no limit.")]
 		public int TimesToTrigger = 1;
 
 		private int _timesTriggered = 0;
 		private bool _triggered = false;
 
 		public void PlayerEntered(IInteractionLockController mouseLook) {
-			if (TimesToTrigger >= 0 && _timesTriggered < TimesToTrigger) {
+			if (TimesToTrigger < 0 || _timesTriggered < TimesToTrigger) {
 				PlayerEnteredInternal(mouseLook);
 				_timesTriggered++;
 				_triggered = true;
