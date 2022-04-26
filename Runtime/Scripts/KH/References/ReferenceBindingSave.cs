@@ -24,7 +24,7 @@ namespace KH.References {
 			DoesntTrigger
 		}
 
-		class Binding<T, U, V> where U : ValueReference<T> {
+		protected class Binding<T, U, V> where U : ValueReference<T> {
 			public Action<T, V> Save;
 			public Action<U, V> Load;
 			public ValueReference<T>.OnValueChanged OnValueChanged;
@@ -46,6 +46,7 @@ namespace KH.References {
 		private readonly Dictionary<BoolReference, Binding<bool, BoolReference, R>> _boolBindings = new Dictionary<BoolReference, Binding<bool, BoolReference, R>>();
 		private readonly Dictionary<IntReference, Binding<int, IntReference, R>> _intBindings = new Dictionary<IntReference, Binding<int, IntReference, R>>();
 		private readonly Dictionary<StringReference, Binding<string, StringReference, R>> _stringBindings = new Dictionary<StringReference, Binding<string, StringReference, R>>();
+		private readonly Dictionary<Vector3Reference, Binding<Vector3, Vector3Reference, R>> _vector3Bindings = new Dictionary<Vector3Reference, Binding<Vector3, Vector3Reference, R>>();
 		private float _delayableSaveTime;
 		private float _undelayableSaveTime;
 		private Coroutine _saveCoroutine = null;
@@ -103,13 +104,19 @@ namespace KH.References {
 			GetInitial(_boolBindings);
 			GetInitial(_intBindings);
 			GetInitial(_stringBindings);
+			AdditionalInitialSOValues();
 		}
+
+		protected virtual void AdditionalInitialSOValues() { }
+		protected virtual void AdditionalBindings() { }
+		protected virtual void AdditionalUnbindings() { }
 
 		private void OnEnable() {
 			Bind(_floatBindings);
 			Bind(_boolBindings);
 			Bind(_intBindings);
 			Bind(_stringBindings);
+			AdditionalBindings();
 		}
 
 		private void OnDisable() {
@@ -117,6 +124,7 @@ namespace KH.References {
 			Unbind(_boolBindings);
 			Unbind(_intBindings);
 			Unbind(_stringBindings);
+			AdditionalUnbindings();
 		}
 
 		public void ScheduleSave() {
@@ -162,7 +170,11 @@ namespace KH.References {
 			AddBinding(_stringBindings, reference, saveToOptions, loadFromOptions, saveType);
 		}
 
-		private void AddBinding<A, B>(Dictionary<B, Binding<A, B, R>> bindings, B reference, Action<A, R> saveToOptions, Action<B, R> loadFromOptions, SaveType saveType = SaveType.AfterDelay) where B : ValueReference<A> {
+		protected void AddVector3Binding(Vector3Reference reference, Action<Vector3, R> saveToOptions, Action<Vector3Reference, R> loadFromOptions, SaveType saveType = SaveType.AfterDelay) {
+			AddBinding(_vector3Bindings, reference, saveToOptions, loadFromOptions, saveType);
+		}
+
+		protected void AddBinding<A, B>(Dictionary<B, Binding<A, B, R>> bindings, B reference, Action<A, R> saveToOptions, Action<B, R> loadFromOptions, SaveType saveType = SaveType.AfterDelay) where B : ValueReference<A> {
 			bindings[reference] = new Binding<A, B, R>(saveToOptions, loadFromOptions, saveType);
 		}
 	}
