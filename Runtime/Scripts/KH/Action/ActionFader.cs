@@ -8,7 +8,9 @@ namespace KH.Actions {
 
 		public enum FaderAction {
 			FadeIn,
-			FadeOut
+			FadeOut,
+			SnapIn,
+			SnapOut,
 		}
 
 		public FloatReference FaderRef;
@@ -25,9 +27,18 @@ namespace KH.Actions {
 				return;
 			}
 
-			if (FaderColorRef != null) FaderColorRef.Value = Color;
+			FaderColorRef?.SetValue(Color);
 
-			StartCoroutine(ActionCoroutineWithFinished());
+
+			if (FaderActionToTake == FaderAction.SnapIn) {
+				FaderRef.Value = 1;
+				Finished();
+			} else if (FaderActionToTake == FaderAction.SnapOut) {
+				FaderRef.Value = 0;
+				Finished();
+			} else {
+				StartCoroutine(ActionCoroutineWithFinished());
+			}
 		}
 
 		private IEnumerator ActionCoroutineWithFinished() {
