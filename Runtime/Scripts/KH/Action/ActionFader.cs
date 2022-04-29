@@ -29,16 +29,7 @@ namespace KH.Actions {
 
 			FaderColorRef?.SetValue(Color);
 
-
-			if (FaderActionToTake == FaderAction.SnapIn) {
-				FaderRef.Value = 1;
-				Finished();
-			} else if (FaderActionToTake == FaderAction.SnapOut) {
-				FaderRef.Value = 0;
-				Finished();
-			} else {
-				StartCoroutine(ActionCoroutineWithFinished());
-			}
+			StartCoroutine(ActionCoroutineWithFinished());
 		}
 
 		private IEnumerator ActionCoroutineWithFinished() {
@@ -50,7 +41,13 @@ namespace KH.Actions {
 			if (fader == null) {
 				Debug.LogWarning("No Fader present for ActionFadeOutFader");
 				yield break;
-			}
+			} else if (action == FaderAction.SnapIn) {
+				fader.Value = 1;
+				yield break;
+            } else if (action == FaderAction.SnapOut) {
+				fader.Value = 0;
+				yield break;
+            }
 
 			float from = action == FaderAction.FadeIn ? 0 : 1;
 			float to = action == FaderAction.FadeIn ? 1 : 0;
