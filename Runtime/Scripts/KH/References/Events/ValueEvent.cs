@@ -13,7 +13,10 @@ namespace KH.References {
 	public class ValueEvent<T, U> : MonoBehaviour where U : ValueReference<T> {
 		[SerializeField]
 		private U _reference;
+		[Tooltip("Calls event when the script starts. Useful if you want to propagate the initial value.")]
 		public bool TriggerOnStart = false;
+		[Tooltip("Calls event when the script is enabled. Useful if this script or the object its on is often inactive or disabled. Since this call can happen before other objects get Awake(), it can cause race conditions. If possible, just don't disable this script.")]
+		public bool TriggerOnEnable = false;
 
 		public U Reference {
 			get => _reference;
@@ -49,6 +52,9 @@ namespace KH.References {
 
 		private void OnEnable() {
 			if (_reference != null) {
+				if (TriggerOnEnable) {
+					ReferenceValueChanged(_reference.Value);
+				}
 				_reference.ValueChanged += ReferenceValueChanged;
 			}
 		}
