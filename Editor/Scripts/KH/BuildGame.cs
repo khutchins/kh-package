@@ -4,6 +4,8 @@ using System.Collections;
 using System.IO;
 using System.Linq;
 using System.Collections.Generic;
+using System;
+using UnityEditor.Build.Reporting;
 
 namespace KH.Editor {
 	public class BuildGame : EditorWindow {
@@ -51,7 +53,11 @@ namespace KH.Editor {
 					options.locationPathName = Combine(path, PlayerSettings.productName);
 					options.target = target.BuildTarget;
 					options.options = BuildOptions.ShowBuiltPlayer;
-					BuildPipeline.BuildPlayer(options);
+					BuildResult result = BuildPipeline.BuildPlayer(options).summary.result;
+					if (result != BuildResult.Succeeded) {
+						Debug.LogErrorFormat("Build not successful for platform {0}. Result was {1}. No further builds will be attempted.", target.Name, result);
+						return;
+					}
 					PlatformSpecificPostProcessing(target, path);
 
 					if (target.ShouldCopyFilesAndFolders) {
