@@ -159,6 +159,8 @@ namespace KH.Texts {
 					return 0F;
 				case '"':
 					return 0F;
+				case '\0':
+					return 0F;
 			}
 			switch (curr) {
 				case '\0':
