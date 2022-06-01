@@ -6,20 +6,30 @@ using UnityEngine;
 namespace KH {
 	public static class EZTween {
 
+
 		public static IEnumerator DoPercentAction(Action<float> action, float duration) {
 			return DoPercentAction(action, duration, Curve.Linear);
 		}
 
 		public static IEnumerator DoPercentAction(Action<float> action, float duration, Func<float, float> curve) {
-			float startTime = Time.time;
+			return DoPercentAction(action, duration, curve, TimeGetter.Scaled);
+		}
+
+		public static IEnumerator DoPercentAction(Action<float> action, float duration, Func<float, float> curve, Func<float> timeGetter) {
+			float startTime = timeGetter();
 
 			float percent;
-			while ((percent = (Time.time - startTime) / duration) < 1) {
+			while ((percent = (timeGetter() - startTime) / duration) < 1) {
 				action(curve(percent));
 				yield return null;
 			}
 			action(curve(1));
 		}
+
+		public static class TimeGetter {
+			public static Func<float> Scaled { get { return () => Time.time; } }
+			public static Func<float> Unscaled { get { return () => Time.unscaledTime; } }
+        }
 
 		public static class Curve {
 
