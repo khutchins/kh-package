@@ -89,89 +89,88 @@ namespace KH.Menu {
 				return new OptionSelectRefConfig(BuildInitObject(), _displayText, _optionStrings.ToArray(), _ref, _handler, _loops);
 			}
 		}
+	}
+
+	public class OptionSelectToggleRefConfig : PanelObjectConfig {
+
+		public readonly string DisplayText;
+		public readonly string[] OptionStrings;
+		public readonly bool Loops;
+		public readonly OptionSelectedHandler Handler;
+		public BoolReference Ref;
+
+		public OptionSelectToggleRefConfig(InitObject configInit, string displayText, string[] optionStrings, BoolReference reference, OptionSelectedHandler handler, bool loops = true)
+				: base(configInit) {
+			DisplayText = displayText;
+			OptionStrings = optionStrings;
+			Ref = reference;
+			Handler = handler;
+			Loops = loops;
+		}
+
+		public override GameObject Create(GameObject parent) {
+			GameObject go = Object.Instantiate(Prefab, parent.transform);
+			go.name = Key;
+			OptionSelectManager manager = go.GetComponent<OptionSelectManager>();
+			if (manager == null) {
+				Debug.LogWarning("Toggle prefab does not contain ToggleManager. Menu generation will not proceed normally!");
+			} else {
+				manager.Loops = Loops;
+				manager.SetText(DisplayText);
+				manager.SetOptions(OptionStrings, Ref.Value ? 1 : 0);
+				manager.OptionSelected += Handler;
+			}
+			BoolReceptor receptor = go.GetComponent<BoolReceptor>();
+			if (receptor != null) {
+				receptor.Reference = Ref;
+			}
+			BoolEvent theEvent = go.GetComponent<BoolEvent>();
+			if (theEvent != null) {
+				theEvent.Reference = Ref;
+			}
+			return go;
+		}
 
 
-		public class OptionSelectToggleRefConfig : PanelObjectConfig {
+		public class Builder : Builder<OptionSelectToggleRefConfig, Builder> {
+			private string _displayText;
+			private string _onText;
+			private string _offText;
+			private BoolReference _ref;
+			private bool _loops = true;
+			private OptionSelectedHandler _handler;
 
-			public readonly string DisplayText;
-			public readonly string[] OptionStrings;
-			public readonly bool Loops;
-			public readonly OptionSelectedHandler Handler;
-			public BoolReference Ref;
-
-			public OptionSelectToggleRefConfig(InitObject configInit, string displayText, string[] optionStrings, BoolReference reference, OptionSelectedHandler handler, bool loops = true)
-					: base(configInit) {
-				DisplayText = displayText;
-				OptionStrings = optionStrings;
-				Ref = reference;
-				Handler = handler;
-				Loops = loops;
+			public Builder(string key, GameObject prefab, string offText, string onText, BoolReference reference) : base(key, prefab) {
+				_onText = onText;
+				_offText = offText;
+				_ref = reference;
 			}
 
-			public override GameObject Create(GameObject parent) {
-				GameObject go = Object.Instantiate(Prefab, parent.transform);
-				go.name = Key;
-				OptionSelectManager manager = go.GetComponent<OptionSelectManager>();
-				if (manager == null) {
-					Debug.LogWarning("Toggle prefab does not contain ToggleManager. Menu generation will not proceed normally!");
-				} else {
-					manager.Loops = Loops;
-					manager.SetText(DisplayText);
-					manager.SetOptions(OptionStrings, Ref.Value ? 1 : 0);
-					manager.OptionSelected += Handler;
-				}
-				BoolReceptor receptor = go.GetComponent<BoolReceptor>();
-				if (receptor != null) {
-					receptor.Reference = Ref;
-				}
-				BoolEvent theEvent = go.GetComponent<BoolEvent>();
-				if (theEvent != null) {
-					theEvent.Reference = Ref;
-				}
-				return go;
+			public Builder SetDisplayText(string displayText) {
+				_displayText = displayText;
+				return _builderInstance;
 			}
 
+			/// <summary>
+			/// Whether or not clicking left from the first option will go to the last option and vice versa.
+			/// Default is true.
+			/// </summary>
+			/// <param name="loops">Whether or not selected object can loop.</param>
+			public Builder SetLoops(bool loops) {
+				_loops = loops;
+				return _builderInstance;
+			}
 
-            public class Builder : Builder<OptionSelectToggleRefConfig, Builder> {
-				private string _displayText;
-				private string _onText;
-				private string _offText;
-				private BoolReference _ref;
-				private bool _loops = true;
-				private OptionSelectedHandler _handler;
+			public Builder SetToggleManager(System.Action<OptionSelectManager, bool> handler) {
+				_handler = (OptionSelectManager manager, int index, string option) => {
+					bool on = index == 1;
+					handler?.Invoke(manager, on);
+				};
+				return _builderInstance;
+			}
 
-				public Builder(string key, GameObject prefab, string offText, string onText, BoolReference reference) : base(key, prefab) {
-					_onText = onText;
-					_offText = offText;
-					_ref = reference;
-				}
-
-				public Builder SetDisplayText(string displayText) {
-					_displayText = displayText;
-					return _builderInstance;
-				}
-
-				/// <summary>
-				/// Whether or not clicking left from the first option will go to the last option and vice versa.
-				/// Default is true.
-				/// </summary>
-				/// <param name="loops">Whether or not selected object can loop.</param>
-				public Builder SetLoops(bool loops) {
-					_loops = loops;
-					return _builderInstance;
-				}
-
-				public Builder SetToggleManager(System.Action<OptionSelectManager, bool> handler) {
-					_handler = (OptionSelectManager manager, int index, string option) => {
-						bool on = index == 1;
-						handler?.Invoke(manager, on);
-					};
-					return _builderInstance;
-				}
-
-				public override OptionSelectToggleRefConfig Build() {
-					return new OptionSelectToggleRefConfig(BuildInitObject(), _displayText, new string[] { _offText, _onText }, _ref, _handler, _loops);
-				}
+			public override OptionSelectToggleRefConfig Build() {
+				return new OptionSelectToggleRefConfig(BuildInitObject(), _displayText, new string[] { _offText, _onText }, _ref, _handler, _loops);
 			}
 		}
 	}
