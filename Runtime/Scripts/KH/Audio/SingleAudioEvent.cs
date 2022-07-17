@@ -35,7 +35,8 @@ namespace KH.Audio {
 				position, 
 				false, 
 				volumeMod * Random.Range(volume.minValue, volume.maxValue), 
-				pitchMod * Random.Range(pitch.minValue, pitch.maxValue), 
+				pitchMod * Random.Range(pitch.minValue, pitch.maxValue),
+				true,
 				MixerGroup
 			);
 		}
@@ -49,6 +50,7 @@ namespace KH.Audio {
 				true, 
 				volumeMod * Random.Range(volume.minValue, volume.maxValue), 
 				pitchMod * Random.Range(pitch.minValue, pitch.maxValue), 
+				true,
 				MixerGroup
 			);
 		}
