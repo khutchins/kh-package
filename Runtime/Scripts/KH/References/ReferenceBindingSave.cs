@@ -104,6 +104,7 @@ namespace KH.References {
 			GetInitial(_boolBindings);
 			GetInitial(_intBindings);
 			GetInitial(_stringBindings);
+			GetInitial(_vector3Bindings);
 			AdditionalInitialSOValues();
 		}
 
@@ -116,6 +117,7 @@ namespace KH.References {
 			Bind(_boolBindings);
 			Bind(_intBindings);
 			Bind(_stringBindings);
+			Bind(_vector3Bindings);
 			AdditionalBindings();
 		}
 
@@ -124,6 +126,7 @@ namespace KH.References {
 			Unbind(_boolBindings);
 			Unbind(_intBindings);
 			Unbind(_stringBindings);
+			Unbind(_vector3Bindings);
 			AdditionalUnbindings();
 		}
 
