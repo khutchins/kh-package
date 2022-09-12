@@ -8,7 +8,7 @@ namespace KH.Audio {
 		public AudioEvent[] events;
 
 		internal override AudioEvent NextEvent() {
-			if (events.Length == 0) return null;
+			if (events == null || events.Length == 0) return null;
 			return events[Random.Range(0, events.Length)];
 		}
 	}

@@ -14,7 +14,7 @@ namespace KH.Audio {
 		}
 
 		internal override AudioEvent NextEvent() {
-			if (events.Length == 0) return null;
+			if (events == null || events.Length == 0) return null;
 
 			AudioEvent audio = events[_index];
 			_index = (_index + 1) % events.Length;
