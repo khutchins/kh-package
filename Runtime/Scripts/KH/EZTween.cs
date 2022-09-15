@@ -26,6 +26,28 @@ namespace KH {
 			action(curve(1));
 		}
 
+		public static IEnumerator DoPercentAction(Action<float, float> action, float duration) {
+			return DoPercentAction(action, duration, Curve.Linear);
+		}
+
+		public static IEnumerator DoPercentAction(Action<float, float> action, float duration, Func<float, float> curve) {
+			return DoPercentAction(action, duration, curve, TimeGetter.Scaled);
+		}
+
+		public static IEnumerator DoPercentAction(Action<float, float> action, float duration, Func<float, float> curve, Func<float> timeGetter) {
+			float startTime = timeGetter();
+
+			float lastPercent = curve(0);
+			float percent;
+			while ((percent = (timeGetter() - startTime) / duration) < 1) {
+				float computedPercent = curve(percent);
+				action(lastPercent, computedPercent);
+				lastPercent = computedPercent;
+				yield return null;
+			}
+			action(lastPercent, curve(1));
+		}
+
 		public static class TimeGetter {
 			public static Func<float> Scaled { get { return () => Time.time; } }
 			public static Func<float> Unscaled { get { return () => Time.unscaledTime; } }
