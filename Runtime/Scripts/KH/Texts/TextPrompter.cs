@@ -44,7 +44,7 @@ namespace KH.Texts {
 			if (_waitingForInput) return;
 
 			_current = nextLine;
-			_textAnimator.PlayText(nextLine.Speaker, Color.white, nextLine.Line, SpeedModifier);
+			_textAnimator.PlayText(nextLine.Speaker, nextLine.SpeakerColor, nextLine.Line, SpeedModifier);
 		}
 
 		private void _textAnimator_TextFinished(bool shouldPlayNextText) {
