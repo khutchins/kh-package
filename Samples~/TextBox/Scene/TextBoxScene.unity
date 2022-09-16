@@ -259,6 +259,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 11400000, guid: e8544b9e41797a6489de704359efe526, type: 2}
     - target: {fileID: 1596508996821426304, guid: 1a786f84df14e914d85f7582db8d8647, type: 3}
+      propertyPath: AnimatorKey
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1596508996821426304, guid: 1a786f84df14e914d85f7582db8d8647, type: 3}
       propertyPath: SoundLocation
       value: 
       objectReference: {fileID: 577851921}
@@ -266,6 +270,18 @@ PrefabInstance:
       propertyPath: InteractMediator
       value: 
       objectReference: {fileID: 11400000, guid: cd26c090c7f2feb4f84ffde4809385ed, type: 2}
+    - target: {fileID: 1596508996821426304, guid: 1a786f84df14e914d85f7582db8d8647, type: 3}
+      propertyPath: TagHandlers.Array.size
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 1596508996821426304, guid: 1a786f84df14e914d85f7582db8d8647, type: 3}
+      propertyPath: TagHandlers.Array.data[0]
+      value: 
+      objectReference: {fileID: 527926661}
+    - target: {fileID: 1596508996821426304, guid: 1a786f84df14e914d85f7582db8d8647, type: 3}
+      propertyPath: TagHandlers.Array.data[1]
+      value: 
+      objectReference: {fileID: 527926662}
     - target: {fileID: 1596508996821426305, guid: 1a786f84df14e914d85f7582db8d8647, type: 3}
       propertyPath: m_Pivot.y
       value: 1
@@ -302,8 +318,35 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   LineQueue: {fileID: 11400000, guid: 1ddaeb9232078f74a8528a9bc972eda6, type: 2}
-  InteractMediator: {fileID: 0}
+  InteractMediator: {fileID: 11400000, guid: cd26c090c7f2feb4f84ffde4809385ed, type: 2}
   SpeedModifier: 1
+--- !u!114 &527926661
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 527926657}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7d4f9f488aa528e47b909a3eba56ad0b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  AudioHooks:
+  - Key: '"whistle"'
+    AudioEvent: {fileID: 11400000, guid: 7c41b898fa0d53345a14ff091f344b18, type: 2}
+--- !u!114 &527926662
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 527926657}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0cbac3d7818ae494bb5c2c28cae42c01, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &577851918
 GameObject:
   m_ObjectHideFlags: 0
@@ -505,7 +548,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1943310784}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4d6a133f1bec0da4896b7cc50b1c5143, type: 3}
   m_Name: 
@@ -543,7 +586,7 @@ MonoBehaviour:
   - B
   - C
   Lines:
-  - This is the first line.
+  - <audio="whistle"/>This is the first line.<audio="whistle"/>
   - This is the second line.
   - This is the third line.
   Queue: {fileID: 11400000, guid: 1ddaeb9232078f74a8528a9bc972eda6, type: 2}
