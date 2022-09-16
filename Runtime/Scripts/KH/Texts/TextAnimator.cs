@@ -55,7 +55,9 @@ namespace KH.Texts {
 		[Header("Misc")]
 		[Tooltip("Reference to the string being animated WITHOUT markup. Changing this value won't change the string being animated, but it will make other people using it sad.")]
 		public StringReference CurrentlyPlayingLine;
-		
+		public BoolReference TextBoxVisible;
+		[SerializeField] TextTagHandler[] TagHandlers;
+
 		public bool TextAnimating => _textAnimating;
 
 		private Vector2[] _standardRectPositions;
@@ -70,8 +72,6 @@ namespace KH.Texts {
 
 		public event TextFinishedHandler TextFinished;
 		public event TextAnimateOutFinishedHandler TextAnimateOutFinished;
-
-		public BoolReference TextBoxVisible; 
 
 		void Awake() {
 			Animators[AnimatorKey] = this;
@@ -111,7 +111,12 @@ namespace KH.Texts {
 		public void StopText() {
 			StopCoroutine(_textCoroutine);
 			if (_currentText != null) {
-				conversationText.text = _currentText.GetFinalString();
+				string finalString = _currentText.GetFinalString();
+				string finalStringNoMarkup = _currentText.GetFinalStringWithoutMarkup();
+				conversationText.text = finalString;
+				foreach (TextTagHandler handler in TagHandlers) {
+					handler.TextCompleted(finalString, finalStringNoMarkup);
+                }
 			}
 			if (rectToShake != null) {
 				rectToShake.anchoredPosition = _textBoxBasePosition;
@@ -220,7 +225,11 @@ namespace KH.Texts {
 			_currentText = new TextPlayer(rawText, baseSpeedMod);
 
 			conversationText.text = "";
-			UpdateTextReference(_currentText.GetFinalStringWithoutMarkup());
+			string textWithoutMarkup = _currentText.GetFinalStringWithoutMarkup();
+			UpdateTextReference(textWithoutMarkup);
+			foreach (TextTagHandler handler in TagHandlers) {
+				handler.TextStarted(_currentText.GetFinalString(), textWithoutMarkup);
+            }
 
 			yield return StartCoroutine(AnimateIn());
 
@@ -250,6 +259,9 @@ namespace KH.Texts {
 							pitch = fl;
 							break;
 					}
+				}
+				foreach (TextTagHandler handler in TagHandlers) {
+					handler.TextProgressed(update);
 				}
 
 				if (update.PlayBlip) {

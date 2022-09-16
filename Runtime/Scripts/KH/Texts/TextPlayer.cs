@@ -87,7 +87,7 @@ namespace KH.Texts {
 				float delay = TimeForCharacter(uniform, prev, curr, next);
 				float actualDelay = delay / percentMod + addMod;
 
-				if (actualDelay > 0F) {
+				if (actualDelay > 0F || unrecognizedTokens.Count > 0) {
 					bool blip = curr != '\0' && delay > 0 && ShouldPlaySound(curr);
 					yield return new TextUpdate(newText, actualDelay, blip, unrecognizedTokens);
 				}
