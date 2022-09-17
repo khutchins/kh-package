@@ -71,6 +71,9 @@ namespace KH {
 				EaseInBack,
 				EaseOutBack,
 				EaseInOutBack,
+				EaseInBounce,
+				EaseOutBounce,
+				EaseInOutBounce,
 				Bezier
 			}
 
@@ -91,6 +94,9 @@ namespace KH {
 					Type.EaseInBack => EaseInBack,
 					Type.EaseOutBack => EaseOutBack,
 					Type.EaseInOutBack => EaseInOutBack,
+					Type.EaseInBounce => EaseInBounce,
+					Type.EaseOutBounce => EaseOutBounce,
+					Type.EaseInOutBounce => EaseInOutBounce,
 					Type.Bezier => Bezier,
 					_ => Linear,
 				};
@@ -187,6 +193,32 @@ namespace KH {
 				return t < 0.5f
 					? (Mathf.Pow(2 * t, 2) * ((C2 + 1) * 2 * t - C2)) / 2f
 					: (Mathf.Pow(2 * t - 2, 2) * ((C2 + 1) * (t * 2 - 2) + C2) + 2) / 2f;
+			};
+
+			public static Func<float, float> EaseInBounce = (float t) => {
+				return 1 - EaseInOutBounce(1 - t);
+			};
+
+			public static Func<float, float> EaseOutBounce = (float t) => {
+				t = Mathf.Clamp(t, 0, 1);
+				float n1 = 7.5625f;
+				float d1 = 2.75f;
+
+				if (t < 1 / d1) {
+					return n1 * t * t;
+				} else if (t < 2 / d1) {
+					return n1 * (t -= 1.5f / d1) * t + 0.75f;
+				} else if (t < 2.5 / d1) {
+					return n1 * (t -= 2.25f / d1) * t + 0.9375f;
+				} else {
+					return n1 * (t -= 2.625f / d1) * t + 0.984375f;
+				}
+			};
+
+			public static Func<float, float> EaseInOutBounce = (float t) => {
+				return t < 0.5
+				  ? (1 - EaseOutBounce(1 - 2 * t)) / 2
+				  : (1 + EaseOutBounce(2 * t - 1)) / 2;
 			};
 
 			public static Func<float, float> Bezier = (float t) => {
