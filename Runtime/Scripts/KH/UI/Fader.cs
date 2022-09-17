@@ -9,15 +9,17 @@ namespace KH.UI {
 	[RequireComponent(typeof(Image))]
 	public class Fader : MonoBehaviour {
 
-		public FloatReference FaderRef;
+		[SerializeField] FloatReference FaderRef;
 		[Tooltip("Reference of color to fade to/from. Takes precedence over Color.")]
-		public ColorReference ColorRef;
-		[Tooltip("Colorolor to fade to/from. Only used if ColorRef is null.")]
+		[SerializeField] ColorReference ColorRef;
+		[Tooltip("Disables image if the fader ref value is zero.")]
+		[SerializeField] bool DisableImageIfInvisible = true;
+		[Tooltip("Color to fade to/from. Only used if ColorRef is null.")]
 		public Color Color;
-		private Image image;
+		private Image _image;
 
 		private void Awake() {
-			image = GetComponent<Image>();
+			_image = GetComponent<Image>();
 			// Set FaderRef to 0 on awake to avoid accidentally transfering fade across scenes.
 			// As such, setting the initial value of FaderRef should be done in Start().
 			FaderRef.Value = 0;
@@ -33,9 +35,10 @@ namespace KH.UI {
 		}
 
 		public void UpdateFade(float newValue) {
+			_image.enabled = newValue > 0 || !DisableImageIfInvisible;
 			Color color = ColorRef != null ? ColorRef.Value : Color;
-			if (image != null) {
-				image.color = new Color(color.r, color.g, color.b, newValue);
+			if (_image != null) {
+				_image.color = new Color(color.r, color.g, color.b, newValue);
 			}
 		}
 	}
