@@ -69,6 +69,7 @@ namespace KH.Texts {
 		private bool _doneNextUpdate;
 		private bool _textAnimating;
 		private float _lastBlip;
+		private bool _requiresCallbackOnDismiss;
 
 		public event TextFinishedHandler TextFinished;
 		public event TextAnimateOutFinishedHandler TextAnimateOutFinished;
@@ -117,6 +118,7 @@ namespace KH.Texts {
 				foreach (TextTagHandler handler in TagHandlers) {
 					handler.TextCompleted(finalString, finalStringNoMarkup);
                 }
+				_requiresCallbackOnDismiss = true;
 			}
 			if (rectToShake != null) {
 				rectToShake.anchoredPosition = _textBoxBasePosition;
@@ -126,6 +128,12 @@ namespace KH.Texts {
 		}
 
 		public void RemoveText() {
+			if (_requiresCallbackOnDismiss) {
+				foreach (TextTagHandler handler in TagHandlers) {
+					handler.TextDismissed();
+				}
+				_requiresCallbackOnDismiss = false;
+            }
 			if (rectToShake != null) {
 				rectToShake.anchoredPosition = _textBoxBasePosition;
 			}
@@ -238,10 +246,14 @@ namespace KH.Texts {
 			}
 
 			bool bypassKeypress = false;
+			List<TextUpdate> skippedTokens = new List<TextUpdate>();
 
 			foreach (TextUpdate update in _currentText) {
 				// Player has manually skipped text.
-				if (_doneNextUpdate) break;
+				if (_doneNextUpdate) {
+					skippedTokens.Add(update);
+					continue;
+				}
 
 				conversationText.text = update.NewString;
 				float pitch = 1f;
@@ -274,6 +286,12 @@ namespace KH.Texts {
 
 				if (update.BypassKeypress) {
 					bypassKeypress = true;
+				}
+			}
+
+			if (skippedTokens.Count > 0) {
+				foreach (TextTagHandler handler in TagHandlers) {
+					handler.TextSkipped(skippedTokens.ToArray());
 				}
 			}
 
@@ -341,6 +359,10 @@ namespace KH.Texts {
 				}
 			} else {
 				_doneNextUpdate = false;
+				// TODO: I don't know when this would happen.
+				// Coroutines run after Update() so the text
+				// animating flag should be cleared when we 
+				// call StopText in the coroutine.
 				if (_textAnimating) {
 					StopText();
 					TextFinished?.Invoke(false);
