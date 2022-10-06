@@ -15,10 +15,15 @@ namespace KH.Interact {
 			LockBoth = LockMovement | LockLook
         }
 
+		[Header("Config")]
 		[Tooltip("Whether or not this interactable should lock movement, look, or both on the interacting player.")]
 		[SerializeField] LockSpec LockState = LockSpec.LockBoth;
 		[Tooltip("Whether or not this is the only interaction that can occur.")]
 		[SerializeField] bool Exclusive = true;
+		[Tooltip("Whether the interaction should immediately end (useful for one-offs, like playing a sound.")]
+		[SerializeField] bool EndImmediately = false;
+
+		[Header("Interaction")]
 		/// <summary>
 		/// Whether the player can cancel the interaction by pressing the interact key again.
 		/// </summary>
@@ -26,10 +31,10 @@ namespace KH.Interact {
 		[SerializeField] bool CancelOnInteract = false;
 
 		[Tooltip("Mediator that detects interaction. Only necessary if CancelOnInteract is true.")]
+		[ConditionalHide("CancelOnInteract")]
 		[SerializeField] SingleInputMediator InteractMediator;
-		[Tooltip("Whether the interaction should immediately end (useful for one-offs, like playing a sound.")]
-		[SerializeField] bool EndImmediately = false;
 
+		[Header("Events")]
 		public UnityEvent OnInteractStart;
 		public UnityEvent OnInteractStop;
 
