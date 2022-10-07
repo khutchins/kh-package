@@ -18,7 +18,8 @@ namespace KH.Music {
                 Debug.LogWarning($"Playlist {this} has no songs!");
             }
             if (Shuffle) {
-                if (_shuffledSongs == null || _index < 0 || _index >= _shuffledSongs.Count) {
+                EnsureShuffledSongs(false);
+                if (_index < 0 || _index >= _shuffledSongs.Count) {
                     EnsureShuffledSongs(true);
                     _index = 0;
                 }
@@ -31,7 +32,7 @@ namespace KH.Music {
         }
 
         void EnsureShuffledSongs(bool forceReshuffle) {
-            if (_shuffledSongs == null || forceReshuffle) {
+            if (_shuffledSongs == null || _shuffledSongs.Count != Songs.Length || forceReshuffle) {
                 IRandom rand = new SystemRandom();
                 _shuffledSongs = Songs.Shuffle(rand).ToList();
             }
