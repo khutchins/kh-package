@@ -20,6 +20,7 @@ namespace KH.Music {
 
         public void TurnOn() {
             if (_on) return;
+            _on = true;
 
             if (_playingCoroutine == null) {
                 _playingCoroutine = StartCoroutine(PlayingCoroutine());
@@ -28,6 +29,7 @@ namespace KH.Music {
 
         public void TurnOff() {
             if (!_on) return;
+            _on = false;
 
             if (_playingCoroutine != null) {
                 StopCoroutine(_playingCoroutine);
