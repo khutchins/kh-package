@@ -5,7 +5,7 @@ using Pomerandomian;
 using UnityEngine;
 
 namespace KH.Music {
-    [CreateAssetMenu(menuName = "KH/SongPlaylist")]
+    [CreateAssetMenu(menuName = "KH/Music/SongPlaylist")]
     public class SongPlaylist : ScriptableObject {
         public Song[] Songs;
         [SerializeField] bool Shuffle;
