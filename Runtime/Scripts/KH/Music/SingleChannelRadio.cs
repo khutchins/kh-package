@@ -16,6 +16,7 @@ namespace KH.Music {
 
         private void Awake() {
             AudioSource.loop = false;
+            SongInfoRef?.SetValue(null);
         }
 
         public void TurnOn() {
