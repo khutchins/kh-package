@@ -7,19 +7,30 @@ namespace KH.Interact {
 	public class InteractableAction : Interactable {
 
 		public Action Action;
-		public bool LockPlayer = true;
-		public bool Exclusive = true;
+
+		public enum LockSpec {
+			None = 0,
+			LockMovement = 1 << 0,
+			LockLook = 1 << 1,
+			LockBoth = LockMovement | LockLook
+		}
+
+		[Header("Config")]
+		[Tooltip("Whether or not this interactable should lock movement, look, or both on the interacting player.")]
+		[SerializeField] LockSpec LockState = LockSpec.LockBoth;
+		[Tooltip("Whether or not this is the only interaction that can occur.")]
+		[SerializeField] bool Exclusive = true;
 
 		public override bool ExclusiveInteraction() {
 			return Exclusive;
 		}
 
 		public override bool LocksMouse() {
-			return LockPlayer;
+			return (LockState & LockSpec.LockLook) > 0;
 		}
 
 		public override bool LocksMovement() {
-			return LockPlayer;
+			return (LockState & LockSpec.LockMovement) > 0;
 		}
 
 		public override bool ShouldAllowInteraction(Interactor interator) {
