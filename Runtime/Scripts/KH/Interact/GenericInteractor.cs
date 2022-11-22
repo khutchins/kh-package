@@ -12,6 +12,10 @@ namespace KH.Interact {
 		public SingleInputMediator InteractMediator;
 		[Tooltip("How far to check for interactables.")]
 		public float RaycastDistance = 1.5f;
+		[Tooltip("If true, will ignore delta y for determining raycast distance if looking down.")]
+		public bool IgnoreDownDistanceForRaycasts = true;
+		[Tooltip("Maximum raycast distance to check for interactables.")]
+		public float MaxRaycastDistance = 3f;
 
 		private Interactor _interactor;
 		private Interactable _focusedInteractable;
@@ -27,12 +31,21 @@ namespace KH.Interact {
 			_interactor = new Interactor(this.gameObject, this);
 		}
 
+		private float AdjustedDistance(Vector3 forward) {
+			if (!IgnoreDownDistanceForRaycasts) return RaycastDistance;
+			if (forward.y >= 0) return RaycastDistance;
+			Vector2 xz = new Vector2(forward.x, forward.z);
+			float magnitude = Mathf.Max(0.01f, xz.magnitude);
+			float scalar = RaycastDistance / magnitude;
+			return Mathf.Min(MaxRaycastDistance, RaycastDistance * scalar);
+		}
+
 		public void CheckInteract(Transform cameraTransform) {
 			// Don't process input if paused.
 			if (Time.deltaTime == 0) return;
 
 			RaycastHit hit;
-			if (Physics.Raycast(cameraTransform.position, cameraTransform.forward, out hit, RaycastDistance)) {
+			if (Physics.Raycast(cameraTransform.position, cameraTransform.forward, out hit, AdjustedDistance(cameraTransform.forward))) {
 				Interactable interactable = hit.transform.gameObject.GetComponentInChildren<Interactable>();
 				if (interactable != null) {
 					UpdateFocusedInteractable(interactable);
