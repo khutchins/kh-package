@@ -1,0 +1,14 @@
+<style="h1">Sample by:</style>
+
+<style="credit">Kevin Hutchins</style>
+<style="details">https://khutchins.itch.io/</style>
+
+<style="h1">Using assets:</style>
+
+<style="asset">Kevin Hutchins - Menutee</style>
+<style="details">https://github.com/khutchins/menutee</style>
+
+<style="asset">Kevin Hutchins - KHPackageCore</style>
+<style="details">https://github.com/khutchins/kh-package</style>
+
+This style is driven using CreditsStyleSheet, you can change the coloring and other attributes there.

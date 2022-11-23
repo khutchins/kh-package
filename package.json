@@ -13,6 +13,11 @@
       "path": "Samples~/TextBox"
     },
     {
+      "displayName": "Credits Animator",
+      "description": "Sample implementation of credits animator.",
+      "path": "Samples~/Credits"
+    },
+    {
       "displayName": "Note System",
       "description": "Sample implementation of a note reader.",
       "path": "Samples~/Notes"
