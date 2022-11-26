@@ -73,7 +73,11 @@ namespace KH.Interact {
 
         private void Update() {
 			if (IsBeingInteractedWith && CancelOnInteract && InteractMediator.InputJustDown()) {
-				ForceStopInteraction();
+				// Only stop interacting if it's not focused on another interactable (or interactions
+				// are not exclusive).
+				if (ExclusiveInteraction() || !CurrentInteractor.HasFocusedInteractable) {
+					ForceStopInteraction();
+				}
 			}
 		}
 

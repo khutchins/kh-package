@@ -13,6 +13,7 @@ namespace KH.Interact {
 		public readonly GameObject GameObject;
 		private readonly IInteractionLockController MovementAndMouse;
 		public bool Locked;
+		public bool HasFocusedInteractable;
 
 		public Interactor(GameObject obj, IInteractionLockController movementAndMouse) {
 			GameObject = obj;

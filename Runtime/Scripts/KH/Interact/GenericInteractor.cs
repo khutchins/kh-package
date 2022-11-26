@@ -69,10 +69,12 @@ namespace KH.Interact {
 			if (_focusedInteractable) {
 				_focusedInteractable.OnLoseFocus();
 				_focusedInteractable = null;
+				_interactor.HasFocusedInteractable = false;
 			}
 			if (target) {
 				_focusedInteractable = target;
 				_focusedInteractable.OnGainFocus();
+				_interactor.HasFocusedInteractable = true;
 			}
 			CanInteract?.SetValue(target != null);
 		}

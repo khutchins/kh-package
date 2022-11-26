@@ -19,6 +19,8 @@ namespace KH.Interact {
 		private int _timesInteracted;
 		private float _lastInteractionStop;
 
+		protected Interactor CurrentInteractor { get => _currentInteractor; }
+
 		public bool IsBeingInteractedWith {
 			get {
 				return _currentInteractor != null;
