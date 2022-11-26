@@ -37,6 +37,8 @@ namespace KH.Interact {
 		[Header("Events")]
 		public UnityEvent OnInteractStart;
 		public UnityEvent OnInteractStop;
+		public UnityEvent OnFocusGain;
+		public UnityEvent OnFocusLoss;
 
 		public override bool ExclusiveInteraction() {
 			return Exclusive;
@@ -59,7 +61,17 @@ namespace KH.Interact {
 			OnInteractStop?.Invoke();
 		}
 
-		private void Update() {
+        public override void OnGainFocus() {
+            base.OnGainFocus();
+			OnFocusGain?.Invoke();
+        }
+
+        public override void OnLoseFocus() {
+            base.OnLoseFocus();
+			OnFocusLoss?.Invoke();
+        }
+
+        private void Update() {
 			if (IsBeingInteractedWith && CancelOnInteract && InteractMediator.InputJustDown()) {
 				ForceStopInteraction();
 			}
