@@ -67,6 +67,7 @@ namespace KH.Notes {
             _currentIdx = idx;
 
             Text.text = _currentNote.Pages[_currentIdx];
+            BackgroundImage.enabled = _currentNote.Image != null;
             BackgroundImage.sprite = _currentNote.Image;
 
             UpdateButtons(idx != 0, idx != _currentNote.Pages.Length - 1, back);

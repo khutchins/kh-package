@@ -24,6 +24,11 @@ namespace KH.Notes {
 				ForceStopInteraction();
 				return;
 			}
+			if (NoteManagerNote == null) {
+				Debug.LogWarning("No note reference on this interactable!");
+				ForceStopInteraction();
+				return;
+            }
 			ReadNote();
 			NoteManagerNote.ValueChanged += NoteChanged;
 		}
