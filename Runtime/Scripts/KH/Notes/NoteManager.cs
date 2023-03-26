@@ -46,15 +46,31 @@ namespace KH.Notes {
 
         public void ShowNote(Note note) {
             _currentNote = note;
-            if (_currentNote == null) {
+            if (_currentNote == null || _currentNote.Pages == null || _currentNote.Pages.Length == 0) {
                 if (_active) {
                     MenuStack.Shared.PopAndCloseMenu(this);
+                }
+                if (_currentNote != null) {
+                    // Bad note that we have to clear. Wait a frame, since 
+                    // doing this online can break some behavior (for instance,
+                    // registering a listener on the note reference after setting
+                    // it, which this would happen before).
+                    ClearNoteOnDelay();
                 }
                 return;
             }
             MenuStack.Shared.PushAndShowMenu(this);
             _currentNote.PickUpAudio?.PlayOneShot();
             SetPage(0, false);
+        }
+
+        private void ClearNoteOnDelay() {
+            StartCoroutine(Clear());
+        }
+
+        IEnumerator Clear() {
+            yield return null;
+            NoteReference.SetValue(null);
         }
 
         private void SetPage(int idx, bool allowAudio = true) {
