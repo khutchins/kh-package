@@ -1,6 +1,7 @@
 ﻿using KH.Input;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using TMPro;
 using UnityEngine;
 using KH.References;
@@ -25,8 +26,8 @@ namespace KH.Texts {
 		public static TextAnimator SharedAnimator;
 
 		[Header("Components")]
-		public TextMeshProUGUI conversationText;
-		public TextMeshProUGUI speaker;
+		public TMP_Text conversationText;
+		public TMP_Text speaker;
 		public GameObject activeTextBox;
 		public SingleInputMediator InteractMediator;
 
@@ -238,6 +239,13 @@ namespace KH.Texts {
 			foreach (TextTagHandler handler in TagHandlers) {
 				handler.TextStarted(_currentText.GetFinalString(), textWithoutMarkup);
             }
+
+			// This is to make sure that the text box doesn't jump in size if
+			// animating in and conversation box is using a content size fitter.
+			TextUpdate first = _currentText.FirstOrDefault();
+			if (first != null) {
+				conversationText.text = first.NewString;
+			}
 
 			yield return StartCoroutine(AnimateIn());
 
