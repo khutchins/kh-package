@@ -23,6 +23,7 @@ namespace KH.SceneStuff {
         /// <param name="prefab"></param>
         public void MaybeInstantiateObject(GameObject prefab) {
             if (_objectsInited.Contains(prefab)) return;
+            _objectsInited.Add(prefab);
             Instantiate(prefab, this.transform);
         }
     }
