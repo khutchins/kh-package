@@ -14,13 +14,13 @@ namespace KH.Music {
         private MusicInfoInstance _currentInstance;
         private static readonly float FADE_IN_TIME = 0.5f;
 
-        private CoroutineManager _fadeInstance;
+        private SingleCoroutineManager _fadeInstance;
 
         private void Awake() {
             INSTANCE = this;
             _source = GetComponent<AudioSource>();
             _source.loop = true;
-            _fadeInstance = new CoroutineManager(this);
+            _fadeInstance = new SingleCoroutineManager(this);
         }
 
         class MusicInfoInstance {
