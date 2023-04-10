@@ -151,11 +151,13 @@ namespace KH.Texts {
 			// It looks odd to have extra time for a closing brace or quote,
 			// so apply the previous time (which was skipped) to play them
 			// together.
-			if (curr == ')' || curr == '"') {
+			if (curr == ')' || curr == ']' || curr == '"') {
 				return TimeForCharacter(uniform, '\0', prev, ' ');
 			}
 			switch (next) {
 				case ')':
+					return 0F;
+				case ']':
 					return 0F;
 				case '"':
 					return 0F;
@@ -174,7 +176,6 @@ namespace KH.Texts {
 				case '—':
 				case ':':
 				case ';':
-				case ')':
 				case '–':
 					return 0.2F;
 				case ',':
