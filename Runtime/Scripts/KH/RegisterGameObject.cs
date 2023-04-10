@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using KH.References;
+using Ratferences;
 
 public class RegisterGameObject : MonoBehaviour {
     public GameObjectReference Variable;

@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Menutee;
-using KH.References;
+using Ratferences;
 
 namespace KH.Menu {
 	public class OptionSelectRefConfig : PanelObjectConfig {

@@ -1,5 +1,5 @@
 ﻿using UnityEngine;
-using KH.References;
+using Ratferences;
 
 namespace KH.Notes {
 	[CreateAssetMenu]

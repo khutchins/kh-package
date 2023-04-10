@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using KH.References;
+using Ratferences;
 
 namespace KH.UI {
 	public class CrosshairManager : MonoBehaviour {

@@ -17,4 +17,5 @@ Add these to the list of dependencies:
 ```
 "com.khutchins.package.core": "https://github.com/khutchins/kh-package.git",
 "com.khutchins.menutee": "https://github.com/khutchins/menutee.git",
+"com.khutchins.ratferences": "https://github.com/khutchins/ratferences.git",
 ```
