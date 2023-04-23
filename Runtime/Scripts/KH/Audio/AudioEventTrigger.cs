@@ -8,17 +8,34 @@ namespace KH.Audio {
     /// </summary>
     public class AudioEventTrigger : MonoBehaviour {
         public AudioEvent AudioEvent;
+        [Tooltip("How long this trigger should wait before retriggering.")]
+        [SerializeField] float RetriggerCooldown = 0f;
+
+        private float _lastPlay = 0f;
+
+        private void CheckAndPlay(System.Action playAction) {
+            if (Time.unscaledTime >= _lastPlay + RetriggerCooldown) {
+                _lastPlay = Time.unscaledTime;
+                playAction();
+            }
+        }
 
         public void PlayOneShot() {
-            AudioEvent?.PlayOneShot();
+            CheckAndPlay(() => {
+                if (AudioEvent != null) AudioEvent.PlayOneShot();
+            });
 		}
 
         public void Play(AudioSource source) {
-            AudioEvent?.Play(source);
+            CheckAndPlay(() => {
+                if (AudioEvent != null) AudioEvent.Play(source);
+            });
 		}
 
         public void PlayClipAtPoint(Vector3 position) {
-            AudioEvent?.PlayClipAtPoint(position);
+            CheckAndPlay(() => {
+                if (AudioEvent != null) AudioEvent.PlayClipAtPoint(position);
+            });
 		}
     }
 }
