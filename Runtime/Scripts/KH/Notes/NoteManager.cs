@@ -29,6 +29,8 @@ namespace KH.Notes {
             _currentNote.Pages != null && 
             _currentIdx < _currentNote.Pages.Length - 1;
 
+        protected override bool AlwaysShowClose => false;
+
         protected override AudioEvent DisplayAudio => NoteReference == null ? null : (NoteReference.Value == null ? null : NoteReference.Value.PickUpAudio);
         protected override AudioEvent ForwardAudio => NoteReference == null ? null : (NoteReference.Value == null ? null : NoteReference.Value.PageTurnAudio);
         protected override AudioEvent BackAudio => NoteReference == null ? null : (NoteReference.Value == null ? null : NoteReference.Value.PageTurnAudio);

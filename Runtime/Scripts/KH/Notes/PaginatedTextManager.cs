@@ -49,6 +49,7 @@ namespace KH.Notes {
         protected abstract bool CanGoBack { get; }
         protected abstract void GoBack();
         protected abstract bool CanGoForward { get; }
+        protected abstract bool AlwaysShowClose { get; }
         protected abstract void GoForward();
         protected virtual AudioEvent DisplayAudio { get => null; }
         protected virtual AudioEvent CloseAudio { get => null; }
@@ -66,7 +67,8 @@ namespace KH.Notes {
 
             List<Selectable> objs = new List<Selectable>();
             if (previous) objs.Add(Previous);
-            objs.Add(next ? Next : Exit);
+            if (next) objs.Add(Next);
+            if (!next || AlwaysShowClose) objs.Add(Exit);
 
             EventSystem.current.SetSelectedGameObject(null);
 
