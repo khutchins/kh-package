@@ -61,14 +61,15 @@ namespace KH.Notes {
         }
 
         private void UpdateButtons(bool previous, bool next, bool wentBack) {
-            Exit.gameObject.SetActive(!next);
+            bool showClose = (!next || AlwaysShowClose);
+            Exit.gameObject.SetActive(showClose);
             Previous.gameObject.SetActive(previous);
             Next.gameObject.SetActive(next);
 
             List<Selectable> objs = new List<Selectable>();
             if (previous) objs.Add(Previous);
             if (next) objs.Add(Next);
-            if (!next || AlwaysShowClose) objs.Add(Exit);
+            if (showClose) objs.Add(Exit);
 
             EventSystem.current.SetSelectedGameObject(null);
 
@@ -82,7 +83,7 @@ namespace KH.Notes {
                 objs[i].navigation = navigation;
             }
 
-            GameObject selected = wentBack ? objs[0].gameObject : objs[objs.Count - 1].gameObject;
+            GameObject selected = wentBack ? objs[0].gameObject : (objs.Count > 1 ? objs[1] : objs[0]).gameObject;
             _defaultObject = selected;
             EventSystem.current.SetSelectedGameObject(selected);
         }
