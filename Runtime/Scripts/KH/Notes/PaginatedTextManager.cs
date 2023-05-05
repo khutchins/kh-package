@@ -107,7 +107,7 @@ namespace KH.Notes {
             if (CanGoBack) GoBack();
             AudioEvent audio = BackAudio;
             if (audio != null) audio.PlayOneShot();
-            UpdateButtons(false);
+            UpdateButtons(true);
         }
 
         void ExitPressed() {
