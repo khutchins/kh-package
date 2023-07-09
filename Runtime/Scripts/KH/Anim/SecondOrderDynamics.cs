@@ -19,12 +19,20 @@ namespace KH.Anim {
         private float _k3;
 
         /// <summary>
+        /// Parameters for a SOD with a f of 2, a z of 0.35, and a r of 1.2.
+        /// It provides a fairly nice feeling bounce.
+        /// </summary>
+        public static (float f, float z, float r) StandardBounce() {
+            return (2f, 0.35f, 1.2f);
+        }
+
+        /// <summary>
         /// Instantiates a second order dynamics system. Uses Vector3
         /// but Vector2 or floats can be packed in instead.
         /// </summary>
-        /// <param name="f">Frequency</param>
-        /// <param name="z">Damping coefficient (zeta)</param>
-        /// <param name="r">Initial response</param>
+        /// <param name="f">Frequency. Speed at which system responds to change. Higher frequencies will result in harsher changes.</param>
+        /// <param name="z">Zeta. The damping coefficient. 0 means vibration never dies down. 0-1 underdamped. 1 damped.</param>
+        /// <param name="r">Initial response. Negative will cause anticipation, > 1 will cause overshoot.</param>
         /// <param name="x0">Starting state</param>
         public SecondOrderDynamics(float f, float z, float r, T x0) {
             _xp = x0;
@@ -51,7 +59,7 @@ namespace KH.Anim {
             float k2Stable = Mathf.Max(_k2, 1.1f * (dt * dt / 4 + dt * _k1 / 2));
             _y = Plus(_y, Times(_yd, dt)); // integrate position by velocity
             // _yd = _yd + dt * (x + _k3 * xd - _y - _k1 * _yd) / k2Stable; // integrate velocity by acceleration
-            _yd = Plus(_yd, Divide(Times(Minus(Minus(Plus(x, Times(xd, _k3)), _y), Times(_yd, _k1)), dt), k2Stable)); 
+            _yd = Plus(_yd, Divide(Times(Minus(Minus(Plus(x, Times(xd, _k3)), _y), Times(_yd, _k1)), dt), k2Stable));
             return _y;
         }
 
@@ -134,7 +142,7 @@ namespace KH.Anim {
             return obj * scalar;
         }
     }
-    
+
     /// <summary>
     /// A version of the SecondOrderDynamics that uses some hacks to make
     /// rotations not react poorly when they wrap from 360 -> 0 or vice versa.
@@ -155,11 +163,13 @@ namespace KH.Anim {
 
         public override Vector3 Update(float dt, Vector3 x) {
             x = EulerHack(_prevTarget, x);
+            _prevTarget = x;
             return base.Update(dt, x);
         }
 
         public override Vector3 Update(float dt, Vector3 x, Vector3 xd) {
             x = EulerHack(_prevTarget, x);
+            _prevTarget = x;
             return base.Update(dt, x, xd);
         }
     }
