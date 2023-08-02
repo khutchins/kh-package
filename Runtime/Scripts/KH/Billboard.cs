@@ -25,5 +25,9 @@ namespace KH {
 			}
 			this.transform.rotation = Quaternion.LookRotation(-dir);
 		}
+
+		public void SetCamera(Camera camera) {
+			CameraToFace = camera;
+		}
 	}
 }
