@@ -56,6 +56,8 @@ namespace KH.Texts {
 		[Header("Misc")]
 		[Tooltip("Reference to the string being animated WITHOUT markup. Changing this value won't change the string being animated, but it will make other people using it sad.")]
 		public StringReference CurrentlyPlayingLine;
+		[Tooltip("Reference to the speaker's name. Changing this value won't change the name, but it will make other people using it sad.")]
+		public StringReference CurrentSpeaker;
 		public BoolReference TextBoxVisible;
 		[SerializeField] TextTagHandler[] TagHandlers;
 
@@ -100,6 +102,7 @@ namespace KH.Texts {
 		}
 
 		public void PlayText(string speakerName, Color nameColor, string rawText, float speedMod = .8F) {
+			if (CurrentSpeaker != null) CurrentSpeaker.Value = speakerName;
 			if (speaker) {
 				speaker.text = speakerName;
 				speaker.color = nameColor;
@@ -118,7 +121,7 @@ namespace KH.Texts {
 				conversationText.text = finalString;
 				foreach (TextTagHandler handler in TagHandlers) {
 					handler.TextCompleted(finalString, finalStringNoMarkup);
-                }
+				}
 				_requiresCallbackOnDismiss = true;
 			}
 			if (rectToShake != null) {
@@ -134,7 +137,7 @@ namespace KH.Texts {
 					handler.TextDismissed();
 				}
 				_requiresCallbackOnDismiss = false;
-            }
+			}
 			if (rectToShake != null) {
 				rectToShake.anchoredPosition = _textBoxBasePosition;
 			}
@@ -202,7 +205,7 @@ namespace KH.Texts {
 					float animLength = 0.2F;
 					float animGap = 0.2F;
 					float start = Time.time;
-					
+
 					while (Time.time - start < animLength + animGap * (RectsToAnimate.Length - 1)) {
 						for (int i = 0; i < RectsToAnimate.Length; i++) {
 							int offset = RectsToAnimate.Length - 1 - i;
@@ -238,7 +241,7 @@ namespace KH.Texts {
 			UpdateTextReference(textWithoutMarkup);
 			foreach (TextTagHandler handler in TagHandlers) {
 				handler.TextStarted(_currentText.GetFinalString(), textWithoutMarkup);
-            }
+			}
 
 			// This is to make sure that the text box doesn't jump in size if
 			// animating in and conversation box is using a content size fitter.
