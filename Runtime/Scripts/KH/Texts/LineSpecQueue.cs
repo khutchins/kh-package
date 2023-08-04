@@ -53,13 +53,13 @@ namespace KH.Texts {
             private LineCallback _existingCallback;
 
             public LineSpecAwaiter(IEnumerable<LineSpec> specs) {
-                List<LineSpec> specList = specs.ToList();
-                if (specList.Count == 0) {
+                _specs = specs.ToList();
+                if (_specs.Count == 0) {
                     _waiting = false;
                     return;
                 }
 
-                LineSpec last = specList[specList.Count - 1];
+                LineSpec last = _specs[_specs.Count - 1];
                 _existingCallback = last.Callback;
                 last.Callback = LineFinished;
             }
