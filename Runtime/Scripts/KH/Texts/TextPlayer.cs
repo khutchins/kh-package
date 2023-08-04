@@ -58,6 +58,7 @@ namespace KH.Texts {
 				List<TextToken> tokens = _parser.TokensForIndex(stripIdx);
 				float percentMod = _baseSpeedMod;
 				float addMod = 0F;
+				bool instant = false;
 				bool uniform = false;
 				List<TextToken> unrecognizedTokens = new List<TextToken>();
 				foreach (TextToken token in tokens) {
@@ -74,6 +75,9 @@ namespace KH.Texts {
 						case "uniform":
 							uniform = OptParse(token.value, true);
 							break;
+						case "instant":
+							instant = true;
+							break;
 						default:
 							unrecognizedTokens.Add(token);
 							break;
@@ -86,6 +90,7 @@ namespace KH.Texts {
 
 				float delay = TimeForCharacter(uniform, prev, curr, next);
 				float actualDelay = delay / percentMod + addMod;
+				if (instant) actualDelay = 0;
 
 				if (actualDelay > 0F || unrecognizedTokens.Count > 0) {
 					bool blip = curr != '\0' && delay > 0 && ShouldPlaySound(curr);
