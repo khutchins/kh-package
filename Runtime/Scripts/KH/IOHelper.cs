@@ -6,11 +6,20 @@ using UnityEngine;
 namespace KH {
     public static class IOHelper {
         public static void EnsurePathAndWriteAllBytes(string path, byte[] bytes) {
+            EnsurePath(path);
+            File.WriteAllBytes(path, bytes);
+        }
+
+        public static void EnsurePathAndWriteText(string path, string contents) {
+            EnsurePath(path);
+            File.WriteAllText(path, contents);
+        }
+
+        public static void EnsurePath(string path) {
             string dir = Path.GetDirectoryName(path);
             if (!Directory.Exists(dir)) {
                 Directory.CreateDirectory(dir);
             }
-            File.WriteAllBytes(path, bytes);
         }
 
         /// <summary>
