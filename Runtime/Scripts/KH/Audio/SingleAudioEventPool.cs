@@ -40,6 +40,10 @@ namespace KH.Audio {
 			}
 			for (int i = 0; i < Pool.Count; i++) {
 				AudioSource source = Pool[i];
+				if (source == null) {
+					source = GenerateSource();
+					Pool[i] = source;
+				}
 				if (!source.isPlaying) {
 					_lastSource = i;
 					return source;
@@ -54,14 +58,18 @@ namespace KH.Audio {
 			}
 		}
 
-		private AudioSource AddSourceToPool() {
+		private AudioSource GenerateSource() {
 			AudioSource audioSource = ASHelper.MakeAudioSource();
 			audioSource.gameObject.name = $"AS: {this.name} (Pool)";
 			audioSource.outputAudioMixerGroup = MixerGroup;
-			Pool.Add(audioSource);
 			return audioSource;
 		}
 
+		private AudioSource AddSourceToPool() {
+			var source = GenerateSource();
+			Pool.Add(source);
+			return source;
+		}
 
 		public override AudioSource Play(AudioSource source, float volumeMod = 1f, float pitchMod = 1f) {
 			// If using an explicit audio source, pool is not used.
