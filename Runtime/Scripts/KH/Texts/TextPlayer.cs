@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 
 namespace KH.Texts {
 	public class TextUpdate {
@@ -116,7 +117,7 @@ namespace KH.Texts {
 			if (str == null)
 				return def;
 
-			if (!float.TryParse(str, out float fl)) {
+			if (!float.TryParse(str, NumberStyles.Any, CultureInfo.InvariantCulture, out float fl)) {
 				fl = def;
 			}
 			return fl;
@@ -126,7 +127,7 @@ namespace KH.Texts {
 			if (str == null)
 				return def;
 
-			if (!bool.TryParse(str, out bool b)) {
+			if (!bool.TryParse(str,  out bool b)) {
 				b = def;
 			}
 			return b;

@@ -7,6 +7,7 @@ using UnityEngine;
 using Ratferences;
 using KH.Audio;
 using UnityEngine.Events;
+using System.Globalization;
 
 namespace KH.Texts {
 	public delegate void TextFinishedHandler(bool shouldPlayNextText);
@@ -275,11 +276,7 @@ namespace KH.Texts {
 							break;
 
 						case "pitch":
-							if (!float.TryParse(token.value, out float fl)) {
-								Debug.LogWarning("Unsupported pitch parameter: " + token.value);
-								fl = 1f;
-							}
-							pitch = fl;
+							pitch = OptParse(token.value, 1f);
 							break;
 					}
 				}
@@ -325,7 +322,7 @@ namespace KH.Texts {
 			if (str == null)
 				return def;
 
-			if (!float.TryParse(str, out float fl)) {
+			if (!float.TryParse(str, NumberStyles.Any, CultureInfo.InvariantCulture, out float fl)) {
 				fl = def;
 			}
 			return fl;
