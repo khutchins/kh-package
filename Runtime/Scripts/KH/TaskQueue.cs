@@ -24,7 +24,7 @@ namespace KH {
         public delegate void QueueNoLongerEmpty(TaskQueue queue);
         public QueueNoLongerEmpty OnQueueNoLongerEmpty;
 
-        private readonly Queue<ITask> _queue = new();
+        private readonly Queue<ITask> _queue = new Queue<ITask>();
         private int _lastIndex = -1;
         private int _lastStartedTask = -1;
         private int _lastFinishedTask = -1;

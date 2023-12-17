@@ -22,7 +22,8 @@ namespace KH {
     public class TaskQueueManager : MonoBehaviour {
         [SerializeField] TaskQueue Queue;
 
-        private readonly Dictionary<System.Type, System.Func<ITask, IEnumerator>> _taskHandlers = new();
+        private readonly Dictionary<System.Type, System.Func<ITask, IEnumerator>> _taskHandlers = 
+            new Dictionary<System.Type, System.Func<ITask, IEnumerator>>();
 
         public static TaskQueueManager INSTANCE;
 
