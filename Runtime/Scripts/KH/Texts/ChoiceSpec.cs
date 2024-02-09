@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace KH.Texts {
@@ -15,6 +16,8 @@ namespace KH.Texts {
         public int LastIndex;
 
         public ChoiceSpec(params ChoiceOptionSpec[] options) : this(null, options) {}
+        public ChoiceSpec(IEnumerable<ChoiceOptionSpec> options) : this(null, options.ToArray()) { }
+        public ChoiceSpec(ChoiceSelectedCallback callback, IEnumerable<ChoiceOptionSpec> options) : this(callback, options.ToArray()) { }
         public ChoiceSpec(ChoiceSelectedCallback callback, params ChoiceOptionSpec[] options) {
             Options = options;
             if (callback != null) {
