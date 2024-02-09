@@ -9,17 +9,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d75f0b037c8852f4488af28c0c29b2f4, type: 3}
-  m_Name: TextInputMediator
+  m_Script: {fileID: 11500000, guid: 54dafcbd006a50248a1f2001fc784adb, type: 3}
+  m_Name: SampleChoiceMenuInputMediator
   m_EditorClassIdentifier: 
   xAxis: Horizontal
   yAxis: Vertical
-  xMouse: Mouse X
-  yMouse: Mouse Y
-  crouch: Fire1
-  jump: Jump
-  sprint: Fire3
   uiInputCancel: Cancel
-  pause: Pause
+  menuToggle: Jump
   submit: Submit
-  Sensitivity: 180
