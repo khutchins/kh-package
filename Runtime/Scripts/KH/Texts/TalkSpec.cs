@@ -4,7 +4,7 @@ using UnityEngine;
 using static KH.Interact.TalkableBase;
 
 namespace KH.Texts {
-	[CreateAssetMenu(menuName = "Text/Talk Spec")]
+	[CreateAssetMenu(menuName = "KH/Text/Talk Spec")]
 	public class TalkSpec : ScriptableObject {
 
 		public TalkCycleType TalkCycle = TalkCycleType.RepeatLast;
