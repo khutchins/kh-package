@@ -1,6 +1,8 @@
+using Menutee;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.UI;
 
 namespace KH.Texts {
@@ -9,9 +11,12 @@ namespace KH.Texts {
 
         public event ChoiceMade OnChoiceMade;
 
-        [Tooltip("Object that holds the choice layout. Must not be this object or a parent of it, as it will disable the object.")]
+        [Tooltip("Object that the choice objects will be placed under.")]
         [SerializeField] GameObject ChoiceHolder;
         [SerializeField] ChoiceOptionManager SingleChoicePrefab;
+
+        [SerializeField] UnityEvent OnShow;
+        [SerializeField] UnityEvent OnHide;
 
         private ChoiceSpec _current;
         private List<ChoiceOptionManager> _optionManagers = new List<ChoiceOptionManager>();
@@ -26,16 +31,29 @@ namespace KH.Texts {
             _current = choice;
             _current.OnChoiceSelected += OptionPicked;
             CreatePrefabsForChoice();
-
+            OnShow?.Invoke();
         }
 
         private void CreatePrefabsForChoice() {
+            if (_current.Options.Length <= 0) return;
+            List<Selectable> selectableObjects = new List<Selectable>();
             foreach (var option in _current.Options) {
                 ChoiceOptionManager manager = Instantiate(SingleChoicePrefab, ChoiceHolder.transform);
                 manager.SetOption(option);
                 _optionManagers.Add(manager);
+                selectableObjects.Add(manager.Button);
             }
+            MenuGenerator.SetVerticalNavigation(selectableObjects);
+            MaybeSetDefaultSelectable(selectableObjects[0]);
+            
             LayoutRebuilder.ForceRebuildLayoutImmediate(ChoiceHolder.transform as RectTransform);
+        }
+
+        private void MaybeSetDefaultSelectable(Selectable defaultMaybe) {
+            var menu = GetComponent<MenuHook>();
+            if (menu != null) {
+                menu.DefaultSelectedGameObject = defaultMaybe.gameObject;
+            }
         }
 
         private void OptionPicked(ChoiceSpec choice, int index, ChoiceOptionSpec selection) {
@@ -58,6 +76,7 @@ namespace KH.Texts {
                 Destroy(go.gameObject);
             }
             _optionManagers.Clear();
+            OnHide?.Invoke();
         }
     }
 }

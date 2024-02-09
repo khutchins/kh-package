@@ -7,7 +7,7 @@ using UnityEngine.UI;
 namespace KH.Texts {
     public class ChoiceOptionManager : MonoBehaviour {
         [Tooltip("Button to listen on. If none is set, will attempt to get it from the object.")]
-        [SerializeField] Button Button;
+        public Button Button;
         [SerializeField] TMP_Text ChoiceText;
 
         private ChoiceOptionSpec _option;
