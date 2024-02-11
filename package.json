@@ -27,9 +27,9 @@
       "path": "Samples~/Notes"
     },
     {
-      "displayName": "Menu Reference Extensions",
-      "description": "Base versions of menu prefabs that hook into references.",
-      "path": "Samples~/MenuRefExtensions"
+      "displayName": "LowRez Template",
+      "description": "Template for rendering a 64x64 game for LowRezJam.",
+      "path": "Samples~/LowRezTemplate"
     }
   ],
   "dependencies": {
