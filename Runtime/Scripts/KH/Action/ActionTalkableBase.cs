@@ -21,8 +21,7 @@ namespace KH.Actions {
 				return;
 			}
 
-			LineSpec spec = new LineSpec("", talkLine);
-			spec.Callback = LinesFinished;
+			LineSpec spec = new LineSpec("", talkLine, LinesFinished);
 			LineSpecQueue.Enqueue(spec);
 		}
 

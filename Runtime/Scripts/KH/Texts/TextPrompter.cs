@@ -28,12 +28,12 @@ namespace KH.Texts {
         }
 
 		private void OnEnable() {
-			LineQueue.FirstLineAdded += LineQueue_FirstLineAdded;
+			LineQueue.OnFirstItemAdded += LineQueue_FirstLineAdded;
 			_textAnimator.TextFinished += _textAnimator_TextFinished;
 		}
 
 		private void OnDisable() {
-			LineQueue.FirstLineAdded -= LineQueue_FirstLineAdded;
+			LineQueue.OnFirstItemAdded -= LineQueue_FirstLineAdded;
 			_textAnimator.TextFinished += _textAnimator_TextFinished;
 		}
 
@@ -63,7 +63,7 @@ namespace KH.Texts {
 
 		private void DoneWithLine() {
 			_textAnimator.RemoveText();
-			_current?.Callback?.Invoke();
+			_current.LineFinished();
 			_current = null;
 			_waitingForInput = false;
 			TryPlayNextLine();
