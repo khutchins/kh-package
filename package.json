@@ -17,6 +17,11 @@
       "path": "Samples~/TextBox"
     },
     {
+      "displayName": "Console",
+      "description": "Sample implementation of a Quake-style console.",
+      "path": "Samples~/Console"
+    },
+    {
       "displayName": "Credits Animator",
       "description": "Sample implementation of credits animator.",
       "path": "Samples~/Credits"
