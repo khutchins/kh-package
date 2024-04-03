@@ -96,6 +96,10 @@ namespace KH.Console {
             // TODO: This doesn't work properly if autocomplete is triggered after a space (e.g. "help ").
             // It thinks it's autocompleting the first token, so it does nothing. In this case, it should
             // realize that the string ends with whitespace and treat it as an empty string in the second token.
+
+            // TODO: (x2) Autocomplete should automatically quote completions that have spaces in them. Single
+            // quotes if the string contains double quotes and no single quotes, double quotes otherwise. Will
+            // have to escape '\', '"', and ''' as necessary.
             string[] tokens = ParseText(_currentText).ToArray();
             if (tokens.Length < 1) {
                 return;
