@@ -22,9 +22,13 @@ namespace KH.Console {
         private bool _isUp = false;
         private Canvas _canvas;
         private string _currentText = "";
+        private bool _blinkOn = false;
+
+        private SingleCoroutineManager _blinkCoroutine;
 
         private void Awake() {
             _canvas = GetComponent<Canvas>();
+            _blinkCoroutine = new SingleCoroutineManager(this);
             _canvas.enabled = false;
             INSTANCE = this;
             RegisterHandler(new Command() {
@@ -92,20 +96,13 @@ namespace KH.Console {
             _registeredCmds.Remove(command);
         }
 
-        private void HandleAutcomplete() {
-            // TODO: This doesn't work properly if autocomplete is triggered after a space (e.g. "help ").
-            // It thinks it's autocompleting the first token, so it does nothing. In this case, it should
-            // realize that the string ends with whitespace and treat it as an empty string in the second token.
-
-            // TODO: (x2) Autocomplete should automatically quote completions that have spaces in them. Single
-            // quotes if the string contains double quotes and no single quotes, double quotes otherwise. Will
-            // have to escape '\', '"', and ''' as necessary.
-            string[] tokens = ParseText(_currentText).ToArray();
+        private void HandleAutocomplete() {
+            string[] tokens = ParseText(_currentText, true).ToArray();
             if (tokens.Length < 1) {
                 return;
             }
 
-            string last = tokens[tokens.Length - 1];
+            string last = tokens[^1];
             if (last == null) last = "";
             Trie trie = null;
             if (tokens.Length == 1) {
@@ -115,8 +112,8 @@ namespace KH.Console {
                 if (!string.IsNullOrWhiteSpace(cmd) && _registeredCmds.ContainsKey(cmd)) {
                     Command command = _registeredCmds[cmd];
                     if (command.Autocomplete != null) {
-                        List<string> autocomplete = command.Autocomplete(tokens).ToList();
-                        if (autocomplete.Count > 0) {
+                        List<string> autocomplete = command.Autocomplete(tokens)?.ToList();
+                        if (autocomplete != null && autocomplete.Count > 0) {
                             trie = new Trie();
                             foreach (string val in autocomplete) {
                                 trie.Insert(val);
@@ -126,15 +123,17 @@ namespace KH.Console {
                 }
             }
             if (trie != null) {
-                string shortestShared = _trie.GetShortestSharedPrefix(last);
-                List<string> words = _trie.WordsWithPrefix(_currentText).OrderBy(x => x).ToList();
-                string complete = string.Join(' ', tokens, 0, tokens.Length - 1) + " " + shortestShared;
+                string shortestShared = trie.GetShortestSharedPrefix(last);
+                List<string> words = trie.WordsWithPrefix(last).OrderBy(x => x).ToList();
+                string prior = tokens.Length > 1 ? string.Join(' ', tokens.Select(x => EscapeStringIfNecessary(x)).ToArray(), 0, tokens.Length - 1) + " " : "";
                 if (words.Count > 1) {
-                    SetCurrentText(complete);
+                    SetCurrentText(prior + EscapeStringIfNecessary(shortestShared, false));
                     OutputText.text = string.Join(' ', words);
                 } else {
-                    SetCurrentText(complete + " ");
+                    SetCurrentText(prior + EscapeStringIfNecessary(shortestShared, true) + " ");
                 }
+            } else {
+                OutputText.text = "No valid autocompletions.";
             }
         }
 
@@ -155,7 +154,7 @@ namespace KH.Console {
             if (UnityEngine.Input.GetKeyDown(KeyCode.Tab)) {
                 // Tab doesn't show up in inputString, for whatever reason, so it has
                 // to be handled here.
-                HandleAutcomplete();
+                HandleAutocomplete();
             }
 
             foreach (char c in UnityEngine.Input.inputString) {
@@ -214,15 +213,37 @@ namespace KH.Console {
             return attrs;
         }
 
-        private void SetCurrentText(string text) {
-            InputText.text = $"> {text}";
+        private void SetCurrentText(string text, bool blink = true) {
+            InputText.text = $"> {text}{(blink ? "_" : "")}";
             _currentText = text;
+            RefreshText();
+        }
+
+        private void SetBlink(bool blink) {
+            _blinkOn = blink;
+            RefreshText();
+        }
+
+        private void RefreshText() {
+            InputText.text = $"> {_currentText}{(_blinkOn ? "_" : "")}";
+        }
+
+        private IEnumerator BlinkCoroutine() {
+            while (true) {
+                SetBlink(!_blinkOn);
+                yield return new WaitForSecondsRealtime(0.75f);
+            }
         }
 
         public void SetMenuUp(bool newUp) {
             _canvas.enabled = newUp;
             _isUp = newUp;
+            if (_isUp) {
+                _blinkCoroutine.StartCoroutine(BlinkCoroutine());
+            }
             if (!_isUp) {
+                _blinkCoroutine.StopCoroutine();
+                _blinkOn = false;
                 OutputText.text = "";
                 SetCurrentText("");
             }
@@ -271,17 +292,37 @@ namespace KH.Console {
             DoubleQuotes
         }
 
-        private static IEnumerable<string> ParseText(string text) {
+        public static string EscapeStringIfNecessary(string text, bool addTerminatingCharacter = true) {
+            if (!text.Any(char.IsWhiteSpace)) {
+                return text;
+            }
+            bool hasQuotes = text.Contains('"');
+            bool hasSingleQuotes = text.Contains('\'');
+            if (hasQuotes && !hasSingleQuotes) {
+                // Escape \
+                return $"'{text.Replace("\\", "\\\\")}{(addTerminatingCharacter ? "'" : "")}";
+            } else if (hasQuotes) {
+                // Escape \ and "
+                return $"\"{text.Replace("\\", "\\\\").Replace("\"", "\\\"")}{(addTerminatingCharacter ? '"' : "")}";
+            } else {
+                // No escape necessary
+                return $"\"{text}{(addTerminatingCharacter ? '"' : "")}";
+            }
+        }
+
+        public static IEnumerable<string> ParseText(string text, bool includeTrailingWhitespace = false) {
             if (string.IsNullOrWhiteSpace(text)) yield break;
 
             char termChar = '\0';
             StringBuilder token = new StringBuilder();
             var context = ParseContext.Start;
+            bool hadWhitespace = false;
 
             void Reset() {
                 token.Clear();
                 termChar = '\0';
                 context = ParseContext.Start;
+                hadWhitespace = false;
             }
 
             for (int i = 0; i < text.Length; i++) {
@@ -293,6 +334,7 @@ namespace KH.Console {
                         context = ParseContext.Standard;
                     } else if (char.IsWhiteSpace(curr)) {
                         // Eat character, as empty tokens are removed (unless double quoted.)
+                        hadWhitespace = true;
                         context = ParseContext.Start;
                     } else {
                         // Replay character in standard context, since we know an escape isn't relevant.
@@ -325,6 +367,7 @@ namespace KH.Console {
                         if (char.IsWhiteSpace(curr)) {
                             yield return token.ToString();
                             Reset();
+                            hadWhitespace = true;
                         } else {
                             token.Append(curr);
                         }
@@ -335,6 +378,8 @@ namespace KH.Console {
             string remainder = token.ToString();
             if (!string.IsNullOrWhiteSpace(remainder)) {
                 yield return remainder;
+            } else if (hadWhitespace && includeTrailingWhitespace) {
+                yield return "";
             }
         }
     }
