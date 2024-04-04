@@ -276,7 +276,7 @@ namespace KH.Console {
 
         private static string GetArg(string[] cmds, int idx) {
             if (idx + 1 >= cmds.Length) {
-                throw new System.Exception($"Expected at least {idx} arguments.");
+                throw new System.Exception($"Expected at least {idx+1} arguments.");
             }
             return cmds[idx + 1];
         }
