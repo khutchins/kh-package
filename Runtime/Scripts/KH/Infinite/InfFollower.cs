@@ -2,7 +2,6 @@ using System.Collections;
 using System.Collections.Generic;
 using Pomerandomian;
 using UnityEngine;
-using NaughtyAttributes;
 
 namespace KH.Infinite {
     [DefaultExecutionOrder(-2)]
@@ -76,7 +75,7 @@ namespace KH.Infinite {
         }
 
         void Regenerate(Vector3 position) {
-            _chunkManager.Update(Vector2Long.Get2DPosition(position, MazeConstants.Offset));
+            _chunkManager.Update(Vector2Long.Get2DPosition(position, Vector2Long.zero));
         }
     }
 }
