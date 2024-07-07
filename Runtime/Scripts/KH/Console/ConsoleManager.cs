@@ -16,6 +16,7 @@ namespace KH.Console {
         [SerializeField] TMP_Text OutputText;
         [Tooltip("Whether ` + shift will toggle console and ESC will close it. Otherwise, do it yourself (it implements IMenu, so you can use that).")]
         [SerializeField] bool UseDefaultDisplayControls = true;
+        [SerializeField] int CommandHistory = 20;
 
         private Dictionary<string, Command> _registeredCmds = new Dictionary<string, Command>();
         private Trie _trie = new Trie();
@@ -96,6 +97,23 @@ namespace KH.Console {
             _registeredCmds.Remove(command);
         }
 
+        private bool IsCtrlDown(params KeyCode[] keys) {
+            if (!(UnityEngine.Input.GetKey(KeyCode.LeftControl) || UnityEngine.Input.GetKey(KeyCode.RightControl))) {
+                return false;
+            }
+            foreach (KeyCode key in keys) {
+                if (!UnityEngine.Input.GetKeyDown(key)) return false;
+            }
+            return true;
+        }
+
+        private bool IsDown(params KeyCode[] keys) {
+            foreach (KeyCode key in keys) {
+                if (!UnityEngine.Input.GetKeyDown(key)) return false;
+            }
+            return true;
+        }
+
         private void HandleAutocomplete() {
             string[] tokens = ParseText(_currentText, true).ToArray();
             if (tokens.Length < 1) {
@@ -137,6 +155,46 @@ namespace KH.Console {
             }
         }
 
+        /// <summary>
+        /// Handles keyboard input that doesn't appear in the inputString, like Tab and Ctrl.
+        /// Notably, delete and backspace do not need to be handled here.
+        /// </summary>
+        /// <returns></returns>
+        private bool HandleSpecialInputControls() {
+            if (UnityEngine.Input.GetKeyDown(KeyCode.Tab)) {
+                // Tab doesn't show up in inputString, for whatever reason, so it has
+                // to be handled here.
+                HandleAutocomplete();
+                return true;
+            } else if (IsCtrlDown(KeyCode.V)) {
+                SetCurrentText(_currentText + GUIUtility.systemCopyBuffer);
+                return true;
+            }
+            return false;
+        }
+
+        private void HandleDefaultInputControls() {
+            foreach (char c in UnityEngine.Input.inputString) {
+                if (c == '\b') { // backspace
+                    if (_currentText.Length != 0) {
+                        SetCurrentText(_currentText[0..^1]);
+                    }
+                } else if (c == 0x7F) { // Ctrl + Backspace, remove last word.
+                    if (_currentText.Length != 0) {
+                        string[] elements = _currentText.Trim().Split(' ');
+                        if (elements.Length > 0) {
+                            SetCurrentText(string.Join(' ', elements, 0, elements.Length - 1));
+                        }
+                    }
+                } else if (c == '\n' || c == '\r') {
+                    HandleInput(_currentText);
+                    SetCurrentText("");
+                } else {
+                    SetCurrentText(_currentText + c);
+                }
+            }
+        }
+
         private void Update() {
             if (UseDefaultDisplayControls) {
                 if (UnityEngine.Input.GetKeyDown(KeyCode.BackQuote) && (UnityEngine.Input.GetKey(KeyCode.LeftShift) || UnityEngine.Input.GetKey(KeyCode.RightShift))) {
@@ -151,30 +209,9 @@ namespace KH.Console {
                     return;
                 }
             }
-            if (UnityEngine.Input.GetKeyDown(KeyCode.Tab)) {
-                // Tab doesn't show up in inputString, for whatever reason, so it has
-                // to be handled here.
-                HandleAutocomplete();
-            }
 
-            foreach (char c in UnityEngine.Input.inputString) {
-                if (c == '\b') {
-                    if (_currentText.Length != 0) {
-                        SetCurrentText(_currentText[0..^1]);
-                    }
-                } else if (c == 127) { // Ctrl + Backspace, remove last word.
-                    if (_currentText.Length != 0) {
-                        string[] elements = _currentText.Trim().Split(' ');
-                        if (elements.Length > 0) {
-                            SetCurrentText(string.Join(' ', elements, 0, elements.Length - 1));
-                        }
-                    }
-                } else if (c == '\n' || c == '\r') {
-                    HandleInput(_currentText);
-                    SetCurrentText("");
-                } else {
-                    SetCurrentText(_currentText + c);
-                }
+            if (!HandleSpecialInputControls()) {
+                HandleDefaultInputControls();
             }
         }
 
@@ -270,7 +307,7 @@ namespace KH.Console {
             try {
                 return float.Parse(arg, CultureInfo.InvariantCulture);
             } catch (System.Exception) {
-                throw new System.Exception($"Argument {idx} ({arg}) was expected to be an float, but it wasn't.");
+                throw new System.Exception($"Argument {idx} ({arg}) was expected to be a float, but it wasn't.");
             }
         }
 
