@@ -3,7 +3,7 @@ using System.Text;
 using UnityEngine;
 
 public class SampleConsoleRegistrar : MonoBehaviour {
-    private void Start() {
+    private void OnEnable() {
         var instance = ConsoleManager.INSTANCE;
         if (instance == null) {
             Debug.LogWarning($"Console does not exist. Cannot register.");
@@ -18,6 +18,7 @@ public class SampleConsoleRegistrar : MonoBehaviour {
         instance.RegisterHandler(new Command() {
             Name = "read_args",
             Description = "Reads all the arguments provided and shows how they're tokenized.",
+            Registrar = this,
             RunCallback = (string[] cmd) => {
                 StringBuilder text = new StringBuilder();
                 for (int i = 0; i < cmd.Length; i++) {
@@ -34,6 +35,7 @@ public class SampleConsoleRegistrar : MonoBehaviour {
         instance.RegisterHandler(new Command() {
             Name = "add_ints",
             Description = "Adds together all the integers provided and returns the result.",
+            Registrar = this,
             RunCallback = (string[] cmd) => {
                 int total = 0;
                 StringBuilder text = new StringBuilder();
@@ -51,6 +53,7 @@ public class SampleConsoleRegistrar : MonoBehaviour {
         instance.RegisterHandler(new Command() {
             Name = "add_floats",
             Description = "Adds together all the floats provided and returns the result.",
+            Registrar = this,
             RunCallback = (string[] cmd) => {
                 float total = 0;
                 StringBuilder text = new StringBuilder();
@@ -69,6 +72,7 @@ public class SampleConsoleRegistrar : MonoBehaviour {
         instance.RegisterHandler(new Command() {
             Name = "throw",
             Description = "Throws a real exception.",
+            Registrar = this,
             RunCallback = (string[] cmd) => {
                 throw new System.Exception("This message was the exception text!");
             }
@@ -78,6 +82,7 @@ public class SampleConsoleRegistrar : MonoBehaviour {
         instance.RegisterHandler(new Command() {
             Name = "autocomplete",
             Description = "Example of using autocomplete.",
+            Registrar = this,
             RunCallback = (string[] cmd) => {
                 return string.Join(' ', cmd, 1, cmd.Length - 1);
             },
@@ -92,5 +97,9 @@ public class SampleConsoleRegistrar : MonoBehaviour {
                 return null;
             },
         });
+    }
+
+    private void OnDisable() {
+        ConsoleManager.INSTANCE.UnregisterRegistrar(this);
     }
 }

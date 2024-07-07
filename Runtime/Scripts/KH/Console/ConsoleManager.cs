@@ -32,14 +32,13 @@ namespace KH.Console {
 
         /// Command Handling
         private FixedArray<string> _commandHistory;
-        private int _historyIndex = -1;
-        private string _tempString = "";
+        private int _historyIndex;
+        private string _tempString;
 
         private SingleCoroutineManager _blinkCoroutine;
 
         private void Awake() {
             _canvas = GetComponent<Canvas>();
-            _commandHistory = new FixedArray<string>(CommandHistory);
             _blinkCoroutine = new SingleCoroutineManager(this);
             _canvas.enabled = false;
             INSTANCE = this;
@@ -80,6 +79,12 @@ namespace KH.Console {
             });
         }
 
+        void Start() {
+            _commandHistory = new FixedArray<string>(CommandHistory);
+            _historyIndex = -1;
+            _tempString = "";
+        }
+
         public void RegisterHandler(Command command) {
             if (command.RunCallback == null || string.IsNullOrWhiteSpace(command.Name)) {
                 Debug.LogWarning($"Commands must have a valid Name and RunCallback specified. This will not be added.");
@@ -98,6 +103,12 @@ namespace KH.Console {
                 Name = command,
                 RunCallback = callback,
             });
+        }
+
+        public void UnregisterRegistrar(object registrar) {
+            foreach(Command cmd in _registeredCmds.Values.Where(x => x.Registrar == registrar).ToList()) {
+                UnregisterHandler(cmd);
+            }
         }
 
         public void UnregisterHandler(Command command) {
@@ -460,9 +471,30 @@ namespace KH.Console {
     }
 
     public struct Command {
+        /// <summary>
+        /// Name of the command.
+        /// </summary>
         public string Name;
+        /// <summary>
+        /// Description of the command. Optional.
+        /// </summary>
         public string Description;
+        /// <summary>
+        /// The registrar responsible for the Command. Optional. Used only for bulk unregistering.
+        /// </summary>
+        public object Registrar;
+        /// <summary>
+        /// Callback for running a command. Takes in tokenized cmd invocation, with the first entry being
+        /// the command name. Returns the text to be output on running the command.
+        /// </summary>
         public System.Func<string[], string> RunCallback;
+        /// <summary>
+        /// Callback for supporting autocomplete. Optional. Takes in the current tokenization (with 0 being the cmd
+        /// name and the final entry being the current partial string and returns an enumerable of all possible 
+        /// autocomplete values for the command's current state. 
+        /// 
+        /// NOTE: You do not need to filter based on the partial final string, as the handler will do substring matching for you.
+        /// </summary>
         public System.Func<string[], IEnumerable<string>> Autocomplete;
     }
 }
