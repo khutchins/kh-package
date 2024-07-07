@@ -16,7 +16,12 @@ namespace KH.Console {
         [SerializeField] TMP_Text OutputText;
         [Tooltip("Whether ` + shift will toggle console and ESC will close it. Otherwise, do it yourself (it implements IMenu, so you can use that).")]
         [SerializeField] bool UseDefaultDisplayControls = true;
+
+        [Header("History")]
+        [Tooltip("How many commands to store in the buffer.")]
         [SerializeField] int CommandHistory = 20;
+        [Tooltip("If true, a command will not be added to the history if it exactly matches the one before.")]
+        [SerializeField] bool OmitDuplicatesFromHistory = true;
 
         private Dictionary<string, Command> _registeredCmds = new Dictionary<string, Command>();
         private Trie _trie = new Trie();
@@ -25,10 +30,16 @@ namespace KH.Console {
         private string _currentText = "";
         private bool _blinkOn = false;
 
+        /// Command Handling
+        private FixedArray<string> _commandHistory;
+        private int _historyIndex = -1;
+        private string _tempString = "";
+
         private SingleCoroutineManager _blinkCoroutine;
 
         private void Awake() {
             _canvas = GetComponent<Canvas>();
+            _commandHistory = new FixedArray<string>(CommandHistory);
             _blinkCoroutine = new SingleCoroutineManager(this);
             _canvas.enabled = false;
             INSTANCE = this;
@@ -169,8 +180,21 @@ namespace KH.Console {
             } else if (IsCtrlDown(KeyCode.V)) {
                 SetCurrentText(_currentText + GUIUtility.systemCopyBuffer);
                 return true;
+            } else if (IsDown(KeyCode.DownArrow)) {
+                UpdateCommandFromHistory(_historyIndex - 1);
+            } else if (IsDown(KeyCode.UpArrow)) {
+                UpdateCommandFromHistory(_historyIndex + 1);
             }
             return false;
+        }
+
+        private void UpdateCommandFromHistory(int idx) {
+            _historyIndex = Mathf.Clamp(idx, -1, _commandHistory.Count - 1);
+            if (_historyIndex < 0) {
+                SetCurrentText(_tempString);
+            } else {
+                SetCurrentText(_commandHistory[_historyIndex]);
+            }
         }
 
         private void HandleDefaultInputControls() {
@@ -213,6 +237,11 @@ namespace KH.Console {
             if (!HandleSpecialInputControls()) {
                 HandleDefaultInputControls();
             }
+
+            // We're not reading through the command buffer.
+            if (_historyIndex == -1) {
+                _tempString = _currentText;
+            }
         }
 
         private string GetDebugOutput() {
@@ -241,6 +270,12 @@ namespace KH.Console {
                 }
             }
             OutputText.text = output;
+
+            if (!OmitDuplicatesFromHistory || str != _commandHistory.Last) {
+                _commandHistory.Add(str);
+            }
+            _historyIndex = -1;
+            _tempString = "";
         }
 
         public MenuAttributes GetMenuAttributes() {
@@ -253,6 +288,9 @@ namespace KH.Console {
         private void SetCurrentText(string text, bool blink = true) {
             InputText.text = $"> {text}{(blink ? "_" : "")}";
             _currentText = text;
+            if (_historyIndex == -1) {
+                _tempString = text;
+            }
             RefreshText();
         }
 
