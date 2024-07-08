@@ -106,7 +106,7 @@ namespace KH.Console {
         }
 
         public void UnregisterRegistrar(object registrar) {
-            foreach(Command cmd in _registeredCmds.Values.Where(x => x.Registrar == registrar).ToList()) {
+            foreach (Command cmd in _registeredCmds.Values.Where(x => x.Registrar == registrar).ToList()) {
                 UnregisterHandler(cmd);
             }
         }
@@ -137,7 +137,7 @@ namespace KH.Console {
         }
 
         private void HandleAutocomplete() {
-            string[] tokens = ParseText(_currentText, true).ToArray();
+            string[] tokens = CommandParser.ParseText(_currentText, true).ToArray();
             if (tokens.Length < 1) {
                 return;
             }
@@ -256,7 +256,7 @@ namespace KH.Console {
         }
 
         private string GetDebugOutput() {
-            string[] cmd = ParseText(_currentText).ToArray();
+            string[] cmd = CommandParser.ParseText(_currentText).ToArray();
             StringBuilder text = new StringBuilder();
             for (int i = 0; i < cmd.Length; i++) {
                 text.Append($"{i}: {cmd[i]}\n");
@@ -265,7 +265,7 @@ namespace KH.Console {
         }
 
         void HandleInput(string str) {
-            string[] cmd = ParseText(str).ToArray();
+            string[] cmd = CommandParser.ParseText(str).ToArray();
             string output = $"cmd: {str}\n";
             if (cmd.Length < 1) {
                 output = "";
@@ -362,20 +362,9 @@ namespace KH.Console {
 
         private static string GetArg(string[] cmds, int idx) {
             if (idx + 1 >= cmds.Length) {
-                throw new System.Exception($"Expected at least {idx+1} arguments.");
+                throw new System.Exception($"Expected at least {idx + 1} arguments.");
             }
             return cmds[idx + 1];
-        }
-
-        enum ParseContext {
-            Standard,
-            Start,
-            InEscape
-        }
-        enum TermChar {
-            Whitespace,
-            SingleQuotes,
-            DoubleQuotes
         }
 
         public static string EscapeStringIfNecessary(string text, bool addTerminatingCharacter = true) {
@@ -393,79 +382,6 @@ namespace KH.Console {
             } else {
                 // No escape necessary
                 return $"\"{text}{(addTerminatingCharacter ? '"' : "")}";
-            }
-        }
-
-        public static IEnumerable<string> ParseText(string text, bool includeTrailingWhitespace = false) {
-            if (string.IsNullOrWhiteSpace(text)) yield break;
-
-            char termChar = '\0';
-            StringBuilder token = new StringBuilder();
-            var context = ParseContext.Start;
-            bool hadWhitespace = false;
-
-            void Reset() {
-                token.Clear();
-                termChar = '\0';
-                context = ParseContext.Start;
-                hadWhitespace = false;
-            }
-
-            for (int i = 0; i < text.Length; i++) {
-                char curr = text[i];
-
-                if (context == ParseContext.Start) {
-                    if (curr == '\'' || curr == '"') {
-                        termChar = curr;
-                        context = ParseContext.Standard;
-                    } else if (char.IsWhiteSpace(curr)) {
-                        // Eat character, as empty tokens are removed (unless double quoted.)
-                        hadWhitespace = true;
-                        context = ParseContext.Start;
-                    } else {
-                        // Replay character in standard context, since we know an escape isn't relevant.
-                        i--;
-                        context = ParseContext.Standard;
-                    }
-                } else if (context == ParseContext.InEscape) {
-                    if (curr == '\\') {
-                        token.Append(curr);
-                    } else if (termChar != '\0' && curr == termChar) {
-                        token.Append(termChar);
-                    } else {
-                        Debug.LogWarning($"Unexpected escape character: '{curr}'. Assuming that escaping was not intended. Don't do this, as escape characters can be added.");
-                        token.Append('\\');
-                        token.Append(curr);
-                    }
-                    context = ParseContext.Standard;
-                } else {
-                    // String started with " or ', putting it in complex mode.
-                    if (termChar != '\0') {
-                        if (curr == '\\') {
-                            context = ParseContext.InEscape;
-                        } else if (curr == termChar) {
-                            yield return token.ToString();
-                            Reset();
-                        } else {
-                            token.Append(curr);
-                        }
-                    } else { // Just a normal string, terminated by whitespace.
-                        if (char.IsWhiteSpace(curr)) {
-                            yield return token.ToString();
-                            Reset();
-                            hadWhitespace = true;
-                        } else {
-                            token.Append(curr);
-                        }
-                    }
-                }
-            }
-
-            string remainder = token.ToString();
-            if (!string.IsNullOrWhiteSpace(remainder)) {
-                yield return remainder;
-            } else if (hadWhitespace && includeTrailingWhitespace) {
-                yield return "";
             }
         }
     }

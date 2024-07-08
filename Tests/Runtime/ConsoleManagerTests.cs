@@ -30,20 +30,20 @@ namespace KH.Console {
 
         [Test]
         public void TestStringParsing() {
-            Assert.That(ConsoleManager.ParseText("foo"), Is.EquivalentTo(new string[] { "foo" }));
-            Assert.That(ConsoleManager.ParseText("foo", true), Is.EquivalentTo(new string[] { "foo" }));
+            Assert.That(CommandParser.ParseText("foo"), Is.EquivalentTo(new string[] { "foo" }));
+            Assert.That(CommandParser.ParseText("foo", true), Is.EquivalentTo(new string[] { "foo" }));
 
-            Assert.That(ConsoleManager.ParseText("foo "), Is.EquivalentTo(new string[] { "foo" }));
-            Assert.That(ConsoleManager.ParseText("foo ", true), Is.EquivalentTo(new string[] { "foo", "" }));
+            Assert.That(CommandParser.ParseText("foo "), Is.EquivalentTo(new string[] { "foo" }));
+            Assert.That(CommandParser.ParseText("foo ", true), Is.EquivalentTo(new string[] { "foo", "" }));
 
-            Assert.That(ConsoleManager.ParseText("'foo '"), Is.EquivalentTo(new string[] { "foo " }));
-            Assert.That(ConsoleManager.ParseText("'foo '", true), Is.EquivalentTo(new string[] { "foo " }));
+            Assert.That(CommandParser.ParseText("'foo '"), Is.EquivalentTo(new string[] { "foo " }));
+            Assert.That(CommandParser.ParseText("'foo '", true), Is.EquivalentTo(new string[] { "foo " }));
 
-            Assert.That(ConsoleManager.ParseText("\"foo \""), Is.EquivalentTo(new string[] { "foo " }));
-            Assert.That(ConsoleManager.ParseText("\"foo \"", true), Is.EquivalentTo(new string[] { "foo " }));
+            Assert.That(CommandParser.ParseText("\"foo \""), Is.EquivalentTo(new string[] { "foo " }));
+            Assert.That(CommandParser.ParseText("\"foo \"", true), Is.EquivalentTo(new string[] { "foo " }));
 
-            Assert.That(ConsoleManager.ParseText("foo \"bar\" 'baz' "), Is.EquivalentTo(new string[] { "foo", "bar", "baz" }));
-            Assert.That(ConsoleManager.ParseText("foo \"bar\" 'baz' ", true), Is.EquivalentTo(new string[] { "foo", "bar", "baz", "" }));
+            Assert.That(CommandParser.ParseText("foo \"bar\" 'baz' "), Is.EquivalentTo(new string[] { "foo", "bar", "baz" }));
+            Assert.That(CommandParser.ParseText("foo \"bar\" 'baz' ", true), Is.EquivalentTo(new string[] { "foo", "bar", "baz", "" }));
         }
     }
 }
