@@ -21,6 +21,10 @@ namespace KH {
         public SingleCoroutineManager(MonoBehaviour owner) {
             _owner = owner;
         }
+        
+        public bool IsRunning {
+            get { return _instance != null; }
+        }
 
         public void StartCoroutine(IEnumerator routine, System.Action onFinally = null, System.Action onCancelCleanup = null) {
             MaybeCancelCoroutine();
