@@ -21,11 +21,34 @@ namespace KH.KVBDSL {
             AssertQuotedString("foo ", "foo ");
             AssertQuotedString(" foo ", " foo ");
             AssertQuotedString(" foo", " foo");
+
+            SimpleDictAssert("key:\"foo\"", "key", "foo");
         }
 
         [Test]
         public void TestMLString() {
             // TODO:
+        }
+
+        [Test]
+        public void TestInt() {
+            AssertInt(-1, "-1");
+            AssertInt(1, "1");
+            AssertInt(1, "+1");
+            AssertInt(1000, "1000");
+            AssertInt(1000, " 1000");
+            AssertInt(1000, "1000 ");
+        }
+
+        [Test]
+        public void TestFloat() {
+            AssertFloat(-1, "-1");
+            AssertFloat(1, "1");
+            AssertFloat(1, "+1");
+            AssertFloat(1000, "1000");
+            AssertFloat(1000, " 1000");
+            AssertFloat(1000, "1000 ");
+            AssertFloat(1000.5f, "1000.5 ");
         }
 
         [Test]
@@ -62,7 +85,8 @@ namespace KH.KVBDSL {
         }
 
         private static void AssertBadKeyParse(string testKey) {
-            Assert.AreEqual(new Dictionary<string, object>(), Deserializer.ParseString($"{testKey}:s foo"));
+            Deserializer deserializer = new Deserializer();
+            Assert.AreEqual(new Dictionary<string, object>(), deserializer.ParseString($"{testKey}:s foo"));
         }
 
         private static void AssertKey(string expectedKey, string testKey) {
@@ -73,14 +97,23 @@ namespace KH.KVBDSL {
             SimpleDictAssert($"key:s {testStr}", "key", expectedStr);
         }
 
+        private static void AssertInt(int expected, string testStr) {
+            SimpleDictAssert($"key:i {testStr}", "key", expected);
+        }
+
+        private static void AssertFloat(float expected, string testStr) {
+            SimpleDictAssert($"key:f {testStr}", "key", expected);
+        }
+
         private static void AssertQuotedString(string expectedStr, string testStr) {
             SimpleDictAssert($"key:s \"{testStr}\"", "key", expectedStr);
         }
 
         private static void SimpleDictAssert(string file, string key, object value) {
+            Deserializer deserializer = new Deserializer();
             Dictionary<string, object> expected = new Dictionary<string, object>();
             expected[key] = value;
-            Assert.AreEqual(expected, Deserializer.ParseString(file));
+            Assert.AreEqual(expected, deserializer.ParseString(file));
         }
     }
 }

@@ -2,6 +2,7 @@ using JetBrains.Annotations;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Globalization;
 using System.Text;
 using UnityEditor;
@@ -9,6 +10,17 @@ using UnityEngine;
 
 namespace KH.KVBDSL {
     public class Deserializer {
+        public class TypeHandler {
+            public readonly string Type;
+            public readonly bool MatchesWithoutWhitespace = false;
+            public readonly Func<string, int, (int idx, object result)> Parse;
+
+            public TypeHandler(string type, Func<string, int, (int idx, object result)> parse, bool matchesWithoutWhitespace = false) {
+                Type = type;
+                MatchesWithoutWhitespace = matchesWithoutWhitespace;
+                Parse = parse;
+            }
+        }
         private enum ParseState {
             Default,
             InTextString,
@@ -32,7 +44,105 @@ namespace KH.KVBDSL {
         private const string MLS_START = "\"\"\"";
         private const string STR_START = "\"";
 
-        public static Dictionary<string, object> ParseString(string input) {
+        private static readonly TypeHandler IntHandler = new TypeHandler("i", (string input, int start) => {
+            int curr = ReadToEndOfLine(input, start, out string str);
+            object output = null;
+            if (int.TryParse(str, NumberStyles.Integer, CultureInfo.InvariantCulture, out int result)) {
+                output = result;
+            } else {
+                curr = ReadToNextLineAndOutputError(input, start, "Invalid int format");
+            }
+            return (curr, output);
+        });
+        private static readonly TypeHandler FloatHandler = new TypeHandler("f", (string input, int start) => {
+            int curr = ReadToEndOfLine(input, start, out string str);
+            object output = null;
+            if (float.TryParse(str, NumberStyles.Float, CultureInfo.InvariantCulture, out float result)) {
+                output = result;
+            } else {
+                curr = ReadToNextLineAndOutputError(input, start, "Invalid float format");
+            }
+            return (curr, output);
+        });
+        private static readonly TypeHandler BoolHandler = new TypeHandler("b", (string input, int start) => {
+            int curr = ReadToEndOfLine(input, start, out string str);
+            object output = null;
+            if (bool.TryParse(str, out bool result)) {
+                output = result;
+            } else {
+                curr = ReadToNextLineAndOutputError(input, start, "Invalid bool format");
+            }
+            return (curr, output);
+        });
+        private static readonly TypeHandler StringHandler = new TypeHandler("s", (string input, int start) => {
+            int curr = ReadString(input, start, out string str);
+            return (curr, str);
+        });
+
+        public static Dictionary<string, TypeHandler> Handlers = new Dictionary<string, TypeHandler>() {
+            { IntHandler.Type, IntHandler },
+            { FloatHandler.Type, FloatHandler },
+            { BoolHandler.Type, BoolHandler },
+            { StringHandler.Type, StringHandler },
+        };
+
+        private ParseState _state = ParseState.Default;
+
+        public Deserializer() { 
+        }
+
+        public Dictionary<string, object> Parse(string input) {
+            return ParseString(input);
+        }
+
+        int ParseValue(string input, int start, out object value) {
+            int curr = ReadToNextEndOfWord(input, start, out string type);
+            value = null;
+            if (type == null) {
+                curr = ReadToNextLineAndOutputError(input, start, $"No type provided");
+                value = null;
+                return curr;
+            }
+            if (Handlers.TryGetValue(type, out TypeHandler handler)) {
+                var result = handler.Parse(input, curr);
+                value = result.result;
+                return result.idx;
+            } else {
+                switch (type) {
+                    case STR_START:
+                        curr -= STR_START.Length;
+                        curr = ReadString(input, curr, out string str);
+                        value = str;
+                        return curr;
+                    case MLS_START:
+                        curr -= MLS_START.Length;
+                        curr = ReadString(input, curr, out string strMLS);
+                        value = strMLS;
+                        return curr;
+                    case TYPE_ARRAY:
+                        if (HasMoreContent(input, curr)) {
+                            curr = GetCurrentLine(input, start, out string line);
+                            Debug.LogWarning($"Array has content beyond '['. Skipping array starting at '{line}'.");
+                            _state = ParseState.SkippingArray;
+                            return curr;
+                        }
+                        return curr;
+                    case TYPE_DICT:
+                        if (HasMoreContent(input, curr)) {
+                            curr = GetCurrentLine(input, start, out string line);
+                            Debug.LogWarning($"Dict has content beyond '{{'. Skipping dict starting at '{line}'.");
+                            _state = ParseState.SkippingDict;
+                            return curr;
+                        }
+                        return curr;
+                    default:
+                        value = null;
+                        return ReadToNextLineAndOutputError(input, curr, $"Unrecognized type '{type}'");
+                }
+            }
+        }
+
+        public Dictionary<string, object> ParseString(string input) {
             ParseState state = ParseState.Default;
             Stack<StackType> stack = new Stack<StackType>();
             Dictionary<string, object> output = new Dictionary<string, object>();
@@ -66,71 +176,9 @@ namespace KH.KVBDSL {
                     // Move past key separator.
                     ++curr;
 
-                    curr = ReadToNextEndOfWord(input, curr, out string type);
-                    if (type == null) {
-                        curr = ReadToNextLineAndOutputError(input, lineStart, $"No type provided");
-                        continue;
-                    }
-                    switch (type) {
-                        case STR_START:
-                            curr -= STR_START.Length;
-                            curr = ReadString(input, curr, out string str);
-                            output[key] = str;
-                            break;
-                        case MLS_START:
-                            curr -= MLS_START.Length;
-                            curr = ReadString(input, curr, out string strMLS);
-                            output[key] = strMLS;
-                            break;
-                        case TYPE_STRING:
-                            curr = ReadString(input, curr, out string strUnquote);
-                            output[key] = strUnquote;
-                            break;
-                        case TYPE_BOOL: {
-                                if (!bool.TryParse(ReadToEndOfLine(input, curr), out bool result)) {
-                                    curr = ReadToNextLineAndOutputError(input, curr, "Invalid boolean format");
-                                    continue;
-                                }
-                                output[key] = result;
-                                break;
-                            }
-                        case TYPE_FLOAT: {
-                                if (!float.TryParse(ReadToEndOfLine(input, curr), NumberStyles.Float, CultureInfo.InvariantCulture, out float result)) {
-                                    curr = ReadToNextLineAndOutputError(input, curr, "Invalid float format");
-                                    continue;
-                                }
-                                output[key] = result;
-                                break;
-                            }
-                        case TYPE_INT: {
-                                if (!int.TryParse(ReadToEndOfLine(input, curr), NumberStyles.Integer, CultureInfo.InvariantCulture, out int result)) {
-                                    curr = ReadToNextLineAndOutputError(input, curr, "Invalid int format");
-                                    continue;
-                                }
-                                output[key] = result;
-                                break;
-                            }
-                        case TYPE_ARRAY:
-                            if (HasMoreContent(input, curr)) {
-                                curr = GetCurrentLine(input, lineStart, out string line);
-                                Debug.LogWarning($"Array has content beyond '['. Skipping array starting at '{line}'.");
-                                state = ParseState.SkippingArray;
-                                continue;
-                            }
-                            stack.Push(StackType.Array);
-                            break;
-                        case TYPE_DICT:
-                            if (HasMoreContent(input, curr)) {
-                                curr = GetCurrentLine(input, lineStart, out string line);
-                                Debug.LogWarning($"Dict has content beyond '{{'. Skipping dict starting at '{line}'.");
-                                state = ParseState.SkippingDict;
-                                continue;
-                            }
-                            stack.Push(StackType.Dictionary);
-                            break;
-                        default:
-                            curr = ReadToNextLineAndOutputError(input, curr, $"Unrecognized type '{type}'");
-                            continue;
+                    curr = ParseValue(input, curr, out object value);
+                    if (value != null) {
+                        output[key] = value;
                     }
                 } else if (state == ParseState.SkippingArray) {
                     // TODO:
@@ -180,8 +228,16 @@ namespace KH.KVBDSL {
             return start;
         }
 
-        private static string ReadToEndOfLine(string input, int start) {
-            return input.Substring(start).Trim();
+        private static int GetToNextLine(string input, int start) {
+            while (input.Length > start && input[start] != '\n') ++start;
+            return start;
+        }
+
+        private static int ReadToEndOfLine(string input, int start, out string remainder) {
+            int curr = start;
+            while (input.Length > curr && input[curr] != '\n') ++curr;
+            remainder = input.Substring(start, curr - start);
+            return curr;
         }
 
         private static int ReadToNextEndOfWord(string input, int start, out string word) {
