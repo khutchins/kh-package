@@ -51,36 +51,45 @@ namespace KH.Infinite {
         private T EnsureChunkForPointInternal(Vector2Long point) {
             Vector2Long key = point.DivideAndFloor(_smallestUnit);
 
+            T info = EnsureChunkInfo(key);
+
+            // Only actually generate the chunk if it's in bounds.
+            if (!info.IsGenerated && info.Location.InRange(_lastPos, _create)) {
+                MaybeGenerate(info);
+            }
+
+            return info;
+        }
+
+        private T EnsureChunkInfo(Vector2Long key) {
             if (!_chunkCache.ContainsKey(key)) {
 
                 T info = ChunkInfoForPointSkipCache(key);
 
-                if (Vector2Long.Distance(_lastPos, info.Location.Bound1) > _create
-                        && Vector2Long.Distance(_lastPos, info.Location.Bound2) > _create) {
-                    // Not actually in bounds.
-                    return null;
-                }
-
-                info.GeneratedObject = _chunkGenerator.Invoke(_smallestUnit, info);
-
                 _chunkInfoList.Add(info);
                 _chunkCache[key] = info;
             }
-
             return _chunkCache[key];
         }
 
         public T ChunkInfoWithOffset(ChunkLocation loc, Vector2Long offset) {
-            return ChunkInfoForPointSkipCache(loc.Key + offset);
+            return EnsureChunkInfo(loc.Key + offset);
         }
 
         private T ChunkInfoForPointSkipCache(Vector2Long key) {
             Vector2Long modifiedPos = key * _smallestUnit;
-            return _infoGenerator(new ChunkLocation() { 
-                Key = key, 
-                Bound1 = modifiedPos, 
-                Bound2 = modifiedPos + _smallestUnit 
+            return _infoGenerator(new ChunkLocation() {
+                Key = key,
+                Bound1 = modifiedPos,
+                Bound2 = modifiedPos + _smallestUnit
             });
+        }
+
+        private bool MaybeGenerate(T info) {
+            if (info.IsGenerated) return false;
+            info.GeneratedObject = _chunkGenerator?.Invoke(_smallestUnit, info);
+            info.IsGenerated = true;
+            return true;
         }
 
         public IEnumerator CleanupCoroutine() {
@@ -92,7 +101,10 @@ namespace KH.Infinite {
                         && Vector2Long.Distance(_lastPos, info.Location.Bound2) > _cleanup) {
                         _chunkCache.Remove(info.Location.Key);
                         _chunkInfoList.RemoveAt(i);
-                        _clearer?.Invoke(info);
+                        if (info.IsGenerated) {
+                            _clearer?.Invoke(info);
+                            info.IsGenerated = false;
+                        }
                         i--;
                         // Don't want it to hang on clearing. Not sure if that'll happen, but hey, whatever.
                         clears++;
