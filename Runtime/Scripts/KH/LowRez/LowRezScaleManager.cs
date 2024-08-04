@@ -5,6 +5,11 @@ using UnityEngine;
 namespace KH.LowRez {
     [RequireComponent(typeof(Canvas))]
     public class LowRezScaleManager : MonoBehaviour {
+        private class GlobalScaleSettings {
+            public int Scale;
+            public bool AlwaysUseMax;
+        }
+
         [SerializeField] private int _scale;
         [SerializeField] private bool _alwaysUseMax;
         [SerializeField] Vector2 BaseResolution = new Vector2(64, 64);
@@ -12,7 +17,10 @@ namespace KH.LowRez {
         [SerializeField] KeyCode[] ScaleDownKeys = new KeyCode[] { KeyCode.Minus, KeyCode.KeypadMinus };
         [SerializeField] ScaleSetting[] Settings;
 
+        private static GlobalScaleSettings _settings;
         private Canvas _canvas;
+        private RectTransform _canvasRect;
+        private Vector2 _lastSize = Vector2.zero;
 
         public enum ScaleMode {
             Add,
@@ -26,23 +34,41 @@ namespace KH.LowRez {
             public Vector2 SizeDifference;
         }
 
-        public int Scale { 
-            get => _scale; 
+        public int Scale {
+            get {
+                EnsureGlobalSettings();
+                return _settings.Scale;
+            }
             set {
-                _scale = value;
+                EnsureGlobalSettings();
+                _settings.Scale = value;
                 UpdateScale();
             }
         }
 
         public bool AlwaysUseMax {
-            get => _alwaysUseMax;
+            get {
+                EnsureGlobalSettings();
+                return _settings.AlwaysUseMax;
+            }
             set {
-                _alwaysUseMax = value;
+                EnsureGlobalSettings();
+                _settings.AlwaysUseMax = value;
                 UpdateScale();
             }
         }
-        
+
+        private void EnsureGlobalSettings() {
+            if (_settings == null) {
+                _settings = new GlobalScaleSettings();
+                _settings.Scale = _scale;
+                _settings.AlwaysUseMax = _alwaysUseMax;
+            }
+        }
+
         private void Awake() {
+            _canvasRect = _canvas.GetComponent<RectTransform>();
+            EnsureGlobalSettings();
             UpdateScale();
         }
 
@@ -63,9 +89,9 @@ namespace KH.LowRez {
 
         void UpdateScale() {
             int maxScale = MaxScale();
-            if (_alwaysUseMax) _scale = maxScale;
-            _scale = Mathf.Clamp(_scale, 1, maxScale);
-            Vector2 size = BaseResolution * _scale;
+            if (_settings.AlwaysUseMax) _settings.Scale = maxScale;
+            _settings.Scale = Mathf.Clamp(_settings.Scale, 1, maxScale);
+            Vector2 size = BaseResolution * _settings.Scale;
             foreach (ScaleSetting setting in Settings) {
                 var element = setting.Element;
                 Vector2 sizeDelta = element.sizeDelta;
@@ -96,9 +122,15 @@ namespace KH.LowRez {
 
             if (keyHit(this.ScaleUpKeys)) this.Scale++;
             if (keyHit(this.ScaleDownKeys)) this.Scale--;
+
+            if (_canvasRect.sizeDelta != _lastSize) {
+                UpdateScale();
+                _lastSize = _canvasRect.sizeDelta;
+            }
         }
 
         private void OnValidate() {
+            EnsureGlobalSettings();
             UpdateScale();
         }
     }
