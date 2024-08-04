@@ -19,8 +19,7 @@ namespace KH.LowRez {
 
         private static GlobalScaleSettings _settings;
         private Canvas _canvas;
-        private RectTransform _canvasRect;
-        private Vector2 _lastSize = Vector2.zero;
+        private Rect _lastPixelRect = Rect.zero;
 
         public enum ScaleMode {
             Add,
@@ -67,7 +66,7 @@ namespace KH.LowRez {
         }
 
         private void Awake() {
-            _canvasRect = _canvas.GetComponent<RectTransform>();
+            EnsureCanvas();
             EnsureGlobalSettings();
             UpdateScale();
         }
@@ -87,11 +86,19 @@ namespace KH.LowRez {
             return Mathf.Min(maxX, maxY);
         }
 
+        private void UpdateScale(int scale) {
+            if (_settings != null) {
+                _settings.Scale = scale;
+            } else {
+                _scale = scale;
+            }
+        }
+
         void UpdateScale() {
             int maxScale = MaxScale();
-            if (_settings.AlwaysUseMax) _settings.Scale = maxScale;
-            _settings.Scale = Mathf.Clamp(_settings.Scale, 1, maxScale);
-            Vector2 size = BaseResolution * _settings.Scale;
+            if (AlwaysUseMax) Scale = maxScale;
+            UpdateScale(Mathf.Clamp(Scale, 1, maxScale));
+            Vector2 size = BaseResolution * Scale;
             foreach (ScaleSetting setting in Settings) {
                 var element = setting.Element;
                 Vector2 sizeDelta = element.sizeDelta;
@@ -123,15 +130,14 @@ namespace KH.LowRez {
             if (keyHit(this.ScaleUpKeys)) this.Scale++;
             if (keyHit(this.ScaleDownKeys)) this.Scale--;
 
-            if (_canvasRect.sizeDelta != _lastSize) {
+            if (_canvas.pixelRect != _lastPixelRect) {
                 UpdateScale();
-                _lastSize = _canvasRect.sizeDelta;
+                _lastPixelRect = _canvas.pixelRect;
             }
         }
 
         private void OnValidate() {
-            EnsureGlobalSettings();
-            UpdateScale();
+            //UpdateScale();
         }
     }
 }
