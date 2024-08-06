@@ -29,6 +29,7 @@ namespace KH.Interact {
 
 		void Awake() {
 			_interactor = new Interactor(this.gameObject, this);
+			if (CanInteract != null) CanInteract.Value = false;
 		}
 
 		private float AdjustedDistance(Vector3 forward) {
