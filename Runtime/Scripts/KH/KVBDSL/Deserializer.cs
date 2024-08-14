@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
+using System.Linq;
 using System.Text;
 using UnityEditor;
 using UnityEngine;
@@ -12,7 +13,16 @@ namespace KH.KVBDSL {
     public class Deserializer {
         public class TypeHandler {
             public readonly string Type;
+            /// <summary>
+            /// Whether or not whitespace is required after the type identifier to begin parsing.
+            /// e.g. foo: "bar" should begin matching once it sees '"' and not require a space.
+            /// </summary>
             public readonly bool MatchesWithoutWhitespace = false;
+            /// <summary>
+            /// Line parser. 
+            /// For the result parameter: if valid, return the parsed object. Otherwise return null.
+            /// For the idx: In both success or failure, return the index of the EOL newline or the start of the next line. Either is fine.
+            /// </summary>
             public readonly Func<string, int, (int idx, object result)> Parse;
 
             public TypeHandler(string type, Func<string, int, (int idx, object result)> parse, bool matchesWithoutWhitespace = false) {
@@ -74,25 +84,49 @@ namespace KH.KVBDSL {
             }
             return (curr, output);
         });
-        private static readonly TypeHandler StringHandler = new TypeHandler("s", (string input, int start) => {
+
+        private static readonly Func<string, int, (int idx, object result)> StringHandlerInternals = (string input, int start) => {
             int curr = ReadString(input, start, out string str);
             return (curr, str);
-        });
+        };
+
+        private static readonly TypeHandler StringHandler = new TypeHandler("s", StringHandlerInternals);
+        private static readonly TypeHandler StringHandlerSingleQuote = new TypeHandler("\"", StringHandlerInternals, true);
+        private static readonly TypeHandler StringHandlerTripleQuote = new TypeHandler("\"\"\"", StringHandlerInternals, true);
+
 
         public static Dictionary<string, TypeHandler> Handlers = new Dictionary<string, TypeHandler>() {
             { IntHandler.Type, IntHandler },
             { FloatHandler.Type, FloatHandler },
             { BoolHandler.Type, BoolHandler },
             { StringHandler.Type, StringHandler },
+            { StringHandlerSingleQuote.Type, StringHandlerSingleQuote },
+            { StringHandlerTripleQuote.Type, StringHandlerTripleQuote },
         };
 
+        private List<TypeHandler> _midStringMatchList;
         private ParseState _state = ParseState.Default;
 
         public Deserializer() { 
+            _midStringMatchList = Handlers.Where(x => x.Value.MatchesWithoutWhitespace).Select(x => x.Value).OrderBy(x => x.Type.Length).ToList();
         }
 
         public Dictionary<string, object> Parse(string input) {
             return ParseString(input);
+        }
+
+        bool CheckNoWhitespaceMatch(string input, out TypeHandler typeHandler) {
+            // _midStringMatchList is guaranteed to be ordered in descending string length order,
+            // so it will never mat6ch a shorter one over a longer one.
+            // For instance, it will look for """ before " when searching for an untyped string literal.
+            foreach (var handler in _midStringMatchList) {
+                if (input.StartsWith(handler.Type)) {
+                    typeHandler = handler;
+                    return true;
+                }
+            }
+            typeHandler = null;
+            return false;
         }
 
         int ParseValue(string input, int start, out object value) {
@@ -102,8 +136,13 @@ namespace KH.KVBDSL {
                 curr = ReadToNextLineAndOutputError(input, start, $"No type provided");
                 value = null;
                 return curr;
-            }
-            if (Handlers.TryGetValue(type, out TypeHandler handler)) {
+            } else if (CheckNoWhitespaceMatch(type, out TypeHandler handler)) {
+                // Handlers that mark themself as not requiring whitespace to match must include the type
+                // in the parse handling, so the start index is passed in instead of the curr index. 
+                var result = handler.Parse(input, start);
+                value = result.result;
+                return result.idx;
+            } else if (Handlers.TryGetValue(type, out handler)) {
                 var result = handler.Parse(input, curr);
                 value = result.result;
                 return result.idx;
@@ -149,9 +188,10 @@ namespace KH.KVBDSL {
 
             int curr = 0;
 
-            for (; curr < input.Length; ++curr) {
+            while (curr < input.Length) {
                 if (state == ParseState.Default) {
                     curr = ReadToNextNonWhitespace(input, curr);
+                    if (curr >= input.Length) break; // EOF
                     int lineStart = curr;
 
                     // Comment
@@ -216,7 +256,7 @@ namespace KH.KVBDSL {
                 // This will end before or at the ':', so we should stay here.
                 return ReadQuotedString(input, start, out key);
             } else {
-                // This will one char past the :, so we need to move back.
+                // This will end one char past the :, so we need to move back.
                 int curr = ReadUnquotedKeyString(input, start, out key);
                 --curr;
                 return curr;
@@ -324,7 +364,7 @@ namespace KH.KVBDSL {
                     }
                     sb.Append(currChar);
                 } else {
-                    int escapeCharIdx = Array.IndexOf(escapes, escapeChar);
+                    int escapeCharIdx = Array.IndexOf(escapes, currChar);
                     if (escapeCharIdx >= 0) {
                         sb.Append(NORMAL_STRING_ESCAPES[escapeCharIdx]);
                     } else {
