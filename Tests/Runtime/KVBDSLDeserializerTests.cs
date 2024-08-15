@@ -1,9 +1,7 @@
-using KH.Console;
 using NUnit.Framework;
-using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
-using UnityEngine;
 
 namespace KH.KVBDSL {
     public class KVBDSLDeserializerTests  {
@@ -74,7 +72,36 @@ namespace KH.KVBDSL {
 
         [Test]
         public void TestArray() {
-            Assert.Fail();
+            // key:[
+            // s foo
+            // i 5
+            // f 3.5
+            // ]
+            AssertArray(GenerateList("foo", 5, 3.5), GenerateTestArray("s foo", "i 5", "f 3.5"));
+            // key:[
+            // [
+            // "foo"
+            // "bar"
+            // ]
+            // "baz"
+            // ]
+            AssertArray(GenerateList(GenerateList("foo", "bar"), "baz"), "[ \n \"foo\" \n \"bar\" \n ] \n \"baz\" \n");
+
+            // Test bad key parse in array. Should just drop the offending key.
+            // key:[
+            // s foo
+            // _ test
+            // ]
+            AssertArray(GenerateList("foo"), GenerateTestArray("s foo", "_ test"));
+            // Test no closing ']'
+            // key:[
+            // s foo
+            // i 5
+            AssertBadArrayParse("[ \n s foo \n i 5 \n");
+            // Test text after opening '['
+            AssertBadArrayParse("[ hello there \n s foo \n i 5 \n ]");
+            // Test text after closing ']'
+            AssertBadArrayParse("[ \n s foo \n i 5 \n ] goodbye!");
         }
 
         [Test]
@@ -101,6 +128,11 @@ namespace KH.KVBDSL {
         }
 
         [Test]
+        public void TestInvalidType() {
+            AssertBadParse("_ foo");
+        }
+
+        [Test]
         public void TestGeneral() {
             StringBuilder file = new StringBuilder();
             // This has a known fine type at the beginning and end, just in case
@@ -113,6 +145,10 @@ namespace KH.KVBDSL {
             file.AppendLine("key3:i 43289");
             file.AppendLine("key4:f 43289.5");
             file.AppendLine("key5:b true");
+            file.AppendLine("key6:[");
+            file.AppendLine("  s foo");
+            file.AppendLine("  i 5");
+            file.AppendLine("]");
             file.AppendLine("key999:i 1");
             Dictionary<string, object> expected = new Dictionary<string, object>();
             expected["key0"] = 1;
@@ -122,6 +158,7 @@ namespace KH.KVBDSL {
             expected["key3"] = 43289;
             expected["key4"] = 43289.5;
             expected["key5"] = true;
+            expected["key6"] = GenerateList("foo", 5);
             expected["key999"] = 1;
 
             var actual = new Deserializer().ParseString(file.ToString());
@@ -136,6 +173,11 @@ namespace KH.KVBDSL {
         private static void AssertBadParse(string typeAndValue) {
             Deserializer deserializer = new Deserializer();
             Assert.AreEqual(new Dictionary<string, object>(), deserializer.ParseString($"foo:{typeAndValue}"));
+        }
+
+        private static void AssertBadArrayParse(string arrayValue) {
+            Deserializer deserializer = new Deserializer();
+            Assert.AreEqual(new Dictionary<string, object>(), deserializer.ParseString($"foo:{arrayValue}"));
         }
 
         private static void AssertKey(string expectedKey, string testKey) {
@@ -160,6 +202,18 @@ namespace KH.KVBDSL {
 
         private static void AssertQuotedString(string expectedStr, string testStr) {
             SimpleDictAssert($"key:s \"{testStr}\"", "key", expectedStr);
+        }
+
+        private static void AssertArray(List<object> expected, string testStr) {
+            SimpleDictAssert($"key:[\n{testStr}\n]", "key", expected);
+        }
+
+        private static List<object> GenerateList(params object[] arr) {
+            return arr.ToList();
+        }
+
+        private static string GenerateTestArray(params string[] values) {
+            return string.Join('\n', values);
         }
 
         private static void SimpleDictAssert(string file, string key, object value) {

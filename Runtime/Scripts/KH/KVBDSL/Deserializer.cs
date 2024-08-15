@@ -23,9 +23,9 @@ namespace KH.KVBDSL {
             /// For the result parameter: if valid, return the parsed object. Otherwise return null.
             /// For the idx: In both success or failure, return the index of the EOL newline or the start of the next line. Either is fine.
             /// </summary>
-            public readonly Func<string, int, (int idx, object result)> Parse;
+            public readonly Func<Deserializer, string, int, (int idx, object result)> Parse;
 
-            public TypeHandler(string type, Func<string, int, (int idx, object result)> parse, bool matchesWithoutWhitespace = false) {
+            public TypeHandler(string type, Func<Deserializer, string, int, (int idx, object result)> parse, bool matchesWithoutWhitespace = false) {
                 Type = type;
                 MatchesWithoutWhitespace = matchesWithoutWhitespace;
                 Parse = parse;
@@ -54,7 +54,7 @@ namespace KH.KVBDSL {
         private const string MLS_START = "\"\"\"";
         private const string STR_START = "\"";
 
-        private static readonly TypeHandler IntHandler = new TypeHandler("i", (string input, int start) => {
+        private static readonly TypeHandler IntHandler = new TypeHandler(TYPE_INT, (Deserializer ds, string input, int start) => {
             int curr = ReadToEndOfLine(input, start, out string str);
             object output = null;
             if (int.TryParse(str, NumberStyles.Integer, CultureInfo.InvariantCulture, out int result)) {
@@ -64,7 +64,7 @@ namespace KH.KVBDSL {
             }
             return (curr, output);
         });
-        private static readonly TypeHandler FloatHandler = new TypeHandler("f", (string input, int start) => {
+        private static readonly TypeHandler FloatHandler = new TypeHandler(TYPE_FLOAT, (Deserializer ds, string input, int start) => {
             int curr = ReadToEndOfLine(input, start, out string str);
             object output = null;
             if (float.TryParse(str, NumberStyles.Float, CultureInfo.InvariantCulture, out float result)) {
@@ -74,7 +74,7 @@ namespace KH.KVBDSL {
             }
             return (curr, output);
         });
-        private static readonly TypeHandler BoolHandler = new TypeHandler("b", (string input, int start) => {
+        private static readonly TypeHandler BoolHandler = new TypeHandler(TYPE_BOOL, (Deserializer ds, string input, int start) => {
             int curr = ReadToEndOfLine(input, start, out string str);
             object output = null;
             if (bool.TryParse(str, out bool result)) {
@@ -84,8 +84,56 @@ namespace KH.KVBDSL {
             }
             return (curr, output);
         });
+        private static readonly TypeHandler ArrayHandler = new TypeHandler(TYPE_ARRAY, (Deserializer ds, string input, int start) => {
+            bool hadError = false;
+            int curr = ReadToNextLineOrNonWhitespace(input, start);
+            if (curr >= input.Length) {
+                Debug.LogWarning($"Unexpected EOF reading array.");
+            } else if (input[curr] != '\n') {
+                // If the check above didn't read to whitespace, it means that there is text on the same line.
+                curr = ReadToNextLineAndOutputError(input, start, "Array has content beyond '['.");
+                hadError = true;
+            }
 
-        private static readonly Func<string, int, (int idx, object result)> StringHandlerInternals = (string input, int start) => {
+            List<object> array = new List<object>();
+            
+            // We need to read to the next non-whitespace, even though ParseValue already does that,
+            // as we're looking for the closing ']'.
+            curr = ReadToNextNonWhitespace(input, curr);
+            while (curr < input.Length && input[curr] != ']') {
+                curr = ds.ParseValue(input, curr, out object value);
+                if (!hadError && value != null) {
+                    array.Add(value);
+                }
+                curr = ReadToNextNonWhitespace(input, curr);
+            }
+            // Reached EOF without closing ']'.
+            if (curr >= input.Length) {
+                ReadToNextLineAndOutputError(input, start, curr, "Array has no closing ']'.");
+                hadError = true;
+            } else {
+                // Skip past the ']'.
+                ++curr;
+                // Skip past the ']' line.
+                curr = ReadToNextLineOrNonWhitespace(input, curr);
+                // If there's more text on the line, fail the parse because honestly, how hard is it?
+                // This one I went back and forth on accepting, as while I can see the case for the parser having
+                // text after the '[' (for singlely typed arrays), I don't see a usecase here. Regardless, it's
+                // probably an error unless it was a comment, which I may allow later.
+                if (curr < input.Length && input[curr] != '\n') {
+                    curr = ReadToNextLineAndOutputError(input, start, curr, "Array has content beyond ']'.");
+                    hadError = true;
+                }
+            }
+
+            // If they got an error here, return nothing. Probably something deeply wrong occurred,
+            // or they were just too lazy to close a terminal array. Either way, teach them the error
+            // of their ways.
+            if (hadError) return (curr, null);
+            else return (curr, array);
+        });
+
+        private static readonly Func<Deserializer, string, int, (int idx, object result)> StringHandlerInternals = (Deserializer ds, string input, int start) => {
             int curr = ReadString(input, start, out string str);
             return (curr, str);
         };
@@ -102,6 +150,7 @@ namespace KH.KVBDSL {
             { StringHandler.Type, StringHandler },
             { StringHandlerSingleQuote.Type, StringHandlerSingleQuote },
             { StringHandlerTripleQuote.Type, StringHandlerTripleQuote },
+            { ArrayHandler.Type, ArrayHandler },
         };
 
         private List<TypeHandler> _midStringMatchList;
@@ -132,40 +181,22 @@ namespace KH.KVBDSL {
         int ParseValue(string input, int start, out object value) {
             int curr = ReadToNextEndOfWord(input, start, out string type);
             value = null;
-            if (type == null) {
+            if (type == null || type.Length == 0) {
                 curr = ReadToNextLineAndOutputError(input, start, $"No type provided");
                 value = null;
                 return curr;
             } else if (CheckNoWhitespaceMatch(type, out TypeHandler handler)) {
                 // Handlers that mark themself as not requiring whitespace to match must include the type
                 // in the parse handling, so the start index is passed in instead of the curr index. 
-                var result = handler.Parse(input, start);
+                var result = handler.Parse(this, input, start);
                 value = result.result;
                 return result.idx;
             } else if (Handlers.TryGetValue(type, out handler)) {
-                var result = handler.Parse(input, curr);
+                var result = handler.Parse(this, input, curr);
                 value = result.result;
                 return result.idx;
             } else {
                 switch (type) {
-                    case STR_START:
-                        curr -= STR_START.Length;
-                        curr = ReadString(input, curr, out string str);
-                        value = str;
-                        return curr;
-                    case MLS_START:
-                        curr -= MLS_START.Length;
-                        curr = ReadString(input, curr, out string strMLS);
-                        value = strMLS;
-                        return curr;
-                    case TYPE_ARRAY:
-                        if (HasMoreContent(input, curr)) {
-                            curr = GetCurrentLine(input, start, out string line);
-                            Debug.LogWarning($"Array has content beyond '['. Skipping array starting at '{line}'.");
-                            _state = ParseState.SkippingArray;
-                            return curr;
-                        }
-                        return curr;
                     case TYPE_DICT:
                         if (HasMoreContent(input, curr)) {
                             curr = GetCurrentLine(input, start, out string line);
@@ -181,49 +212,69 @@ namespace KH.KVBDSL {
             }
         }
 
+        public int ParseArrayValue(string input, int curr, out object value) {
+            value = null;
+            curr = ReadToNextNonWhitespace(input, curr);
+            if (curr >= input.Length) { // EOF
+                return curr;
+            }
+
+            // Comment
+            if (input[curr] == '#') {
+                curr = ReadToNextLine(input, curr);
+                return curr;
+            }
+
+            return ParseValue(input, curr, out value);
+        }
+
+        public int ParseEntry(string input, int curr, out string key, out object value) {
+            key = null;
+            value = null;
+            curr = ReadToNextNonWhitespace(input, curr);
+            if (curr >= input.Length) { // EOF
+                return curr; 
+            }
+            int lineStart = curr;
+
+            // Comment
+            if (input[curr] == '#') {
+                curr = ReadToNextLine(input, curr);
+                return curr;
+            }
+            curr = ReadKey(input, curr, out key);
+            if (key == null) {
+                curr = ReadToNextLineAndOutputError(input, lineStart, "Improperly formatted line. Should be comment or kvp");
+                return curr;
+            }
+            curr = ReadToNextNonWhitespace(input, curr);
+            if (input.Length <= curr) {
+                curr = ReadToNextLineAndOutputError(input, lineStart, "Unexpected end of file");
+                key = null;
+                return curr;
+            }
+            if (input[curr] != ':') {
+                curr = ReadToNextLineAndOutputError(input, lineStart, "Expected ':' to end key, but other char found");
+                key = null;
+                return curr;
+            }
+            // Move past key separator.
+            ++curr;
+
+            return ParseValue(input, curr, out value);
+        }
+
         public Dictionary<string, object> ParseString(string input) {
-            ParseState state = ParseState.Default;
             Stack<StackType> stack = new Stack<StackType>();
             Dictionary<string, object> output = new Dictionary<string, object>();
 
             int curr = 0;
 
             while (curr < input.Length) {
-                if (state == ParseState.Default) {
-                    curr = ReadToNextNonWhitespace(input, curr);
-                    if (curr >= input.Length) break; // EOF
-                    int lineStart = curr;
-
-                    // Comment
-                    if (input[curr] == '#') {
-                        curr = ReadToNextLine(input, curr);
-                        continue;
-                    }
-                    curr = ReadKey(input, curr, out string key);
-                    if (key == null) {
-                        curr = ReadToNextLineAndOutputError(input, lineStart, "Improperly formatted line. Should be comment or kvp");
-                        continue;
-                    }
-                    curr = ReadToNextNonWhitespace(input, curr);
-                    if (input.Length <= curr) {
-                        curr = ReadToNextLineAndOutputError(input, lineStart, "Unexpected end of file");
-                        continue;
-                    }
-                    if (input[curr] != ':') {
-                        curr = ReadToNextLineAndOutputError(input, lineStart, "Expected ':' to end key, but other char found");
-                        continue;
-                    }
-                    // Move past key separator.
-                    ++curr;
-
-                    curr = ParseValue(input, curr, out object value);
-                    if (value != null) {
-                        output[key] = value;
-                    }
-                } else if (state == ParseState.SkippingArray) {
-                    // TODO:
-                } else if (state == ParseState.SkippingDict) {
-                    // TODO:
+                curr = ParseEntry(input, curr, out string key, out object value);
+                // Theoretically either null check is sufficient
+                if (key != null && value != null) {
+                    output[key] = value;
                 }
             }
             return output;
@@ -231,7 +282,15 @@ namespace KH.KVBDSL {
 
         private static int ReadToNextLineAndOutputError(string input, int lineStart, string msg) {
             int endIdx = GetCurrentLine(input, lineStart, out string line);
-            Debug.LogWarning($"{msg}. Skipping line: '{line}'.");
+            Debug.LogWarning($"{msg}. Skipping line at index {lineStart}: '{line}'.");
+            return endIdx;
+        }
+
+        private static int ReadToNextLineAndOutputError(string input, int lineStart, int curr, string msg) {
+            int endIdx = GetCurrentLine(input, curr, out string line);
+            GetCurrentLine(input, lineStart, out line);
+            
+            Debug.LogWarning($"{msg}. Skipping line at index {lineStart}: '{line}'.");
             return endIdx;
         }
 
@@ -288,6 +347,11 @@ namespace KH.KVBDSL {
                 ++start;
             }
             word = strBuilder.ToString();
+            return start;
+        }
+
+        private static int ReadToNextLineOrNonWhitespace(string input, int start) {
+            while (input.Length > start && input[start] != '\n' && char.IsWhiteSpace(input[start])) ++start;
             return start;
         }
 
