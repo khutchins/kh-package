@@ -32,6 +32,8 @@ namespace KH.KVBDSL {
             AssertString("foo", "foo ");
             AssertString("foo", " foo ");
             AssertString("foo\"", " foo\" ");
+            // This it a '\' followed by a 't', _not_ an escape character.
+            AssertString("\\t", "\\t");
         }
 
         [Test]
@@ -288,8 +290,9 @@ namespace KH.KVBDSL {
             AssertKey(" foo ", "\" foo \"");
             AssertKey(" foo", "\" foo\"");
             AssertKey("foo:bar", "\"foo:bar\"");
-            AssertKey("\"foo\"", "\\\"foo\"");
-            AssertKey("5\n3", "5\\n3");
+            // "\"foo" -> "foo
+            AssertKey("\"foo", "\"\\\"foo\"");
+            AssertKey("5\\n3", "5\\n3");
 
             AssertBadKeyParse("\"foo");
             AssertBadKeyParse("foo:bar");

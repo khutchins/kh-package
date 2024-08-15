@@ -48,7 +48,7 @@ namespace KH.KVBDSL {
             AssertSurvivesRoundTrip(GenerateDict(
                 ("key1", "\nfoo \"\"\" bar"), // \n causes MLS
                 ("key2", "\n\\t"), // \n causes MLS
-                ("key3", "\\t"), // Will use unquoted escaping (this currently is being translated into a '\t' char and trimmed. Need to fix.
+                ("key3", "\\t"), // Will use unquoted escaping
                 ("key4", "\"\\t") // Will use quote escaping
             ));
         }
@@ -156,6 +156,8 @@ namespace KH.KVBDSL {
             // Cases where unquoted strings are preferred.
             AssertExpected("s foo", "foo");
             AssertExpected("s foo\"bar", "foo\"bar");
+            // Notably, here it's _not_ writing an escape character.
+            AssertExpected("s \\t", "\\\\t");
             // Cases where quoted strings are preferred.
             AssertExpected("\"\"", "");
             AssertExpected("\" foo\"", " foo");

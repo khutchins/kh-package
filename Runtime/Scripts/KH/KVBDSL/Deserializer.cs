@@ -572,14 +572,30 @@ namespace KH.KVBDSL {
         }
 
         private static int ReadUnquotedString(string input, int start, out string str) {
-            return ReadAndUnescapeString(input, start, Consts.UNQUOTED_STRING_TERM_CHARS, Consts.ESCAPE_CHAR, Consts.NORMAL_ESCAPE_CHARS, Consts.NORMAL_STRING_ESCAPES, true, out str);
+            return ReadUnquotedString(input, start, Consts.UNQUOTED_STRING_TERM_CHARS, true, out str);
         }
 
         private static int ReadUnquotedKeyString(string input, int start, out string str) {
-            return ReadAndUnescapeString(input, start, Consts.UNQUOTED_KEY_STRING_TERM_CHARS, Consts.ESCAPE_CHAR, Consts.NORMAL_ESCAPE_CHARS, Consts.NORMAL_STRING_ESCAPES, true, out str);
+            return ReadUnquotedString(input, start, Consts.UNQUOTED_KEY_STRING_TERM_CHARS, true, out str);
         }
 
-        
+        private static int ReadUnquotedString(string input, int start, char[] terminatingChars, bool removeTerminatingWhitespace, out string str) {
+            StringBuilder sb = new StringBuilder();
+            int curr = start;
+            for (; input.Length > curr; ++curr) {
+                char currChar = input[curr];
+                if (terminatingChars.Contains(currChar)) {
+                    ++curr;
+                    break;
+                }
+                sb.Append(currChar);
+            }
+            str = sb.ToString();
+            if (removeTerminatingWhitespace) {
+                str = str.TrimEnd();
+            }
+            return curr;
+        }
 
         enum StringParseContext {
             Standard,

@@ -22,6 +22,8 @@ namespace KH.KVBDSL {
         // It is important for the \ to remain at the start of both of these.
         public static readonly char[] NORMAL_ESCAPE_CHARS = new char[] { '\\', '\"', 'b', 'f', 'n', 'r', 't', 'v', };
         public static readonly char[] NORMAL_STRING_ESCAPES = new char[] { '\\', '\"', '\b', '\f', '\n', '\r', '\t', '\v'};
+        public static readonly char[] UNQUOTED_ESCAPE_CHARS = new char[] { };
+        public static readonly char[] UNQUOTED_STRING_ESCAPES = new char[] { };
         public static readonly string WHITESPACE_PRESERVATION_ESCAPE = "\\p";
     }
 }
