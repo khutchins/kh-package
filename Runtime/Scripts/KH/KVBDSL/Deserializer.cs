@@ -1,8 +1,6 @@
-using JetBrains.Annotations;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using System.Text;
@@ -45,16 +43,7 @@ namespace KH.KVBDSL {
             Dictionary
         }
 
-        private const string TYPE_STRING = "s";
-        private const string TYPE_INT = "i";
-        private const string TYPE_FLOAT = "f";
-        private const string TYPE_BOOL = "b";
-        private const string TYPE_ARRAY = "[";
-        private const string TYPE_DICT = "{";
-        private const string MLS_START = "\"\"\"";
-        private const string STR_START = "\"";
-
-        private static readonly TypeHandler IntHandler = new TypeHandler(TYPE_INT, (Deserializer ds, string input, int start) => {
+        private static readonly TypeHandler IntHandler = new TypeHandler(Consts.TYPE_INT, (Deserializer ds, string input, int start) => {
             int curr = ReadToEndOfLine(input, start, out string str);
             object output = null;
             if (int.TryParse(str, NumberStyles.Integer, CultureInfo.InvariantCulture, out int result)) {
@@ -64,7 +53,7 @@ namespace KH.KVBDSL {
             }
             return (curr, output);
         });
-        private static readonly TypeHandler FloatHandler = new TypeHandler(TYPE_FLOAT, (Deserializer ds, string input, int start) => {
+        private static readonly TypeHandler FloatHandler = new TypeHandler(Consts.TYPE_FLOAT, (Deserializer ds, string input, int start) => {
             int curr = ReadToEndOfLine(input, start, out string str);
             object output = null;
             if (float.TryParse(str, NumberStyles.Float, CultureInfo.InvariantCulture, out float result)) {
@@ -74,7 +63,7 @@ namespace KH.KVBDSL {
             }
             return (curr, output);
         });
-        private static readonly TypeHandler BoolHandler = new TypeHandler(TYPE_BOOL, (Deserializer ds, string input, int start) => {
+        private static readonly TypeHandler BoolHandler = new TypeHandler(Consts.TYPE_BOOL, (Deserializer ds, string input, int start) => {
             int curr = ReadToEndOfLine(input, start, out string str);
             object output = null;
             if (bool.TryParse(str, out bool result)) {
@@ -84,7 +73,7 @@ namespace KH.KVBDSL {
             }
             return (curr, output);
         });
-        private static readonly TypeHandler ArrayHandler = new TypeHandler(TYPE_ARRAY, (Deserializer ds, string input, int start) => {
+        private static readonly TypeHandler ArrayHandler = new TypeHandler(Consts.TYPE_ARRAY, (Deserializer ds, string input, int start) => {
             bool hadError = false;
             int curr = ReadToNextLineOrNonWhitespace(input, start);
             if (curr >= input.Length) {
@@ -100,7 +89,7 @@ namespace KH.KVBDSL {
             // We need to read to the next non-whitespace, even though ParseValue already does that,
             // as we're looking for the closing ']'.
             curr = ReadToNextNonWhitespace(input, curr);
-            while (curr < input.Length && input[curr] != ']') {
+            while (curr < input.Length && input[curr] != Consts.TYPE_ARRAY_END) {
                 curr = ds.ParseValue(input, curr, out object value);
                 if (!hadError && value != null) {
                     array.Add(value);
@@ -118,7 +107,7 @@ namespace KH.KVBDSL {
                 curr = ReadToNextLineOrNonWhitespace(input, curr);
                 // If there's more text on the line, fail the parse because honestly, how hard is it?
                 // This one I went back and forth on accepting, as while I can see the case for the parser having
-                // text after the '[' (for singlely typed arrays), I don't see a usecase here. Regardless, it's
+                // text after the '[' (for singlely typed arrays), I don't see a use case here. Regardless, it's
                 // probably an error unless it was a comment, which I may allow later.
                 if (curr < input.Length && input[curr] != '\n') {
                     curr = ReadToNextLineAndOutputError(input, start, curr, "Array has content beyond ']'.");
@@ -132,6 +121,54 @@ namespace KH.KVBDSL {
             if (hadError) return (curr, null);
             else return (curr, array);
         });
+        private static readonly TypeHandler DictionaryHandler = new TypeHandler(Consts.TYPE_DICT, (Deserializer ds, string input, int start) => {
+            bool hadError = false;
+            int curr = ReadToNextLineOrNonWhitespace(input, start);
+            if (curr >= input.Length) {
+                Debug.LogWarning($"Unexpected EOF reading array.");
+            } else if (input[curr] != '\n') {
+                // If the check above didn't read to whitespace, it means that there is text on the same line.
+                curr = ReadToNextLineAndOutputError(input, start, "Dictionary has content beyond '{'.");
+                hadError = true;
+            }
+
+            Dictionary<string, object> dict = new Dictionary<string, object>();
+
+            // We need to read to the next non-whitespace, even though ParseValue already does that,
+            // as we're looking for the closing '}'.
+            curr = ReadToNextNonWhitespace(input, curr);
+            while (curr < input.Length && input[curr] != Consts.TYPE_DICT_END) {
+                curr = ds.ParseEntry(input, curr, out string key, out object value);
+                if (!hadError && key != null && value != null) {
+                    dict[key] = value;
+                }
+                curr = ReadToNextNonWhitespace(input, curr);
+            }
+            // Reached EOF without closing '}'.
+            if (curr >= input.Length) {
+                ReadToNextLineAndOutputError(input, start, curr, "Dictionary has no closing '}'.");
+                hadError = true;
+            } else {
+                // Skip past the '}'.
+                ++curr;
+                // Skip past the '}' line.
+                curr = ReadToNextLineOrNonWhitespace(input, curr);
+                // If there's more text on the line, fail the parse because honestly, how hard is it?
+                // This one I went back and forth on accepting, as while I can see the case for the parser having
+                // text after the '{' (for singlely typed dictionaries), I don't see a use case here. Regardless, it's
+                // probably an error unless it was a comment, which I may allow later.
+                if (curr < input.Length && input[curr] != '\n') {
+                    curr = ReadToNextLineAndOutputError(input, start, curr, "Dictionary has content beyond '}'.");
+                    hadError = true;
+                }
+            }
+
+            // If they got an error here, return nothing. Probably something deeply wrong occurred,
+            // or they were just too lazy to close a terminal dictionary. Either way, teach them the error
+            // of their ways.
+            if (hadError) return (curr, null);
+            else return (curr, dict);
+        });
 
         private static readonly Func<Deserializer, string, int, (int idx, object result)> StringHandlerInternals = (Deserializer ds, string input, int start) => {
             int curr = ReadString(input, start, out string str);
@@ -139,8 +176,8 @@ namespace KH.KVBDSL {
         };
 
         private static readonly TypeHandler StringHandler = new TypeHandler("s", StringHandlerInternals);
-        private static readonly TypeHandler StringHandlerSingleQuote = new TypeHandler("\"", StringHandlerInternals, true);
-        private static readonly TypeHandler StringHandlerTripleQuote = new TypeHandler("\"\"\"", StringHandlerInternals, true);
+        private static readonly TypeHandler StringHandlerSingleQuote = new TypeHandler(Consts.STR_START, StringHandlerInternals, true);
+        private static readonly TypeHandler StringHandlerTripleQuote = new TypeHandler(Consts.MLS_START, StringHandlerInternals, true);
 
 
         public static Dictionary<string, TypeHandler> Handlers = new Dictionary<string, TypeHandler>() {
@@ -151,10 +188,10 @@ namespace KH.KVBDSL {
             { StringHandlerSingleQuote.Type, StringHandlerSingleQuote },
             { StringHandlerTripleQuote.Type, StringHandlerTripleQuote },
             { ArrayHandler.Type, ArrayHandler },
+            { DictionaryHandler.Type, DictionaryHandler },
         };
 
         private List<TypeHandler> _midStringMatchList;
-        private ParseState _state = ParseState.Default;
 
         public Deserializer() { 
             _midStringMatchList = Handlers.Where(x => x.Value.MatchesWithoutWhitespace).Select(x => x.Value).OrderBy(x => x.Type.Length).ToList();
@@ -196,19 +233,8 @@ namespace KH.KVBDSL {
                 value = result.result;
                 return result.idx;
             } else {
-                switch (type) {
-                    case TYPE_DICT:
-                        if (HasMoreContent(input, curr)) {
-                            curr = GetCurrentLine(input, start, out string line);
-                            Debug.LogWarning($"Dict has content beyond '{{'. Skipping dict starting at '{line}'.");
-                            _state = ParseState.SkippingDict;
-                            return curr;
-                        }
-                        return curr;
-                    default:
-                        value = null;
-                        return ReadToNextLineAndOutputError(input, curr, $"Unrecognized type '{type}'");
-                }
+                value = null;
+                return ReadToNextLineAndOutputError(input, curr, $"Unrecognized type '{type}'");
             }
         }
 
@@ -264,8 +290,7 @@ namespace KH.KVBDSL {
             return ParseValue(input, curr, out value);
         }
 
-        public Dictionary<string, object> ParseString(string input) {
-            Stack<StackType> stack = new Stack<StackType>();
+        private Dictionary<string, object> ParseString(string input) {
             Dictionary<string, object> output = new Dictionary<string, object>();
 
             int curr = 0;
@@ -350,6 +375,15 @@ namespace KH.KVBDSL {
             return start;
         }
 
+        private static int ReadPastNextLineOrToNonWhitespace(string input, int start) {
+            while (input.Length > start) {
+                if (input[start] == '\n') return start + 1;
+                if (!char.IsWhiteSpace(input[start])) return start;
+                ++start;
+            }
+            return start;
+        }
+
         private static int ReadToNextLineOrNonWhitespace(string input, int start) {
             while (input.Length > start && input[start] != '\n' && char.IsWhiteSpace(input[start])) ++start;
             return start;
@@ -362,9 +396,9 @@ namespace KH.KVBDSL {
 
         private static int ReadString(string input, int start, out string str) {
             start = ReadToNextNonWhitespace(input, start);
-            if (IsAt(input, start, MLS_START)) {
+            if (IsAt(input, start, Consts.MLS_START)) {
                 return ReadMultiLineString(input, start, out str);
-            } else if (IsAt(input, start, STR_START)) {
+            } else if (IsAt(input, start, Consts.STR_START)) {
                 return ReadQuotedString(input, start, out str);
             } else {
                 return ReadUnquotedString(input, start, out str);
@@ -379,32 +413,166 @@ namespace KH.KVBDSL {
             return i == test.Length;
         }
 
+        private static int MLSStringEnd(string input, int start, string check) {
+            StringParseContext pc = StringParseContext.Standard;
+            int curr = start;
+            int matched = 0;
+
+            int Backtrack(int idx) {
+                while (idx > 0 && char.IsWhiteSpace(input[idx])) {
+                    if (input[idx] == '\n') return idx;
+                    --idx;
+                }
+                return idx + 1;
+            }
+
+            bool CheckProgress(char c) {
+                if (c == check[matched]) {
+                    ++matched;
+                    if (matched == check.Length) {
+                        curr -= check.Length;
+                        return true;
+                    }
+                } else {
+                    matched = 0;
+                }
+                return false;
+            }
+
+            for (; curr < input.Length; curr++) {
+                char currChar = input[curr];
+                if (pc != StringParseContext.InEscape) {
+                    if (currChar == Consts.ESCAPE_CHAR) {
+                        pc = StringParseContext.InEscape;
+                        continue;
+                    }
+                    if (CheckProgress(currChar)) return Backtrack(curr);
+                } else {
+                    // If we're in an escape, we're not matching against the quote.
+                    matched = 0;
+                    pc = StringParseContext.Standard;
+                }
+
+            }
+            return curr;
+        }
+
         private static int ReadMultiLineString(string input, int start, out string str) {
-            start = ReadToNextNonWhitespace(input, start);
-            start += 3;
-            str = null;
-            return start;
+            int curr = ReadToNextNonWhitespace(input, start);
+            curr += Consts.MLS_START.Length;
+            int textStart = curr;
+
+            // Determine the end so that we don't have to worry about overshooting. This is an additional
+            // scan through the whole text. Could optimize later.
+            int end = MLSStringEnd(input, curr, Consts.MLS_START);
+            if (end == -1) {
+                str = null;
+                ReadToNextLineAndOutputError(input, start, "Multi-line string is not terminated.");
+                return input.Length;
+            }
+
+            StringBuilder sb = new StringBuilder();
+            StringParseContext pc = StringParseContext.Standard;
+
+            // First find leading whitespace amount and character.
+            char whitespaceChar = '\0';
+            int whitespaceAmt = int.MaxValue;
+            curr = ReadToNextLine(input, curr); // This may skip the first line, but that's fine at this stage.
+            // Whole string is on one line.
+            if (curr >= end) {
+                whitespaceAmt = 0;
+            }
+            while (curr < end && whitespaceAmt > 0) {
+                int check = ReadPastNextLineOrToNonWhitespace(input, curr);
+                // Only compute starting whitespace if there are characters on the line.
+                // This adds an additional scan through each line, but if performance is an
+                // issue, I can try to fix it later.
+                if (check >= end || input[check] != '\n') {
+                    int wsL = 0;
+                    for (; check < end && wsL < whitespaceAmt; wsL++, check++) {
+                        char currChar = input[check];
+                        if (currChar != '\t' && currChar != ' ') {
+                            break;
+                        }
+                        if (whitespaceChar == '\0') {
+                            whitespaceChar = currChar;
+                        } else if (currChar != whitespaceChar) {
+                            break;
+                        }
+                    }
+                    whitespaceAmt = Mathf.Min(whitespaceAmt, wsL);
+                }
+                curr = ReadToNextLine(input, curr + 1);
+            }
+            if (whitespaceAmt == int.MaxValue) whitespaceAmt = 0;
+
+            curr = textStart;
+            // Skip past introductory whitespace past first newline (or to first non-WS char).
+            curr = ReadPastNextLineOrToNonWhitespace(input, curr);
+            if (curr < end && curr > 0 && input[curr-1] == '\n') curr += whitespaceAmt;
+
+            // Then parse the lines and construct a string.
+            for (int lastNWS = curr; curr < end; curr++) {
+                char currChar = input[curr];
+
+                void AddBeforeEscape() {
+                    sb.Append(input, lastNWS, curr - 1 - lastNWS);
+                    lastNWS = curr + 1;
+                }
+
+                if (pc != StringParseContext.InEscape) {
+                    if (currChar == Consts.ESCAPE_CHAR) {
+                        pc = StringParseContext.InEscape;
+                        continue;
+                    }
+
+                    if (!char.IsWhiteSpace(currChar)) {
+                        sb.Append(input, lastNWS, curr + 1 - lastNWS);
+                        lastNWS = curr + 1;
+                    } else if (currChar == '\n') {
+                        // Skip leading whitespace.
+                        sb.Append(currChar);
+                        curr += whitespaceAmt;
+                        // Skip trailing whitespace.
+                        lastNWS = curr + 1;
+                    }
+                } else {
+                    int escapeCharIdx = Array.IndexOf(Consts.NORMAL_ESCAPE_CHARS, currChar);
+                    if (escapeCharIdx >= 0) {
+                        AddBeforeEscape();
+                        sb.Append(Consts.NORMAL_STRING_ESCAPES[escapeCharIdx]);
+
+                    } else if (currChar == 'p') {
+                        AddBeforeEscape();
+                        // There's nothing to output here.
+                    } else {
+                        // Invalid escape code. Assume they meant literally a '\' and then this character.
+                        Debug.LogWarning($"Attempted to escape invalid escape character {currChar}. Adding both the escape and this character literally.");
+                        sb.Append(Consts.ESCAPE_CHAR);
+                        sb.Append(currChar);
+                    }
+                    pc = StringParseContext.Standard;
+                }
+            }
+
+            str = sb.ToString();
+            return end + Consts.MLS_START.Length + 1;
         }
 
         private static int ReadQuotedString(string input, int start, out string str) {
             start += 1;
-            return ReadAndUnescapeString(input, start, QUOTED_STRING_TERM_CHARS, ESCAPE_CHAR, NORMAL_ESCAPE_CHARS, NORMAL_STRING_ESCAPES, false, out str);
+            return ReadAndUnescapeString(input, start, Consts.QUOTED_STRING_TERM_CHARS, Consts.ESCAPE_CHAR, Consts.NORMAL_ESCAPE_CHARS, Consts.NORMAL_STRING_ESCAPES, false, out str);
         }
 
         private static int ReadUnquotedString(string input, int start, out string str) {
-            return ReadAndUnescapeString(input, start, UNQUOTED_STRING_TERM_CHARS, ESCAPE_CHAR, NORMAL_ESCAPE_CHARS, NORMAL_STRING_ESCAPES, true, out str);
+            return ReadAndUnescapeString(input, start, Consts.UNQUOTED_STRING_TERM_CHARS, Consts.ESCAPE_CHAR, Consts.NORMAL_ESCAPE_CHARS, Consts.NORMAL_STRING_ESCAPES, true, out str);
         }
 
         private static int ReadUnquotedKeyString(string input, int start, out string str) {
-            return ReadAndUnescapeString(input, start, UNQUOTED_KEY_STRING_TERM_CHARS, ESCAPE_CHAR, NORMAL_ESCAPE_CHARS, NORMAL_STRING_ESCAPES, true, out str);
+            return ReadAndUnescapeString(input, start, Consts.UNQUOTED_KEY_STRING_TERM_CHARS, Consts.ESCAPE_CHAR, Consts.NORMAL_ESCAPE_CHARS, Consts.NORMAL_STRING_ESCAPES, true, out str);
         }
 
-        private const char ESCAPE_CHAR = '\\';
-        private static readonly char[] QUOTED_STRING_TERM_CHARS = new char[] { '"', '\n' };
-        private static readonly char[] UNQUOTED_KEY_STRING_TERM_CHARS = new char[] { '\n', ':' };
-        private static readonly char[] UNQUOTED_STRING_TERM_CHARS = new char[] { '\n' };
-        private static readonly char[] NORMAL_ESCAPE_CHARS = new char[] { '\"', '\\', 'b', 'f', 'n', 'r', 't', 'v' };
-        private static readonly char[] NORMAL_STRING_ESCAPES = new char[] { '\"', '\\', '\b', '\f', '\n', '\r', '\t', '\v' };
+        
 
         enum StringParseContext {
             Standard,
@@ -430,7 +598,7 @@ namespace KH.KVBDSL {
                 } else {
                     int escapeCharIdx = Array.IndexOf(escapes, currChar);
                     if (escapeCharIdx >= 0) {
-                        sb.Append(NORMAL_STRING_ESCAPES[escapeCharIdx]);
+                        sb.Append(Consts.NORMAL_STRING_ESCAPES[escapeCharIdx]);
                     } else {
                         // Invalid escape code. Assume they meant literally a '\' and then this character.
                         Debug.LogWarning($"Attempted to escape invalid escape character {currChar}. Adding both the escape and this character literally.");
@@ -466,7 +634,7 @@ namespace KH.KVBDSL {
                 } else {
                     int escapeCharIdx = Array.IndexOf(escapes, escapeChar);
                     if (escapeCharIdx >= 0) {
-                        sb.Append(NORMAL_STRING_ESCAPES[escapeCharIdx]);
+                        sb.Append(Consts.NORMAL_STRING_ESCAPES[escapeCharIdx]);
                     } else {
                         // Invalid escape code. Assume they meant literally a '\' and then this character.
                         Debug.LogWarning($"Attempted to escape invalid escape character {currChar}. Adding both the escape and this character literally.");

@@ -1,15 +1,30 @@
 using NUnit.Framework;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
+using System.Threading;
 
 namespace KH.KVBDSL {
-    public class KVBDSLDeserializerTests  {
+    public class KVBDSLDeserializerTests {
+        CultureInfo _cachedCulture;
+
+        [SetUp]
+        public void Setup() {
+            _cachedCulture = Thread.CurrentThread.CurrentCulture;
+        }
+
+        [TearDown]
+        public void TearDown() {
+            Thread.CurrentThread.CurrentCulture = _cachedCulture;
+        }
+
         [Test]
         public void TestUnquotedString() {
             AssertString("foo", "foo");
             AssertString("foo", "foo ");
             AssertString("foo", " foo ");
+            AssertString("foo\"", " foo\" ");
         }
 
         [Test]
@@ -26,8 +41,76 @@ namespace KH.KVBDSL {
 
         [Test]
         public void TestMLString() {
-            // TODO:
-            Assert.Fail();
+            // Test method automatically adds """ on both ends.
+
+            // Simple string, no modifications.
+            AssertMLS("foo\nbar\nbaz", "foo\nbar\nbaz");
+            // Simple string, leading and trailing newline cleared.
+            AssertMLS("foo\nbar\nbaz", "\nfoo\nbar\nbaz\n");
+            // Simple string, leading spaces cleared.
+            AssertMLS("foo\nbar\nbaz", BootlegMLS(
+                "",
+                "  foo",
+                "  bar",
+                "  baz",
+                ""
+            ));
+            // Simple string, leading tabs cleared.
+            AssertMLS("foo\nbar\nbaz", BootlegMLS(
+                "",
+                "\t\tfoo",
+                "\t\tbar",
+                "\t\tbaz",
+                ""
+            ));
+            // Simple string, variable tabs.
+            AssertMLS("foo\n\tbar\n\tbaz", BootlegMLS(
+                "",
+                "\tfoo",
+                "\t\tbar",
+                "\t\tbaz",
+                ""
+            ));
+            // Simple string, variable spaces.
+            AssertMLS("foo\n bar\n baz", BootlegMLS(
+                "",
+                " foo",
+                "  bar",
+                "  baz",
+                ""
+            ));
+            // Simple string, variable spaces, limiting is at end, no final newline.
+            AssertMLS(" foo\n bar\nbaz", BootlegMLS(
+                "",
+                "  foo",
+                "  bar",
+                " baz"
+            ));
+
+            // Whitespace preserved at end with escape.
+            AssertMLS("foo  ", BootlegMLS(
+                "foo  \\p",
+                ""
+            ));
+
+            // Whitespace preserved at end with escape.
+            AssertMLS("foo  ", BootlegMLS(
+                "foo  \\p"
+            ));
+
+            // Preservation escape is still erased even if not at EOL.
+            AssertMLS("foo  test", BootlegMLS(
+                "foo  \\ptest"
+            ));
+
+            // Escape codes work.
+            AssertMLS("foo\t\nfive", BootlegMLS(
+                "foo\\t\\nfive",
+                ""
+            ));
+
+            // Pathological case. Shouldn't end early.
+            AssertMLS("\"", "\\\"");
         }
 
         [Test]
@@ -58,6 +141,18 @@ namespace KH.KVBDSL {
         }
 
         [Test]
+        public void TestFloatWithCommaSeparatorCulture() {
+            // France uses ',' as a decimal separator.
+            Thread.CurrentThread.CurrentCulture = new CultureInfo("fr-FR");
+
+            // Verify that it's the culture is used by default and formats as ','.
+            Assert.AreEqual(1.5f, float.Parse("1,5"));
+
+            // Verify that the deserializer uses '.' regardless.
+            AssertFloat(1.5f, "1.5");
+        }
+
+        [Test]
         public void TestBool() {
             AssertBool(true, "true");
             AssertBool(true, "TRUE");
@@ -72,12 +167,14 @@ namespace KH.KVBDSL {
 
         [Test]
         public void TestArray() {
+            // Basic example
             // key:[
             // s foo
             // i 5
             // f 3.5
             // ]
             AssertArray(GenerateList("foo", 5, 3.5), GenerateTestArray("s foo", "i 5", "f 3.5"));
+            // Nested array
             // key:[
             // [
             // "foo"
@@ -106,7 +203,63 @@ namespace KH.KVBDSL {
 
         [Test]
         public void TestDictionary() {
-            Assert.Fail();
+            // Basic example.
+            // key:{
+            // key1: s foo
+            // key2: i 5
+            AssertDict(
+                GenerateDict(("key1", "foo"), ("key2", 5)),
+                BootlegMLS("key1:s foo", "key2: i 5"));
+            // Nested dictionary.
+            // key:{
+            // key1: s foo
+            // key2: {
+            //   ik: f 2.5
+            // }
+            // key3: i 5
+            AssertDict(
+                GenerateDict(("key1", "foo"), ("key2", GenerateDict(("ik", 2.5))), ("key3", 5)),
+                BootlegMLS("key1:s foo", $"key2:{BootlegMLS("{", "ik: f 2.5", "}")}", "key3: i 5"));
+
+            // Test no closing '}'
+            AssertBadArrayParse(BootlegMLS("{", "key1: s foo", "key2: i  5"));
+            // Test text after opening '{'
+            AssertBadArrayParse(BootlegMLS("{ hello there", "key1: s foo", "key2: i  5", "}"));
+            // Test text after closing ']'
+            AssertBadArrayParse(BootlegMLS("{", "key1: s foo", "key2: i  5", "} goodbye!"));
+        }
+
+        [Test] public void TestComments() {
+            string file = BootlegMLS(
+                "key1: s foo",
+                " # Hello, I am a comment",
+                "key2: i 2"
+            );
+            var actual = new Deserializer().Parse(file.ToString());
+            var expected = GenerateDict(("key1", "foo"), ("key2", 2));
+            Assert.AreEqual(expected, actual);
+
+            file = BootlegMLS(
+                "key1: [",
+                " s foo",
+                " # Hello, I am a comment",
+                " s bar",
+                "]"
+            );
+            actual = new Deserializer().Parse(file.ToString());
+            expected = GenerateDict(("key1", GenerateList("foo", "bar")));
+            Assert.AreEqual(expected, actual);
+
+            file = BootlegMLS(
+                "key1: {",
+                " k1: s foo",
+                " # Hello, I am a comment",
+                " k2: s bar",
+                "}"
+            );
+            actual = new Deserializer().Parse(file.ToString());
+            expected = GenerateDict(("key1", GenerateDict(("k1", "foo"), ("k2", "bar"))));
+            Assert.AreEqual(expected, actual);
         }
 
         [Test]
@@ -149,6 +302,10 @@ namespace KH.KVBDSL {
             file.AppendLine("  s foo");
             file.AppendLine("  i 5");
             file.AppendLine("]");
+            file.AppendLine("key7:{");
+            file.AppendLine("  key7a:s foo");
+            file.AppendLine("  key7b:i 5");
+            file.AppendLine("}");
             file.AppendLine("key999:i 1");
             Dictionary<string, object> expected = new Dictionary<string, object>();
             expected["key0"] = 1;
@@ -159,25 +316,31 @@ namespace KH.KVBDSL {
             expected["key4"] = 43289.5;
             expected["key5"] = true;
             expected["key6"] = GenerateList("foo", 5);
+            expected["key7"] = GenerateDict(("key7a", "foo"), ("key7b", 5));
             expected["key999"] = 1;
 
-            var actual = new Deserializer().ParseString(file.ToString());
+            var actual = new Deserializer().Parse(file.ToString());
             Assert.AreEqual(expected, actual);
         }
 
         private static void AssertBadKeyParse(string testKey) {
             Deserializer deserializer = new Deserializer();
-            Assert.AreEqual(new Dictionary<string, object>(), deserializer.ParseString($"{testKey}:s foo"));
+            Assert.AreEqual(new Dictionary<string, object>(), deserializer.Parse($"{testKey}:s foo"));
         }
 
         private static void AssertBadParse(string typeAndValue) {
             Deserializer deserializer = new Deserializer();
-            Assert.AreEqual(new Dictionary<string, object>(), deserializer.ParseString($"foo:{typeAndValue}"));
+            Assert.AreEqual(new Dictionary<string, object>(), deserializer.Parse($"foo:{typeAndValue}"));
         }
 
         private static void AssertBadArrayParse(string arrayValue) {
             Deserializer deserializer = new Deserializer();
-            Assert.AreEqual(new Dictionary<string, object>(), deserializer.ParseString($"foo:{arrayValue}"));
+            Assert.AreEqual(new Dictionary<string, object>(), deserializer.Parse($"foo:{arrayValue}"));
+        }
+
+        private static void AssertBadDictionaryParse(string dictValue) {
+            Deserializer deserializer = new Deserializer();
+            Assert.AreEqual(new Dictionary<string, object>(), deserializer.Parse($"foo:{dictValue}"));
         }
 
         private static void AssertKey(string expectedKey, string testKey) {
@@ -186,6 +349,10 @@ namespace KH.KVBDSL {
 
         private static void AssertString(string expectedStr, string testStr) {
             SimpleDictAssert($"key:s {testStr}", "key", expectedStr);
+        }
+
+        private static void AssertMLS(string expectedStr, string testStr) {
+            SimpleDictAssert($"key: \"\"\"{testStr}\"\"\"", "key", expectedStr);
         }
 
         private static void AssertInt(int expected, string testStr) {
@@ -204,6 +371,10 @@ namespace KH.KVBDSL {
             SimpleDictAssert($"key:s \"{testStr}\"", "key", expectedStr);
         }
 
+        private static void AssertDict(Dictionary<string, object> expected, string testStr) {
+            SimpleDictAssert($"key:{{\n{testStr}\n}}", "key", expected);
+        }
+
         private static void AssertArray(List<object> expected, string testStr) {
             SimpleDictAssert($"key:[\n{testStr}\n]", "key", expected);
         }
@@ -212,16 +383,27 @@ namespace KH.KVBDSL {
             return arr.ToList();
         }
 
+        private static Dictionary<string, object> GenerateDict(params (string key, object value)[] values) {
+            Dictionary<string, object> dict = new Dictionary<string, object>();
+            foreach (var value in values) {
+                dict[value.key] = value.value;
+            }
+            return dict;
+        }
+
+        private static string BootlegMLS(params string[] lines) {
+            return string.Join("\n", lines);
+        }
+
         private static string GenerateTestArray(params string[] values) {
             return string.Join('\n', values);
         }
 
         private static void SimpleDictAssert(string file, string key, object value) {
             Deserializer deserializer = new Deserializer();
-            Dictionary<string, object> expected = new Dictionary<string, object>();
-            expected[key] = value;
-            Dictionary<string, object> actual = deserializer.ParseString(file);
-            Assert.AreEqual(expected, actual);
+            Dictionary<string, object> actual = deserializer.Parse(file);
+            Assert.True(actual.ContainsKey(key));
+            Assert.AreEqual(value, actual[key]);
         }
     }
 }
