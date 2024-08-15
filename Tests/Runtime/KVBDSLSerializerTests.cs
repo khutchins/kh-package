@@ -1,4 +1,4 @@
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
@@ -156,14 +156,16 @@ namespace KH.KVBDSL {
             // Cases where unquoted strings are preferred.
             AssertExpected("s foo", "foo");
             AssertExpected("s foo\"bar", "foo\"bar");
+            AssertExpected("s 測試字串", "測試字串");
             // Notably, here it's _not_ writing an escape character.
-            AssertExpected("s \\t", "\\\\t");
+            AssertExpected("s \\t", "\\t");
             // Cases where quoted strings are preferred.
             AssertExpected("\"\"", "");
             AssertExpected("\" foo\"", " foo");
             AssertExpected("\"foo \"", "foo ");
             AssertExpected("\" foo \"", " foo ");
             AssertExpected("\" foo \"", " foo ");
+            AssertExpected("\"測試字串 \"", "測試字串 ");
             AssertExpected("\"\\\"foo\\\"\"", "\"foo\"");
             AssertExpected("\"\\\"\\\\\\\b\\\f\\\n\\\r\\\t\\\v\"", "\"\\\b\f\n\r\t\v", Serializer.Options.DisableMLS);
             // Cases where MLS is preferred.
@@ -179,6 +181,7 @@ namespace KH.KVBDSL {
             AssertMLS("\n\\\\", "\n\\");
             // Single backslashes should not find themselves escaping the following unescaped letter.
             AssertMLS("\n\\\\t", "\n\\t");
+            AssertMLS("\n測試字串", "\n測試字串");
         }
 
         void AssertSurvivesRoundTrip(Dictionary<string, object> dict) {

@@ -1,4 +1,4 @@
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -32,6 +32,7 @@ namespace KH.KVBDSL {
             AssertString("foo", "foo ");
             AssertString("foo", " foo ");
             AssertString("foo\"", " foo\" ");
+            AssertString("測試字串", "測試字串");
             // This it a '\' followed by a 't', _not_ an escape character.
             AssertString("\\t", "\\t");
         }
@@ -43,6 +44,7 @@ namespace KH.KVBDSL {
             AssertQuotedString("foo ", "foo ");
             AssertQuotedString(" foo ", " foo ");
             AssertQuotedString(" foo", " foo");
+            AssertQuotedString("測試字串", "測試字串");
 
             // Test string key with no type but opening ".
             SimpleDictAssert("key:\"foo\"", "key", "foo");
@@ -119,7 +121,9 @@ namespace KH.KVBDSL {
                 ""
             ));
 
-            // Pathological case. Shouldn't end early.
+            AssertMLS("測試字串", BootlegMLS("測試字串"));
+
+            // Pathological case. Shouldn't end early. Probably more of an issue on the serialization side.
             AssertMLS("\"", "\\\"");
 
             // Handles \r\n properly (by stripping the \r).
@@ -293,6 +297,7 @@ namespace KH.KVBDSL {
             // "\"foo" -> "foo
             AssertKey("\"foo", "\"\\\"foo\"");
             AssertKey("5\\n3", "5\\n3");
+            AssertKey("測試字串", "測試字串");
 
             AssertBadKeyParse("\"foo");
             AssertBadKeyParse("foo:bar");
