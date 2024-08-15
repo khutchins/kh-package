@@ -64,7 +64,7 @@ namespace KH.KVBDSL {
                 foreach (var str in value.Split('\n')) {
                     if (str.Length > 0) {
                         AppendIndent(sb, indent + 1);
-                        sb.Append(str.Replace(Consts.MLS_START, "\\\"\\\"\\\""));
+                        sb.Append(str.Replace("\\", "\\\\").Replace(Consts.MLS_START, "\\\"\\\"\\\""));
                         if (char.IsWhiteSpace(str[str.Length - 1])) sb.Append(Consts.WHITESPACE_PRESERVATION_ESCAPE);
                     }
                     sb.Append('\n');

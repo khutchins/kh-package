@@ -592,9 +592,18 @@ namespace KH.KVBDSL {
             int curr = start;
             for (; input.Length > curr; ++curr) {
                 char currChar = input[curr];
-                if (Array.IndexOf(terminatingChars, currChar) != -1) {
-                    ++curr;
-                    break;
+                if (terminatingChars.Contains(currChar)) {
+                    if (escapeLiterals.Contains(currChar)) {
+                        // If it's an escapable terminal, make sure that
+                        // it isn't currently being escaped.
+                        if (pc == StringParseContext.Standard) {
+                            ++curr;
+                            break;
+                        }
+                    } else {
+                        ++curr;
+                        break;
+                    }
                 }
                 if (pc != StringParseContext.InEscape) {
                     if (currChar == escapeChar) {

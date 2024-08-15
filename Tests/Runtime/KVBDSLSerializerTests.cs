@@ -33,6 +33,27 @@ namespace KH.KVBDSL {
         }
 
         [Test]
+        public void TestRoundTrip() {
+            Dictionary<string, object> values = new Dictionary<string, object>();
+            values["key1"] = "foo";
+            values["key2"] = 5;
+            values["key3"] = false;
+            values["key4"] = 5.5f;
+            values["key5"] = GenerateList("foo", 5);
+            values["key6"] = GenerateDict(("key6a", 5), ("key6b", 2.5f));
+            values["key7"] = "\nfoo";
+            AssertSurvivesRoundTrip(values);
+
+            // Check that escapes happen correctly with items translated into multi-line strings.
+            AssertSurvivesRoundTrip(GenerateDict(
+                ("key1", "\nfoo \"\"\" bar"), // \n causes MLS
+                ("key2", "\n\\t"), // \n causes MLS
+                ("key3", "\\t"), // Will use unquoted escaping (this currently is being translated into a '\t' char and trimmed. Need to fix.
+                ("key4", "\"\\t") // Will use quote escaping
+            ));
+        }
+
+        [Test]
         public void TestGeneral() {
             Dictionary<string, object> values = new Dictionary<string, object>();
             values["key1"] = "foo";
@@ -41,6 +62,7 @@ namespace KH.KVBDSL {
             values["key4"] = 5.5f;
             values["key5"] = GenerateList("foo", 5);
             values["key6"] = GenerateDict(("key6a", 5), ("key6b", 2.5f));
+            values["key7"] = "\nfoo";
 
             Assert.AreEqual(BootlegMLS(
                 "key1: s foo",
@@ -55,6 +77,10 @@ namespace KH.KVBDSL {
                 "key6a: i 5",
                 "key6b: f 2.5",
                 "}",
+                "key7: \"\"\"",
+                "",
+                "foo",
+                "\"\"\"",
                 ""
             ), new Serializer().Serialize(values));
         }
@@ -139,13 +165,28 @@ namespace KH.KVBDSL {
             AssertExpected("\"\\\"foo\\\"\"", "\"foo\"");
             AssertExpected("\"\\\"\\\\\\\b\\\f\\\n\\\r\\\t\\\v\"", "\"\\\b\f\n\r\t\v", Serializer.Options.DisableMLS);
             // Cases where MLS is preferred.
-            AssertExpected("\"\"\"\n1\n2\n\"\"\"", "1\n2");
+            AssertMLS("1\n2", "1\n2");
             // Should preserve the whitespace after the 1 by placing in a \p.
-            AssertExpected("\"\"\"\n1  \\p\n2\n\"\"\"", "1  \n2");
+            AssertMLS("1  \\p\n2", "1  \n2");
             // Should escape any three quotes in a row. Could be a bit smarter about it
             // by tactically encoding quotes, but that feels messier. Shouldn't come up
             // much anyway.
-            AssertExpected("\"\"\"\n\n\\\"\\\"\\\"\"\"\n\"\"\"", "\n\"\"\"\"\"");
+            AssertMLS("\n\\\"\\\"\\\"\"\"", "\n\"\"\"\"\"");
+            // Single backslashes should get encoded, as otherwise they could accidentally
+            // escape some other symbols while being decoded.
+            AssertMLS("\n\\\\", "\n\\");
+            // Single backslashes should not find themselves escaping the following unescaped letter.
+            AssertMLS("\n\\\\t", "\n\\t");
+        }
+
+        void AssertSurvivesRoundTrip(Dictionary<string, object> dict) {
+            string serialized = new Serializer().Serialize(dict);
+            var deserialized = new Deserializer().Parse(serialized);
+            Assert.AreEqual(dict, deserialized);
+        }
+
+        void AssertMLS(string innerExpected, string valueToEncode) {
+            AssertExpected($"\"\"\"\n{innerExpected}\n\"\"\"", valueToEncode);
         }
 
         void AssertKey(string expectedEncoding, string key) {
