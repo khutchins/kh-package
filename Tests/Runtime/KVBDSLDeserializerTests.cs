@@ -20,6 +20,13 @@ namespace KH.KVBDSL {
         }
 
         [Test]
+        public void TestSimpleStringTypes() {
+            AssertValue("foo", "s foo");
+            AssertValue("foo", "s \"foo\"");
+            AssertValue("foo", "s \"\"\"\nfoo\"\"\"");
+        }
+
+        [Test]
         public void TestUnquotedString() {
             AssertString("foo", "foo");
             AssertString("foo", "foo ");
@@ -46,10 +53,9 @@ namespace KH.KVBDSL {
             // Simple string, no modifications.
             AssertMLS("foo\nbar\nbaz", "foo\nbar\nbaz");
             // Simple string, leading and trailing newline cleared.
-            AssertMLS("foo\nbar\nbaz", "\nfoo\nbar\nbaz\n");
+            AssertMLS("foo\nbar\nbaz", "foo\nbar\nbaz\n");
             // Simple string, leading spaces cleared.
             AssertMLS("foo\nbar\nbaz", BootlegMLS(
-                "",
                 "  foo",
                 "  bar",
                 "  baz",
@@ -57,7 +63,6 @@ namespace KH.KVBDSL {
             ));
             // Simple string, leading tabs cleared.
             AssertMLS("foo\nbar\nbaz", BootlegMLS(
-                "",
                 "\t\tfoo",
                 "\t\tbar",
                 "\t\tbaz",
@@ -65,7 +70,6 @@ namespace KH.KVBDSL {
             ));
             // Simple string, variable tabs.
             AssertMLS("foo\n\tbar\n\tbaz", BootlegMLS(
-                "",
                 "\tfoo",
                 "\t\tbar",
                 "\t\tbaz",
@@ -73,7 +77,6 @@ namespace KH.KVBDSL {
             ));
             // Simple string, variable spaces.
             AssertMLS("foo\n bar\n baz", BootlegMLS(
-                "",
                 " foo",
                 "  bar",
                 "  baz",
@@ -81,7 +84,6 @@ namespace KH.KVBDSL {
             ));
             // Simple string, variable spaces, limiting is at end, no final newline.
             AssertMLS(" foo\n bar\nbaz", BootlegMLS(
-                "",
                 "  foo",
                 "  bar",
                 " baz"
@@ -93,7 +95,7 @@ namespace KH.KVBDSL {
                 ""
             ));
 
-            // Whitespace preserved at end with escape.
+            // Whitespace preserved at end no extra end newline with escape.
             AssertMLS("foo  ", BootlegMLS(
                 "foo  \\p"
             ));
@@ -109,8 +111,21 @@ namespace KH.KVBDSL {
                 ""
             ));
 
+            // Escape codes signalling whitespace are not removed at EOL.
+            AssertMLS("foo \t\n", BootlegMLS(
+                "foo \\t\\n",
+                ""
+            ));
+
             // Pathological case. Shouldn't end early.
             AssertMLS("\"", "\\\"");
+
+            // Handles \r\n properly (by stripping the \r).
+            SimpleDictAssert($"key: \"\"\"\r\n foo\r\n bar\"\"\"", "key", "foo\nbar");
+
+            AssertBadParse("\"\"\" same line mls doesn't work! \"\"\"");
+            AssertBadParse("\"\"\"\nThis has no closer.");
+            AssertBadParse("\"\"\"\nThis has no closer but kind of looks like it does due to an escape. \\\"\"\"");
         }
 
         [Test]
@@ -306,6 +321,9 @@ namespace KH.KVBDSL {
             file.AppendLine("  key7a:s foo");
             file.AppendLine("  key7b:i 5");
             file.AppendLine("}");
+            file.AppendLine("key8: \"\"\"");
+            file.AppendLine("  this is");
+            file.AppendLine("  some ok text. \"\"\"");
             file.AppendLine("key999:i 1");
             Dictionary<string, object> expected = new Dictionary<string, object>();
             expected["key0"] = 1;
@@ -317,6 +335,7 @@ namespace KH.KVBDSL {
             expected["key5"] = true;
             expected["key6"] = GenerateList("foo", 5);
             expected["key7"] = GenerateDict(("key7a", "foo"), ("key7b", 5));
+            expected["key8"] = "this is\nsome ok text.";
             expected["key999"] = 1;
 
             var actual = new Deserializer().Parse(file.ToString());
@@ -347,12 +366,16 @@ namespace KH.KVBDSL {
             SimpleDictAssert($"{testKey}: s 123", expectedKey, "123");
         }
 
+        private static void AssertValue(object expectedValue, string typeAndValue) {
+            SimpleDictAssert($"key:{typeAndValue}", "key", expectedValue);
+        }
+
         private static void AssertString(string expectedStr, string testStr) {
             SimpleDictAssert($"key:s {testStr}", "key", expectedStr);
         }
 
         private static void AssertMLS(string expectedStr, string testStr) {
-            SimpleDictAssert($"key: \"\"\"{testStr}\"\"\"", "key", expectedStr);
+            SimpleDictAssert($"key: \"\"\"\n{testStr}\"\"\"", "key", expectedStr);
         }
 
         private static void AssertInt(int expected, string testStr) {

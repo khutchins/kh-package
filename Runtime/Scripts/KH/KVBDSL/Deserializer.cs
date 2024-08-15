@@ -454,21 +454,33 @@ namespace KH.KVBDSL {
                 }
 
             }
-            return curr;
+            return -1;
         }
 
         private static int ReadMultiLineString(string input, int start, out string str) {
             int curr = ReadToNextNonWhitespace(input, start);
             curr += Consts.MLS_START.Length;
+
             int textStart = curr;
+            str = null;
 
             // Determine the end so that we don't have to worry about overshooting. This is an additional
             // scan through the whole text. Could optimize later.
             int end = MLSStringEnd(input, curr, Consts.MLS_START);
             if (end == -1) {
-                str = null;
                 ReadToNextLineAndOutputError(input, start, "Multi-line string is not terminated.");
                 return input.Length;
+            }
+
+            // Move past opening line.
+            textStart = curr = ReadToNextLineOrNonWhitespace(input, curr);
+            if (curr >= input.Length) {
+                curr = ReadToNextLineAndOutputError(input, start, "Unexpected EOF reading multi-line string.");
+                return curr;
+            } else if (input[curr] != '\n') {
+                // If the check above didn't read to whitespace, it means that there is text on the same line.
+                curr = ReadToNextLineAndOutputError(input, start, "Multi-line string has content on opening line beyond '\"\"\"'.");
+                return end + Consts.MLS_START.Length + 1;
             }
 
             StringBuilder sb = new StringBuilder();
@@ -477,11 +489,7 @@ namespace KH.KVBDSL {
             // First find leading whitespace amount and character.
             char whitespaceChar = '\0';
             int whitespaceAmt = int.MaxValue;
-            curr = ReadToNextLine(input, curr); // This may skip the first line, but that's fine at this stage.
-            // Whole string is on one line.
-            if (curr >= end) {
-                whitespaceAmt = 0;
-            }
+
             while (curr < end && whitespaceAmt > 0) {
                 int check = ReadPastNextLineOrToNonWhitespace(input, curr);
                 // Only compute starting whitespace if there are characters on the line.
@@ -506,9 +514,8 @@ namespace KH.KVBDSL {
             }
             if (whitespaceAmt == int.MaxValue) whitespaceAmt = 0;
 
-            curr = textStart;
-            // Skip past introductory whitespace past first newline (or to first non-WS char).
-            curr = ReadPastNextLineOrToNonWhitespace(input, curr);
+            // Move past opening newline.
+            curr = textStart + 1;
             if (curr < end && curr > 0 && input[curr-1] == '\n') curr += whitespaceAmt;
 
             // Then parse the lines and construct a string.
