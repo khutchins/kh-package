@@ -42,6 +42,7 @@ namespace KH.KVBDSL {
             values["key5"] = GenerateList("foo", 5);
             values["key6"] = GenerateDict(("key6a", 5), ("key6b", 2.5f));
             values["key7"] = "\nfoo";
+            values["foo bar"] = 32;
             AssertSurvivesRoundTrip(values);
 
             // Check that escapes happen correctly with items translated into multi-line strings.
@@ -146,6 +147,7 @@ namespace KH.KVBDSL {
         [Test]
         public void TestKeyEscaping() {
             AssertKey("foo", "foo");
+            AssertKey("foo bar", "foo bar");
             AssertKey("\"fo:o\"", "fo:o");
             AssertKey("\"\\\"foo\\\"\"", "\"foo\"");
             AssertKey("\"\\\"\\\\\\\b\\\f\\\n\\\r\\\t\\\v\"", "\"\\\b\f\n\r\t\v");

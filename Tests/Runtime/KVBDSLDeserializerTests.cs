@@ -294,13 +294,21 @@ namespace KH.KVBDSL {
             AssertKey(" foo ", "\" foo \"");
             AssertKey(" foo", "\" foo\"");
             AssertKey("foo:bar", "\"foo:bar\"");
+            AssertKey("foo bar", "foo bar");
             // "\"foo" -> "foo
             AssertKey("\"foo", "\"\\\"foo\"");
             AssertKey("5\\n3", "5\\n3");
             AssertKey("測試字串", "測試字串");
 
-            AssertBadKeyParse("\"foo");
+            // No : allowed in unquoted strings.
             AssertBadKeyParse("foo:bar");
+            // No \n allowed in keys.
+            AssertBadKeyParse("foo\nbar");
+            AssertBadKeyParse("\"foo\nbar\"");
+            // No closing quote.
+            AssertBadKeyParse("\"foo");
+            
+            
         }
 
         [Test]
