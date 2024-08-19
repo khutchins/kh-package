@@ -4,7 +4,13 @@ using System.Collections.Generic;
 using UnityEngine;
 
 namespace KH.Infinite {
-    public class ChunkManager<T> where T : ChunkInfo {
+    public interface IChunkManager {
+        void SetRadius(int create, int cleanup);
+        void Update(Vector2Long position);
+        IEnumerator CleanupCoroutine();
+    }
+
+    public class ChunkManager<T> : IChunkManager where T : ChunkInfo {
 
         private Func<ChunkLocation, T> _infoGenerator;
         private Func<Vector2Int, T, object> _chunkGenerator;
@@ -70,6 +76,22 @@ namespace KH.Infinite {
                 _chunkCache[key] = info;
             }
             return _chunkCache[key];
+        }
+
+        /// <summary>
+        /// Returns the first chunk info found for the location in otherManager.
+        /// </summary>
+        /// <param name="otherManager">The manager to do a lookup on.</param>
+        /// <param name="location">The location to look up, in the coordinate space of THIS chunk manager.</param>
+        /// <returns>The first chunk info for the given location. Could match multiple if going from a bigger chunk size to a smaller one.</returns>
+        public U LookupChunkInfo<U>(ChunkManager<U> otherManager, ChunkLocation location) where U : ChunkInfo {
+            double xLoc = location.Key.x * _smallestUnit.x;
+            double yLoc = location.Key.y * _smallestUnit.y;
+            return otherManager.ChunkInfoForWorldSpace(xLoc, yLoc);
+        }
+
+        public T ChunkInfoForWorldSpace(double xLoc, double yLoc) {
+            return EnsureChunkForPointInternal(new Vector2Long((long)xLoc, (long)yLoc));
         }
 
         public T ChunkInfoWithOffset(ChunkLocation loc, Vector2Long offset) {

@@ -48,10 +48,9 @@ namespace KH.Infinite {
         public Vector2Long Bound4 { get => new Vector2Long(Bound2.x, Bound1.y); }
 
         public bool InRange(Vector2Long pos, float distance) {
-            return Vector2Long.Distance(pos, Bound1) <= distance
-                || Vector2Long.Distance(pos, Bound2) <= distance
-                || Vector2Long.Distance(pos, Bound3) <= distance
-                || Vector2Long.Distance(pos, Bound4) <= distance;
+            int dx = (int)Mathf.Max(Bound1.x - pos.x, 0, pos.x - Bound2.x);
+            int dy = (int)Mathf.Max(Bound1.y - pos.y, 0, pos.y - Bound2.y);
+            return (dx * dx + dy * dy) <= distance * distance;
         }
     }
 }
