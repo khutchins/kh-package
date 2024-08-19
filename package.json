@@ -27,6 +27,11 @@
       "path": "Samples~/Credits"
     },
     {
+      "displayName": "Infinite Generation",
+      "description": "Sample implementation of infinite generation.",
+      "path": "Samples~/InfGen"
+    },
+    {
       "displayName": "Note System",
       "description": "Sample implementation of a note reader.",
       "path": "Samples~/Notes"
