@@ -285,6 +285,7 @@ namespace KH.KVBDSL {
 
         [Test]
         public void TestKeyParse() {
+            AssertKey("", "");
             AssertKey("foo", "foo");
             AssertKey("foo", "foo ");
             AssertKey("foo", " foo");
@@ -302,9 +303,11 @@ namespace KH.KVBDSL {
 
             // No : allowed in unquoted strings.
             AssertBadKeyParse("foo:bar");
-            // No \n allowed in keys.
-            AssertBadKeyParse("foo\nbar");
-            AssertBadKeyParse("\"foo\nbar\"");
+            // No \n allowed in keys. Can't just test for bad key parse here, as
+            // foo will be discarded for being an incomplete entry, and the value
+            // will be attached to bar.
+            SimpleDictAssert("foo\nbar: i 5", "bar", 5);
+            SimpleDictAssert("\"foo\nbar\": i 5", "bar\"", 5);
             // No closing quote.
             AssertBadKeyParse("\"foo");
             
