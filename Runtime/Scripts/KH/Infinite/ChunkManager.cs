@@ -134,19 +134,37 @@ namespace KH.Infinite {
             return true;
         }
 
+        /// <summary>
+        /// Cleans up all chunks that are out of range. You shouldn't use this
+        /// directly, as it could potentially take a long time. Use CleanupCoroutine
+        /// instead.
+        /// </summary>
+        public void ForceCleanupAll() {
+            for (int i = 0; i < _chunkInfoList.Count; i++) {
+                T info = _chunkInfoList[i];
+                if (!info.Location.InRange(_lastPos, _cleanup)) {
+                    Cleanup(i, info);
+                    i--;
+                }
+            }
+        }
+
+        private void Cleanup(int idx, T info) {
+            _chunkCache.Remove(info.Location.Key);
+            _chunkInfoList.RemoveAt(idx);
+            if (info.IsGenerated) {
+                _clearer?.Invoke(info);
+                info.IsGenerated = false;
+            }
+        }
+
         public IEnumerator CleanupCoroutine() {
             while (true) {
                 int clears = 0;
                 for (int i = 0; i < _chunkInfoList.Count; i++) {
                     T info = _chunkInfoList[i];
-                    if (Vector2Long.Distance(_lastPos, info.Location.Bound1) > _cleanup
-                        && Vector2Long.Distance(_lastPos, info.Location.Bound2) > _cleanup) {
-                        _chunkCache.Remove(info.Location.Key);
-                        _chunkInfoList.RemoveAt(i);
-                        if (info.IsGenerated) {
-                            _clearer?.Invoke(info);
-                            info.IsGenerated = false;
-                        }
+                    if (info.Location.InRange(_lastPos, _cleanup)) {
+                        Cleanup(i, info);
                         i--;
                         // Don't want it to hang on clearing. Not sure if that'll happen, but hey, whatever.
                         clears++;
