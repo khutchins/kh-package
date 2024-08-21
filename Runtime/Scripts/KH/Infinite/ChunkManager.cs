@@ -45,19 +45,39 @@ namespace KH.Infinite {
             _cleanup = cleanup;
         }
 
+        /// <summary>
+        /// Create chunks based on the updated player position. The position is in world space, but
+        /// with no y-component and the x and z components floored and put into a Vector2Long. I should
+        /// probably change this to take in a Vector2Double type.
+        /// </summary>
+        /// <param name="position"></param>
         public void Update(Vector2Long position) {
             _lastPos = position;
-            for (long x = position.x - _create; x <= position.x + _create; x += _smallestUnit.x / 2) {
-                for (long y = position.y - _create; y <= position.y + _create; y += _smallestUnit.y / 2) {
-                    EnsureChunkForPointInternal(new Vector2Long(x, y));
+            double px = _lastPos.x * 1.0 / _smallestUnit.x;
+            double py = _lastPos.y * 1.0 / _smallestUnit.y;
+            double cx = _create * 1.0 / _smallestUnit.x;
+            double cy = _create * 1.0 / _smallestUnit.y;
+
+            long sx = (long)Math.Floor(px - cx);
+            long ex = (long)Math.Floor(px + cx);
+            long sy = (long)Math.Floor(py - cy);
+            long ey = (long)Math.Floor(py + cy);
+            Vector2Long curr = new Vector2Long(sx, sy);
+            for (curr.x = sx; curr.x <= ex; curr.x++) {
+                for (curr.y = sy; curr.y <= ey; curr.y++) {
+                    EnsureChunkForPointInternalInKeySpace(curr);
                 }
             }
         }
 
         private T EnsureChunkForPointInternal(Vector2Long point) {
             Vector2Long key = point.DivideAndFloor(_smallestUnit);
+            return EnsureChunkForPointInternalInKeySpace(key);
+        }
 
-            T info = EnsureChunkInfo(key);
+        private T EnsureChunkForPointInternalInKeySpace(Vector2Long pointInKeySpace) {
+
+            T info = EnsureChunkInfo(pointInKeySpace);
 
             // Only actually generate the chunk if it's in bounds.
             if (!info.IsGenerated && info.Location.InRange(_lastPos, _create)) {
