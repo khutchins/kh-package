@@ -163,7 +163,7 @@ namespace KH.Infinite {
                 int clears = 0;
                 for (int i = 0; i < _chunkInfoList.Count; i++) {
                     T info = _chunkInfoList[i];
-                    if (info.Location.InRange(_lastPos, _cleanup)) {
+                    if (!info.Location.InRange(_lastPos, _cleanup)) {
                         Cleanup(i, info);
                         i--;
                         // Don't want it to hang on clearing. Not sure if that'll happen, but hey, whatever.
