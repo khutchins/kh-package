@@ -15,6 +15,7 @@ namespace KH.Infinite {
         private Func<ChunkLocation, T> _infoGenerator;
         private Func<Vector2Int, T, object> _chunkGenerator;
         private Action<T> _clearer;
+        private Action<T> _chunkClearer;
         private int _cleanup = 200;
         private int _create = 100;
         private Vector2Long _lastPos = Vector2Long.zero;
@@ -37,6 +38,10 @@ namespace KH.Infinite {
 
         public void SetChunkClearer(Action<T> clearer) {
             _clearer = clearer;
+        }
+
+        public void SetInfoClearer(Action<T> clearer) {
+            _chunkClearer = clearer;
         }
 
         public void SetRadius(int create, int cleanup) {
@@ -156,6 +161,7 @@ namespace KH.Infinite {
                 _clearer?.Invoke(info);
                 info.IsGenerated = false;
             }
+            _chunkClearer?.Invoke(info);
         }
 
         public IEnumerator CleanupCoroutine() {

@@ -43,10 +43,12 @@ namespace KH.Infinite {
             );
             // Shouldn't clean up anything.
             manager.ExpectChunkCleanupLocations();
+            manager.ExpectInfoCleanupLocations();
 
             manager.UpdateWithCleanup(new Vector2Long(5, 5));
             manager.AssertAllExpectedInfosGenerated();
             manager.AssertAllExpectedChunksCleared();
+            manager.AssertAllExpectedInfosCleared();
         }
 
         [Test]
@@ -65,11 +67,47 @@ namespace KH.Infinite {
             );
             // Shouldn't clean up anything.
             manager.ExpectChunkCleanupLocations();
+            manager.ExpectInfoCleanupLocations();
 
             // Should not generate -200, -200, as the closest corner (0, 0) is > 10 away from (9, 9).
             manager.UpdateWithCleanup(new Vector2Long(9, 9));
             manager.AssertAllExpectedChunksGenerated();
             manager.AssertAllExpectedChunksCleared();
+            manager.AssertAllExpectedInfosCleared();
+        }
+
+        [Test]
+        public void BasicCleanup() {
+            var manager = new TestChunkManager(new Vector2Int(200, 200));
+            manager.SetRadius(10, 15);
+
+            manager.ExpectInfoGenerationLocations(
+                new Vector2Long(0, 0)
+            );
+            manager.ExpectChunkGenerationLocations(
+                new Vector2Long(0, 0)
+            );
+            manager.ExpectChunkCleanupLocations();
+            manager.ExpectInfoCleanupLocations();
+            manager.UpdateWithCleanup(new Vector2Long(20, 20));
+
+            // No cleanups at this stage.
+            manager.AssertAllExpectedChunksGenerated();
+            manager.AssertAllExpectedInfosGenerated();
+            manager.AssertAllExpectedChunksCleared();
+            manager.AssertAllExpectedInfosCleared();
+
+            manager.ClearAllExpectations();
+
+            manager.ExpectInfoCleanupLocations(
+                new Vector2Long(0, 0)
+            );
+            manager.ExpectChunkCleanupLocations(
+                new Vector2Long(0, 0)
+            );
+            manager.UpdateWithCleanup(new Vector2Long(-20, 20));
+            manager.AssertAllExpectedChunksCleared();
+            manager.AssertAllExpectedInfosCleared();
         }
     }
 
@@ -81,11 +119,13 @@ namespace KH.Infinite {
         public int InfoGeneratorCalls = 0;
         public int ChunkGeneratorCalls = 0;
         public int ChunkCleanupCalls = 0;
+        public int InfoCleanupCalls = 0;
         public TestInfo LastGeneratedChunk;
 
         private List<Vector2Long> _expectedInfoGenerations;
         private List<Vector2Long> _expectedChunkGenerations;
         private List<Vector2Long> _expectedCleanups;
+        private List<Vector2Long> _expectedInfoCleanups;
 
         public TestChunkManager(Vector2Int smallestUnit) : base(smallestUnit) {
             SetInfoGenerator((ChunkLocation loc) => {
@@ -122,11 +162,28 @@ namespace KH.Infinite {
                 }
                 ChunkCleanupCalls++;
             });
+            SetInfoClearer((TestInfo info) => {
+                if (_expectedInfoCleanups != null) {
+                    if (_expectedInfoCleanups.Contains(info.Location.Bound1)) {
+                        _expectedInfoCleanups.Remove(info.Location.Bound1);
+                    } else {
+                        Assert.Fail($"Manager unexpectedly cleaned up info at {info.Location.Bound1}");
+                    }
+                }
+                InfoCleanupCalls++;
+            });
         }
 
         public void UpdateWithCleanup(Vector2Long position) {
             Update(position);
             ForceCleanupAll();
+        }
+
+        public void ClearAllExpectations() {
+            _expectedInfoGenerations = null;
+            _expectedChunkGenerations = null;
+            _expectedInfoCleanups = null;
+            _expectedCleanups = null;
         }
 
         public void ExpectInfoGenerationLocations(params Vector2Long[] locs) {
@@ -174,6 +231,22 @@ namespace KH.Infinite {
                 Assert.Fail("No cleanups were expected.");
             } else if (_expectedCleanups.Count > 0) {
                 Assert.Fail($"Did not clear chunk for locs: {string.Join(", ", _expectedCleanups)}");
+            }
+        }
+
+        public void ExpectInfoCleanupLocations(params Vector2Long[] locs) {
+            if (_expectedInfoCleanups != null) {
+                _expectedInfoCleanups.AddRange(locs);
+            } else {
+                _expectedInfoCleanups = locs.ToList();
+            }
+        }
+
+        public void AssertAllExpectedInfosCleared() {
+            if (_expectedInfoCleanups == null) {
+                Assert.Fail("No info cleanups were expected.");
+            } else if (_expectedInfoCleanups.Count > 0) {
+                Assert.Fail($"Did not clear infos for locs: {string.Join(", ", _expectedCleanups)}");
             }
         }
     }
