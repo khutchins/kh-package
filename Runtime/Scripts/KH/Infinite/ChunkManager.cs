@@ -75,13 +75,16 @@ namespace KH.Infinite {
             }
         }
 
-        private T EnsureChunkForPointInternal(Vector2Long point) {
+        private T EnsureChunkForPointInternal(Vector2Long point, bool forceGenerate = true) {
             Vector2Long key = point.DivideAndFloor(_smallestUnit);
-            return EnsureChunkForPointInternalInKeySpace(key);
+            return EnsureChunkForPointInternalInKeySpace(key, forceGenerate);
         }
 
-        private T EnsureChunkForPointInternalInKeySpace(Vector2Long pointInKeySpace) {
-
+        private T EnsureChunkForPointInternalInKeySpace(Vector2Long pointInKeySpace, bool forceGenerate = true) {
+            if (!forceGenerate) {
+                _chunkCache.TryGetValue(pointInKeySpace, out T cinfo);
+                return cinfo;
+            }
             T info = EnsureChunkInfo(pointInKeySpace);
 
             // Only actually generate the chunk if it's in bounds.
@@ -104,7 +107,8 @@ namespace KH.Infinite {
         }
 
         /// <summary>
-        /// Returns the first chunk info found for the location in otherManager.
+        /// Returns the first chunk info found for the location in otherManager. Will generate even if it's
+        /// currently out of range.
         /// </summary>
         /// <param name="otherManager">The manager to do a lookup on.</param>
         /// <param name="location">The location to look up, in the coordinate space of THIS chunk manager.</param>
@@ -113,6 +117,28 @@ namespace KH.Infinite {
             double xLoc = location.Key.x * _smallestUnit.x;
             double yLoc = location.Key.y * _smallestUnit.y;
             return otherManager.ChunkInfoForWorldSpace(xLoc, yLoc);
+        }
+
+        /// <summary>
+        /// Returns the first chunk info found for the location in otherManager. Will generate even if it's
+        /// currently out of range.
+        /// </summary>
+        /// <param name="otherManager">The manager to do a lookup on.</param>
+        /// <param name="location">The location to look up, in the coordinate space of THIS chunk manager.</param>
+        /// <returns>The first chunk info for the given location. Could match multiple if going from a bigger chunk size to a smaller one.</returns>
+        public bool TryLookupChunkInfo<U>(ChunkManager<U> otherManager, ChunkLocation location, out U info) where U : ChunkInfo {
+            double xLoc = location.Key.x * _smallestUnit.x;
+            double yLoc = location.Key.y * _smallestUnit.y;
+            if (otherManager == null) {
+                info = null;
+                return false;
+            }
+            return otherManager.TryGetChunkInfoForWorldSpace(xLoc, yLoc, out info);
+        }
+
+        public bool TryGetChunkInfoForWorldSpace(double xLoc, double yLoc, out T info) {
+            info = EnsureChunkForPointInternal(new Vector2Long((long)xLoc, (long)yLoc), false);
+            return info != null;
         }
 
         public T ChunkInfoForWorldSpace(double xLoc, double yLoc) {
