@@ -457,6 +457,33 @@ namespace KH.KVBDSL {
             return -1;
         }
 
+        private static int MLSLeadingWhitespace(string input, int curr, int end) {
+            StringBuilder leadingWhitespace = null;
+
+            while (curr < end && (leadingWhitespace == null || leadingWhitespace.Length > 0)) {
+                int check = ReadPastNextLineOrToNonWhitespace(input, curr);
+                // Only compute starting whitespace if there are characters on the line.
+                // This adds an additional scan through each line, but if performance is an
+                // issue, I can try to fix it later.
+                if (check >= end || input[check] != '\n') {
+                    for (int wsL = 0; check + wsL < end && (leadingWhitespace == null || wsL < leadingWhitespace.Length); wsL++) {
+                        char currChar = input[check + wsL];
+                        if ((currChar != '\t' && currChar != ' ')
+                                || (leadingWhitespace != null && currChar != leadingWhitespace[wsL])) {
+                            if (leadingWhitespace == null) {
+                                leadingWhitespace = new StringBuilder(input, check, wsL, wsL);
+                            } else if (wsL < leadingWhitespace.Length) {
+                                leadingWhitespace.Remove(wsL, leadingWhitespace.Length - wsL);
+                            }
+                            break;
+                        }
+                    }
+                }
+                curr = ReadToNextLine(input, curr + 1);
+            }
+            return leadingWhitespace.Length;
+        }
+
         private static int ReadMultiLineString(string input, int start, out string str) {
             int curr = ReadToNextNonWhitespace(input, start);
             curr += Consts.MLS_START.Length;
@@ -487,32 +514,7 @@ namespace KH.KVBDSL {
             StringParseContext pc = StringParseContext.Standard;
 
             // First find leading whitespace amount and character.
-            char whitespaceChar = '\0';
-            int whitespaceAmt = int.MaxValue;
-
-            while (curr < end && whitespaceAmt > 0) {
-                int check = ReadPastNextLineOrToNonWhitespace(input, curr);
-                // Only compute starting whitespace if there are characters on the line.
-                // This adds an additional scan through each line, but if performance is an
-                // issue, I can try to fix it later.
-                if (check >= end || input[check] != '\n') {
-                    int wsL = 0;
-                    for (; check < end && wsL < whitespaceAmt; wsL++, check++) {
-                        char currChar = input[check];
-                        if (currChar != '\t' && currChar != ' ') {
-                            break;
-                        }
-                        if (whitespaceChar == '\0') {
-                            whitespaceChar = currChar;
-                        } else if (currChar != whitespaceChar) {
-                            break;
-                        }
-                    }
-                    whitespaceAmt = Mathf.Min(whitespaceAmt, wsL);
-                }
-                curr = ReadToNextLine(input, curr + 1);
-            }
-            if (whitespaceAmt == int.MaxValue) whitespaceAmt = 0;
+            int whitespaceAmt = MLSLeadingWhitespace(input, curr, end);
 
             // Move past opening newline.
             curr = textStart + 1;

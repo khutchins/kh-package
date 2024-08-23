@@ -93,6 +93,27 @@ namespace KH.KVBDSL {
                 " baz"
             ));
 
+            // Simple string, mix of tabs and spaces.
+            AssertMLS("foo\nbar\nbaz", BootlegMLS(
+                "\t\t   \t foo",
+                "\t\t   \t bar",
+                "\t\t   \t baz"
+            ));
+
+            // Simple string, mix of tabs and spaces, middle shortest.
+            AssertMLS("\t foo\n bar\n\t baz", BootlegMLS(
+                "\t\t   \t foo",
+                "\t\t    bar",
+                "\t\t   \t baz"
+            ));
+
+            // Simple string, mix of tabs and spaces, mismatch at start.
+            AssertMLS("\t\t foo\n \t bar\n\t\t baz", BootlegMLS(
+                "\t\t foo",
+                " \t bar",
+                "\t\t baz"
+            ));
+
             // Whitespace preserved at end with escape.
             AssertMLS("foo  ", BootlegMLS(
                 "foo  \\p",
