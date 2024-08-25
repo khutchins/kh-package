@@ -74,6 +74,9 @@ namespace KH {
 				EaseInBounce,
 				EaseOutBounce,
 				EaseInOutBounce,
+				CircEaseIn,
+				CircEaseOut,
+				CircEaseInOut,
 				Bezier
 			}
 
@@ -97,6 +100,9 @@ namespace KH {
 					Type.EaseInBounce => EaseInBounce,
 					Type.EaseOutBounce => EaseOutBounce,
 					Type.EaseInOutBounce => EaseInOutBounce,
+					Type.CircEaseIn => CircEaseIn,
+					Type.CircEaseOut => CircEaseOut,
+					Type.CircEaseInOut => CircEaseInOut,
 					Type.Bezier => Bezier,
 					_ => Linear,
 				};
@@ -221,7 +227,24 @@ namespace KH {
 				  : (1 + EaseOutBounce(2 * t - 1)) / 2;
 			};
 
-			public static Func<float, float> Bezier = (float t) => {
+            public static Func<float, float> CircEaseIn = (float t) => {
+                t = Mathf.Clamp(t, 0, 1);
+                return 1 - Mathf.Sqrt(1 - Mathf.Pow(t, 2));
+            };
+
+            public static Func<float, float> CircEaseOut = (float t) => {
+                t = Mathf.Clamp(t, 0, 1);
+                return 1 - Mathf.Sqrt(1 - Mathf.Pow(t - 1, 2));
+            };
+
+            public static Func<float, float> CircEaseInOut = (float t) => {
+                t = Mathf.Clamp(t, 0, 1);
+                return t < 0.5f
+				  ? (1 - Mathf.Sqrt(1 - Mathf.Pow( 2 * t,     2))    ) / 2
+				  : (    Mathf.Sqrt(1 - Mathf.Pow(-2 * t + 2, 2)) + 1) / 2;
+            };
+
+            public static Func<float, float> Bezier = (float t) => {
 				return t * t * (3f - 2f * t);
 			};
 		}
