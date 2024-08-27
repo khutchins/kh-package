@@ -117,6 +117,7 @@ namespace KH.Console {
 
         public void UnregisterHandler(string command) {
             _registeredCmds.Remove(command);
+            _trie.Remove(command);
         }
 
         private bool IsCtrlDown(params KeyCode[] keys) {
@@ -139,7 +140,7 @@ namespace KH.Console {
         private void HandleAutocomplete() {
             string[] tokens = CommandParser.ParseText(_currentText, true).ToArray();
             if (tokens.Length < 1) {
-                return;
+                tokens = new string[] { "" };
             }
 
             string last = tokens[^1];

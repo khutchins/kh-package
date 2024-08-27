@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Plastic.Antlr3.Runtime;
 using UnityEngine;
 
 namespace KH {
@@ -10,6 +11,10 @@ namespace KH {
 
         public void Insert(string word) {
             Insert(word, 0);
+        }
+
+        public void Remove(string word) {
+            Remove(word, 0);
         }
 
         public bool Contains(string word) {
@@ -60,9 +65,20 @@ namespace KH {
             }
         }
 
+        protected void Remove(string word, int index) {
+            if (index == word.Length) {
+                _terminal = false;
+            } else {
+                if (_children.TryGetValue(word[index].ToString(), out TrieNode value)) {
+                    value.Remove(word, index + 1);
+                }
+            }
+        }
+
         public string ShortestSharedPrefix(string basePrefix) {
             if (_terminal) return basePrefix;
             if (_children.Count > 1) return basePrefix;
+            if (_children.Count == 0) return basePrefix;
             var entry = _children.First();
             return entry.Value.ShortestSharedPrefix(basePrefix + entry.Key);
         }
