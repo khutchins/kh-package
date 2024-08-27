@@ -65,14 +65,19 @@ namespace KH {
             }
         }
 
-        protected void Remove(string word, int index) {
+        protected bool Remove(string word, int index) {
             if (index == word.Length) {
                 _terminal = false;
             } else {
-                if (_children.TryGetValue(word[index].ToString(), out TrieNode value)) {
-                    value.Remove(word, index + 1);
+                string nextLetter = word[index].ToString();
+                if (_children.TryGetValue(nextLetter, out TrieNode value)) {
+                    if (value.Remove(word, index + 1)) {
+                        _children.Remove(nextLetter);
+                    }
                 }
             }
+
+            return !_terminal && _children.Count == 0;
         }
 
         public string ShortestSharedPrefix(string basePrefix) {

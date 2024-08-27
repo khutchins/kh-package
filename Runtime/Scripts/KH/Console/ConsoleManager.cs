@@ -91,7 +91,7 @@ namespace KH.Console {
                 return;
             }
             if (_registeredCmds.ContainsKey(command.Name)) {
-                Debug.LogWarning($"Console already recognizes command '{command}'. Existing handler will be overwritten.");
+                Debug.LogWarning($"Console already recognizes command '{command.Name}'. Existing handler will be overwritten.");
             }
             _registeredCmds[command.Name] = command;
             _trie.Insert(command.Name);
