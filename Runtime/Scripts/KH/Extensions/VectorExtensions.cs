@@ -64,5 +64,35 @@ namespace KH.Extensions {
         public static Vector2Int ToVectorYZ(this Vector3Int vec) {
             return new Vector2Int(vec.y, vec.z);
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool EqualsXY(this Vector2 vec, Vector3 comp) {
+            return vec.x == comp.x && vec.y == comp.y;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool EqualsXZ(this Vector2 vec, Vector3 comp) {
+            return vec.x == comp.x && vec.y == comp.z;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool EqualsYZ(this Vector2 vec, Vector3 comp) {
+            return vec.x == comp.y && vec.y == comp.z;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool EqualsXY(this Vector2Int vec, Vector3Int comp) {
+            return vec.x == comp.x && vec.y == comp.y;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool EqualsXZ(this Vector2Int vec, Vector3Int comp) {
+            return vec.x == comp.x && vec.y == comp.z;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool EqualsYZ(this Vector2Int vec, Vector3Int comp) {
+            return vec.x == comp.y && vec.y == comp.z;
+        }
     }
 }
