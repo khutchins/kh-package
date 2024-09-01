@@ -1,8 +1,5 @@
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using Unity.Plastic.Antlr3.Runtime;
-using UnityEngine;
 
 namespace KH {
     public class Trie : TrieNode {
