@@ -99,14 +99,14 @@ namespace KH.Achievements {
         /// </summary>
         public void SaveToDisk() {
             if (RefreshBeforeSave) {
-                _achievementStatus.Union(_persistance.Load());
+                _achievementStatus.UnionWith(_persistance.Load());
             }
             _persistance.Save(_achievementStatus);
         }
 
         private void LoadFromDisk() {
             _achievementStatus.Clear();
-            _achievementStatus.Union(_persistance.Load());
+            _achievementStatus.UnionWith(_persistance.Load());
         }
 
         public IEnumerable<string> AllUnlockedAchievements() {
