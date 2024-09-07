@@ -15,7 +15,7 @@
       "displayName": "Achievements",
       "description": "Sample integration with achievements.",
       "path": "Samples~/Achievements"
-    }
+    },
     {
       "displayName": "Conversation Box",
       "description": "Sample implementation of conversation box.",
