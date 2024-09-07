@@ -59,6 +59,16 @@ namespace KH.Editor {
             GUILayout.Space(10);
 
             GUILayout.Label("Build Flavors", EditorStyles.boldLabel);
+
+            using (new GUILayout.VerticalScope(EditorStyles.helpBox)) {
+                GUIStyle textStyle = EditorStyles.label;
+                textStyle.wordWrap = true;
+                EditorGUILayout.LabelField(
+                    "Flavors have a define with the name BUILD_FLAVOR_FLAVORNAME (e.g. BUILD_FLAVOR_STEAM).",
+                    textStyle
+                );
+            }
+
             using (new GUILayout.VerticalScope(EditorStyles.helpBox)) {
                 EditorGUILayout.PropertyField(flavorsProp);
             }

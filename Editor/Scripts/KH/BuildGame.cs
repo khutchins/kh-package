@@ -6,6 +6,7 @@ using System.Linq;
 using System.Collections.Generic;
 using System;
 using UnityEditor.Build.Reporting;
+using System.Text.RegularExpressions;
 
 namespace KH.Editor {
 	public class BuildGame : EditorWindow {
@@ -48,12 +49,14 @@ namespace KH.Editor {
 				foreach (string service in ddServices) {
 					string path = PathForBuildTarget(target, service);
 					Debug.Log("Building " + target.Name);
-					BuildPlayerOptions options = new BuildPlayerOptions();
-					options.scenes = EditorBuildSettings.scenes.Select(x => x.path).ToArray();
-					options.locationPathName = Combine(path, PlayerSettings.productName);
-					options.target = target.BuildTarget;
-					options.options = BuildOptions.ShowBuiltPlayer;
-					BuildResult result = BuildPipeline.BuildPlayer(options).summary.result;
+                    BuildPlayerOptions options = new BuildPlayerOptions {
+                        scenes = EditorBuildSettings.scenes.Select(x => x.path).ToArray(),
+                        locationPathName = Combine(path, PlayerSettings.productName),
+                        target = target.BuildTarget,
+                        options = BuildOptions.ShowBuiltPlayer,
+                        extraScriptingDefines = new string[] { NormalizeDDName(service) }
+                    };
+                    BuildResult result = BuildPipeline.BuildPlayer(options).summary.result;
 					if (result != BuildResult.Succeeded) {
 						Debug.LogErrorFormat("Build not successful for platform {0}. Result was {1}. No further builds will be attempted.", target.Name, result);
 						return;
@@ -70,7 +73,11 @@ namespace KH.Editor {
 			}
 		}
 
-		private static void PlatformSpecificPostProcessing(Platform target, string path) {
+        private static string NormalizeDDName(string name) {
+            return $"BUILD_FLAVOR_{new Regex("[^a-zA-Z0-9 -]").Replace(name, "").ToUpper()}";
+        }
+
+        private static void PlatformSpecificPostProcessing(Platform target, string path) {
 			if (target.Extension != null) {
 				string appPath = Combine(path, PlayerSettings.productName);
 				string pathWithExt = appPath + target.Extension;
