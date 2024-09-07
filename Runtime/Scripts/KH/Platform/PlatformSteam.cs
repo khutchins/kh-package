@@ -13,6 +13,7 @@ namespace KH.Platform {
 	public class PlatformSteam : SingletonInstance<PlatformSteam> {
 		[SerializeField] uint AppId = 884480;
 		[SerializeField] StringSignal AchievementUnlockedSignal;
+		[SerializeField] BoolReference ShowLocalAchievements;
 
 #if BUILD_FLAVOR_STEAM
 
@@ -32,6 +33,8 @@ namespace KH.Platform {
 				FailedToInit();
 				return;
 			}
+
+			if (ShowLocalAchievements != null) ShowLocalAchievements.Value = false;
 
 			Debug.Log($"Initialized for user: {SteamClient.Name}");
 
@@ -78,5 +81,5 @@ namespace KH.Platform {
 			return !_initializeFailed && SteamClient.IsValid;
 		}
 #endif
-    }
+	}
 }

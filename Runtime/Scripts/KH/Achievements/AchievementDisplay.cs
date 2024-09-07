@@ -7,22 +7,28 @@ using UnityEngine.SocialPlatforms.Impl;
 using UnityEngine.UI;
 
 namespace KH.Achievements {
+    [RequireComponent(typeof(Canvas))]
     public class AchievementDisplay : MonoBehaviour {
         [SerializeField] StringSignal AchievementSignal;
+        [Tooltip("If this is set, it will use its value to determine if it shows achievements or not. Useful when you don't want to double-show with Steam.")]
+        [SerializeField] BoolReference ShowLocalAchievements;
         [SerializeField] AchievementList AchievementList;
         [SerializeField] AchievementPopover AchievementPopover;
         [SerializeField] VerticalLayoutGroup AchievementLayoutGroup;
-        [SerializeField] RectTransform Spacer;
         [SerializeField] float AnimationTime = 0.25f;
         [SerializeField] float ShowTime = 3f;
+        
 
         private int _achievementHeight;
         private int _achievementYOffset;
         private RectTransform _layoutGroupRect;
         private SingleCoroutineManager _achievementCoroutineManager;
         private List<AchievementList.Achievement>  _enqueuedAchievements = new List<AchievementList.Achievement>();
+        private Canvas _canvas;
 
         private void Awake() {
+            _canvas = GetComponent<Canvas>();
+            _canvas.enabled = false;
             _achievementYOffset = AchievementLayoutGroup.padding.top;
             _achievementHeight = Mathf.CeilToInt(AchievementPopover.GetComponent<RectTransform>().sizeDelta.y);
             _layoutGroupRect = AchievementLayoutGroup.GetComponent<RectTransform>();
@@ -42,6 +48,7 @@ namespace KH.Achievements {
         }
 
         void AchievementUnlocked(string achievementId) {
+            if (ShowLocalAchievements != null && !ShowLocalAchievements.Value) return;
             var achievement = AchievementList.Achievements.Where(x => x.ID == achievementId).FirstOrDefault();
             if (achievement == null) {
                 Debug.LogWarning($"Unknown achievement {achievementId}");
@@ -67,6 +74,7 @@ namespace KH.Achievements {
         }
 
         IEnumerator ProcessAchievements() {
+            _canvas.enabled = true;
             while (_enqueuedAchievements.Count > 0) {
 
                 var achievement = _enqueuedAchievements[0];
@@ -90,6 +98,7 @@ namespace KH.Achievements {
                     _enqueuedAchievements.RemoveAt(0);
                 }
             }
+            _canvas.enabled = false;
         }
     }
 }
