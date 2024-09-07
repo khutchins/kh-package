@@ -1,6 +1,7 @@
 using Ratferences;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using UnityEngine;
 
@@ -12,6 +13,8 @@ namespace KH.Achievements {
 
     public class AchievementManager : SingletonInstance<AchievementManager> {
         [SerializeField] StringSignal UnlockSignal;
+        [Tooltip("If true, will load the achievements from disk and union them with the in-memory copy to help protect against writes from multiple processes.")]
+        [SerializeField] bool RefreshBeforeSave;
 
         public bool ManualSavesOnly = false;
         private HashSet<string> _achievementStatus = new HashSet<string>();
@@ -22,9 +25,19 @@ namespace KH.Achievements {
             base.Awake();
             _persistance = GetComponent<IAchievementPersister>();
             if (_persistance == null) {
-                _persistance = new PlayerPrefsAchievementPersister();
+                _persistance = new KVBDSLAchievementPersister();
             }
             LoadFromDisk();
+        }
+
+        /// <summary>
+        /// Tells the manager to unlock the achievement. This will automatically save the new
+        /// achievement list to disk, unless <see cref="ManualSavesOnly"/> is enabled. This
+        /// achievement will be notified immediately.
+        /// </summary>
+        /// <param name="id">Achievement id to unlock.</param>
+        public void Unlock(string id) {
+            Unlock(id, false);
         }
 
         /// <summary>
@@ -38,6 +51,7 @@ namespace KH.Achievements {
         public void Unlock(string id, bool deferNotifications) {
             if (_achievementStatus.Contains(id)) return;
 
+            _achievementStatus.Add(id);
             if (!deferNotifications) {
                 Notify(id);
             } else if (deferNotifications) {
@@ -76,6 +90,7 @@ namespace KH.Achievements {
 
         public void LockAll() {
             _achievementStatus.Clear();
+            MaybeSave();
         }
 
         /// <summary>
@@ -83,6 +98,9 @@ namespace KH.Achievements {
         /// saving is disabled via <see cref="ManualSavesOnly"/>.
         /// </summary>
         public void SaveToDisk() {
+            if (RefreshBeforeSave) {
+                _achievementStatus.Union(_persistance.Load());
+            }
             _persistance.Save(_achievementStatus);
         }
 

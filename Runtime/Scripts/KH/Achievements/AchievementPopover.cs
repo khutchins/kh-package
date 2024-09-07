@@ -1,15 +1,18 @@
+using KH.Achievements;
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class AchievementPopover : MonoBehaviour {
-    // Start is called before the first frame update
-    void Start() {
+    [SerializeField] TMP_Text Name;
+    [SerializeField] TMP_Text Description;
+    [SerializeField] Image Image;
 
-    }
-
-    // Update is called once per frame
-    void Update() {
-
+    public void SetAchievement(AchievementList.Achievement achievement) {
+        Name.text = achievement.Name;
+        Description.text = achievement.Description;
+        Image.sprite = achievement.Image;
     }
 }

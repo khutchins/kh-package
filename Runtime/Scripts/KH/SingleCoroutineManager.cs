@@ -33,6 +33,15 @@ namespace KH {
             _instance = _owner.StartCoroutine(Coroutine(routine));
         }
 
+        public bool MaybeStartCoroutine(IEnumerator routine, System.Action onFinally = null, System.Action onCancelCleanup = null) {
+            if (_instance != null) return false;
+            MaybeCancelCoroutine();
+            _onFinally = onFinally;
+            _onCancelCleanup = onCancelCleanup;
+            _instance = _owner.StartCoroutine(Coroutine(routine));
+            return true;
+        }
+
         public void StopCoroutine() {
             MaybeCancelCoroutine();
         }

@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0f3964d95b4a2f1419757ecdf8fb924d, type: 3}
+  m_Name: AchievementList
+  m_EditorClassIdentifier: 
+  Achievements:
+  - ID: SAMPLE_ACHIEVEMENT_1
+    Name: Got That Cheevo!
+    Description: You really earned it!
+    Image: {fileID: 21300000, guid: deca9469beb1cbd4290f51a8dfb4a891, type: 3}
+  - ID: SAMPLE_ACHIEVEMENT_2
+    Name: Got That Cheevo 2!
+    Description: You didn't really earn it this time!
+    Image: {fileID: 21300000, guid: 1ec83e3c7948cd945894b27cfd59cfae, type: 3}
+  - ID: SAMPLE_ACHIEVEMENT_3
+    Name: Got That Cheevo 3!
+    Description: Aren't you kind of sick of these?
+    Image: {fileID: 21300000, guid: 09e5a41f99ba1f84396ce3b2d559bbfa, type: 3}
