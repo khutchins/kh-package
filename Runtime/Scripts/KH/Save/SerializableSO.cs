@@ -234,6 +234,11 @@ namespace KH.Save {
             AssetDatabase.Refresh();
             Debug.Log($"Created default settings at: {assetPath}");
         }
+
+        [ContextMenu("Show File In Explorer")]
+        private void OpenEditorToFile() {
+            EditorUtility.RevealInFinder(SavePath());
+        }
 #endif
     }
 }
