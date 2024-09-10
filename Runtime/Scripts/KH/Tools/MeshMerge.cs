@@ -105,13 +105,16 @@ namespace KH.Tools {
                 List<Submesh> submeshes = pair.Value;
 
                 var combine = new CombineInstance[submeshes.Count];
+                int vertCount = 0;
                 for (int j = 0; j < submeshes.Count; j++) {
                     combine[j].mesh = submeshes[j].Obj.Filter.sharedMesh;
                     combine[j].subMeshIndex = submeshes[j].SubMeshIdx;
                     combine[j].transform = submeshes[j].Obj.Filter.transform.localToWorldMatrix;
+                    vertCount += submeshes[j].Obj.Filter.sharedMesh.vertexCount;
                 }
 
                 Mesh mesh = new Mesh();
+                if (vertCount > 65535) mesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
                 mesh.CombineMeshes(combine);
                 meshes[i] = mesh;
                 materials[i] = pair.Key;
