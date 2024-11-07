@@ -29,19 +29,6 @@ namespace KH.KVBDSL {
                 Parse = parse;
             }
         }
-        private enum ParseState {
-            Default,
-            InTextString,
-            InTextBlock,
-            SkippingArray,
-            SkippingDict,
-        };
-
-        private enum StackType {
-            None,
-            Array,
-            Dictionary
-        }
 
         private static readonly TypeHandler IntHandler = new TypeHandler(Consts.TYPE_INT, (Deserializer ds, string input, int start) => {
             int curr = ReadToEndOfLine(input, start, out string str);

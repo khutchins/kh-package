@@ -110,26 +110,6 @@ namespace KH.Save {
             return Attrs.FirstOrDefault(a => a.Name == name);
         }
 
-        private Dictionary<string, object> GetCurrentFieldValues() {
-            Dictionary<string, object> values = new Dictionary<string, object>();
-            foreach (FieldInfo field in GetFieldInfos()) {
-                string fieldName = NameForField(field);
-                var obj = field.GetValue(this);
-                if (obj == null) {
-                    MaybeLogWarning($"Field for name {field.Name} is unset. This is bad.");
-                    continue;
-                }
-                if (obj is FloatReference fr) {
-                    values[fieldName] = fr.Value;
-                } else if (obj is IntReference ir) {
-                    values[fieldName] = ir.Value;
-                } else if (obj is StringReference sr) {
-                    values[fieldName] = sr.Value;
-                }
-            }
-            return values;
-        }
-
         private Dictionary<string, object> ReadCurrentFieldValues() {
             Dictionary<string, object> values = new Dictionary<string, object>();
             foreach (FieldInfo field in GetFieldInfos()) {
@@ -221,7 +201,7 @@ namespace KH.Save {
                 Debug.Log("File already exists. To replace, delete the original file first.");
                 return;
             }
-            File.WriteAllText(assetPath, new Serializer().Serialize(GetCurrentFieldValues()));
+            File.WriteAllText(assetPath, new Serializer().Serialize(ReadCurrentFieldValues()));
             AssetDatabase.Refresh();
             TextAsset asset = AssetDatabase.LoadAssetAtPath<TextAsset>(assetPath);
             if (asset == null) {
