@@ -42,6 +42,7 @@ namespace KH.KVBDSL {
             values["key5"] = GenerateList("foo", 5);
             values["key6"] = GenerateDict(("key6a", 5), ("key6b", 2.5f));
             values["key7"] = "\nfoo";
+            values["key9"] = new Color(80f / 255, 60f / 255, 40f / 255);
             values["foo bar"] = 32;
             AssertSurvivesRoundTrip(values);
 
@@ -64,6 +65,8 @@ namespace KH.KVBDSL {
             values["key5"] = GenerateList("foo", 5);
             values["key6"] = GenerateDict(("key6a", 5), ("key6b", 2.5f));
             values["key7"] = "\nfoo";
+            values["key8"] = new Color(.5f, .375f, .25f);
+            values["key9"] = new Color(.5f, .375f, .25f, .5f);
 
             Assert.AreEqual(BootlegMLS(
                 "key1: s foo",
@@ -82,6 +85,8 @@ namespace KH.KVBDSL {
                 "",
                 "foo",
                 "\"\"\"",
+                "key8: _rgb #806040",
+                "key9: _rgba #80604080",
                 ""
             ), new Serializer().Serialize(values));
         }

@@ -7,6 +7,44 @@ using UnityEngine;
 
 namespace KH.KVBDSL {
     public class Serializer {
+        public class TypeHandler {
+            public readonly Func<object, bool> Matches;
+            public readonly Action<object, StringBuilder> Serialize;
+
+            public TypeHandler(Func<object, bool> matches, Action<object, StringBuilder> serialize) {
+                Matches = matches;
+                Serialize = serialize;
+            }
+        }
+
+        private static readonly TypeHandler IntHandler = new TypeHandler((object obj) => obj is int, (object obj, StringBuilder sb) => {
+            sb.Append($"{Consts.TYPE_INT} ");
+            sb.Append((int)obj);
+        });
+
+        private static readonly TypeHandler FloatHandler = new TypeHandler((object obj) => obj is float, (object obj, StringBuilder sb) => {
+            sb.Append($"{Consts.TYPE_FLOAT} ");
+            sb.Append(((float)obj).ToString(CultureInfo.InvariantCulture));
+        });
+
+        private static readonly TypeHandler BoolHandler = new TypeHandler((object obj) => obj is bool, (object obj, StringBuilder sb) => {
+            sb.Append($"{Consts.TYPE_BOOL} ");
+            sb.Append(((bool)obj) ? "true" : "false");
+        });
+
+        private static readonly TypeHandler RGBHandler = new TypeHandler((object obj) => obj is Color c && c.a == 1, (object obj, StringBuilder sb) => {
+            string col = ColorUtility.ToHtmlStringRGB((Color)obj);
+            sb.Append($"{Consts.TYPE_RGB} #{col}");
+        });
+
+        private static readonly TypeHandler RGBAHandler = new TypeHandler((object obj) => obj is Color c, (object obj, StringBuilder sb) => {
+            string col = ColorUtility.ToHtmlStringRGBA((Color)obj);
+            sb.Append($"{Consts.TYPE_RGBA} #{col}");
+        });
+
+        public static List<TypeHandler> Handlers = new List<TypeHandler> {
+            IntHandler, FloatHandler, BoolHandler, RGBHandler, RGBAHandler
+        };
 
         [Flags]
         public enum Options {
@@ -119,41 +157,47 @@ namespace KH.KVBDSL {
                 return;
             }
 
-            sb.Append(TypeStringForObject(value));
+            bool HandlerHandled() {
+                foreach (TypeHandler handler in Handlers) {
+                    if (handler.Matches(value)) {
+                        handler.Serialize(value, sb);
+                        return true;
+                    }
+                }
+                return false;
+            }
 
-            if (value is int) sb.Append(value);
-            else if (value is float f) {
-                sb.Append(f.ToString(CultureInfo.InvariantCulture));
-            } else if (value is bool b) {
-                sb.Append(b ? "true" : "false");
-            } else if (value is string s) {
-                WriteStringValue(sb, s, indent);
-            } else if (IsDictionary(value)) {
-                sb.Append(Consts.TYPE_DICT);
-                sb.Append('\n');
-                foreach (DictionaryEntry entry in value as IDictionary) {
-                    WriteEntry(sb, entry.Key as string, entry.Value, indent + 1);
+            if (!HandlerHandled()) {
+                sb.Append(TypeStringForObject(value));
+
+                if (value is string s) {
+                    WriteStringValue(sb, s, indent);
+                } else if (IsDictionary(value)) {
+                    sb.Append(Consts.TYPE_DICT);
+                    sb.Append('\n');
+                    foreach (DictionaryEntry entry in value as IDictionary) {
+                        WriteEntry(sb, entry.Key as string, entry.Value, indent + 1);
+                    }
+                    AppendIndent(sb, indent);
+                    sb.Append(Consts.TYPE_DICT_END);
+                } else if (IsList(value)) {
+                    sb.Append(Consts.TYPE_ARRAY);
+                    sb.Append('\n');
+                    foreach (var entry in value as IList) {
+                        AppendIndent(sb, indent + 1);
+                        WriteValue(sb, entry, indent + 1);
+                    }
+                    AppendIndent(sb, indent);
+                    sb.Append(Consts.TYPE_ARRAY_END);
                 }
-                AppendIndent(sb, indent);
-                sb.Append(Consts.TYPE_DICT_END);
-            } else if (IsList(value)) {
-                sb.Append(Consts.TYPE_ARRAY);
-                sb.Append('\n');
-                foreach (var entry in value as IList) {
-                    AppendIndent(sb, indent + 1);
-                    WriteValue(sb, entry, indent + 1);
-                }
-                AppendIndent(sb, indent);
-                sb.Append(Consts.TYPE_ARRAY_END);
             }
             sb.Append("\n");
         }
 
         private string TypeStringForObject(object obj) {
             if (obj is string) return "";
-            else if (obj is int) return "i ";
-            else if (obj is float) return "f ";
-            else if (obj is bool) return "b ";
+            else if (obj is Color col && col.a == 1) return "rgb ";
+            else if (obj is Color) return "rgba ";
             else if (IsDictionary(obj)) return "";
             else if (IsList(obj)) return "";
             // Shouldn't happen, output bad type.
@@ -173,8 +217,15 @@ namespace KH.KVBDSL {
                 && obj.GetType().GetGenericTypeDefinition() == typeof(List<object>).GetGenericTypeDefinition();
         }
 
+        private bool IsColor(object obj) {
+            return obj is Color;
+        }
+
         private bool SupportedObject(object obj) {
-            return obj is int || obj is string || obj is float || obj is bool || IsDictionary(obj) || IsList(obj);
+            foreach (TypeHandler handler in Handlers) {
+                if (handler.Matches(obj)) return true;
+            }
+            return obj is string || IsDictionary(obj) || IsList(obj);
         }
     }
 }

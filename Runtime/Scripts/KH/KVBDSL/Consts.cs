@@ -8,6 +8,8 @@ namespace KH.KVBDSL {
         public const string TYPE_INT = "i";
         public const string TYPE_FLOAT = "f";
         public const string TYPE_BOOL = "b";
+        public const string TYPE_RGB = "_rgb";
+        public const string TYPE_RGBA = "_rgba";
         public const string TYPE_ARRAY = "[";
         public const char TYPE_ARRAY_END = ']';
         public const string TYPE_DICT = "{";

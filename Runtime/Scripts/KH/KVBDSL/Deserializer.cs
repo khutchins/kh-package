@@ -60,6 +60,28 @@ namespace KH.KVBDSL {
             }
             return (curr, output);
         });
+        private static readonly TypeHandler RGBHandler = new TypeHandler(Consts.TYPE_RGB, (Deserializer ds, string input, int start) => {
+            int curr = ReadToEndOfLine(input, start, out string str);
+            str = str.Trim();
+            object output = null;
+            if (str.Length > 1 && ColorUtility.TryParseHtmlString(str.Trim(), out Color result)) {
+                output = result;
+            } else {
+                curr = ReadToNextLineAndOutputError(input, start, "Invalid RGB format");
+            }
+            return (curr, output);
+        });
+        private static readonly TypeHandler RGBAHandler = new TypeHandler(Consts.TYPE_RGBA, (Deserializer ds, string input, int start) => {
+            int curr = ReadToEndOfLine(input, start, out string str);
+            str = str.Trim();
+            object output = null;
+            if (str.Length > 1 && ColorUtility.TryParseHtmlString(str.Trim(), out Color result)) {
+                output = result;
+            } else {
+                curr = ReadToNextLineAndOutputError(input, start, "Invalid RGBA format");
+            }
+            return (curr, output);
+        });
         private static readonly TypeHandler ArrayHandler = new TypeHandler(Consts.TYPE_ARRAY, (Deserializer ds, string input, int start) => {
             bool hadError = false;
             int curr = ReadToNextLineOrNonWhitespace(input, start);
@@ -176,6 +198,8 @@ namespace KH.KVBDSL {
             { StringHandlerTripleQuote.Type, StringHandlerTripleQuote },
             { ArrayHandler.Type, ArrayHandler },
             { DictionaryHandler.Type, DictionaryHandler },
+            { RGBHandler.Type, RGBHandler },
+            { RGBAHandler.Type, RGBAHandler },
         };
 
         private List<TypeHandler> _midStringMatchList;

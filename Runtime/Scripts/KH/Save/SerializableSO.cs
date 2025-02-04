@@ -127,6 +127,8 @@ namespace KH.Save {
                     values[fieldName] = sr.Value;
                 } else if (obj is BoolReference br) {
                     values[fieldName] = br.Value;
+                } else if (obj is ColorReference cr) {
+                    values[fieldName] = cr.Value;
                 } else {
                     MaybeLogWarning($"Unsupported type {obj.GetType()}");
                 }
@@ -151,6 +153,8 @@ namespace KH.Save {
                     sr.Value = s;
                 } else if (entry.Value is bool b && obj is BoolReference br) {
                     br.Value = b;
+                } else if (entry.Value is Color c && obj is ColorReference cr) { 
+                    cr.Value = c; 
                 } else {
                     MaybeLogWarning($"Entry type {entry.Value.GetType()} is not compatible with field type {obj.GetType()}");
                 }

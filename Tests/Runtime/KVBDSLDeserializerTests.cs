@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading;
+using UnityEngine;
 
 namespace KH.KVBDSL {
     public class KVBDSLDeserializerTests {
@@ -364,6 +365,8 @@ namespace KH.KVBDSL {
             file.AppendLine("key8: \"\"\"");
             file.AppendLine("  this is");
             file.AppendLine("  some ok text. \"\"\"");
+            file.AppendLine("key9: _rgb #806040");
+            file.AppendLine("key10: _rgba #80604080");
             file.AppendLine("key999:i 1");
             Dictionary<string, object> expected = new Dictionary<string, object>();
             expected["key0"] = 1;
@@ -376,6 +379,8 @@ namespace KH.KVBDSL {
             expected["key6"] = GenerateList("foo", 5);
             expected["key7"] = GenerateDict(("key7a", "foo"), ("key7b", 5));
             expected["key8"] = "this is\nsome ok text.";
+            expected["key9"] = new Color(128f / 255, 96f / 255, 64f / 255);
+            expected["key10"] = new Color(128f / 255, 96f / 255, 64f / 255, 128f / 255);
             expected["key999"] = 1;
 
             var actual = new Deserializer().Parse(file.ToString());
