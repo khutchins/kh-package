@@ -9,11 +9,27 @@ namespace KH.Actions {
         AudioEvent Audio;
         [SerializeField]
         bool Is2DSound;
+        [SerializeField]
+        bool WaitForFinish;
 
 		public override void Begin() {
-            if (Is2DSound) Audio?.PlayOneShot();
-            else Audio?.PlayClipAtPoint(this.transform.position);
-            Finished();
+            if (Audio == null) {
+                Finished();
+                return;
+            }
+            AudioSource source = null;
+            if (Is2DSound) source = Audio.PlayOneShot();
+            else source = Audio.PlayClipAtPoint(this.transform.position);
+            if (WaitForFinish) {
+                StartCoroutine(WaitForFinishCoroutine(source));
+            } else {
+                Finished();
+            }
 		}
+
+        IEnumerator WaitForFinishCoroutine(AudioSource source) {
+            yield return new WaitWhile(() => source != null && source.isPlaying);
+            Finished();
+        }
     }
 }
