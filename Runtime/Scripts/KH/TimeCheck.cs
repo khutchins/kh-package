@@ -22,11 +22,11 @@ namespace KH {
         }
 
         public void UpdateTime() {
-            _time = GetTime();
+            _time = _timeGetter.Invoke();
         }
 
-        private float GetTime() {
-            return _type == Type.Time ? Time.time : Time.unscaledTime;
+        public void UpdateTime(float time) {
+            _time = time;
         }
 
         public bool HasTimeElapsed(float newDuration) {
