@@ -15,8 +15,8 @@ namespace KH.KVBDSL {
         /// </summary>
         /// <returns></returns>
         public T TryGet<T>(string key, T defaultValue) {
-            if (!_source.TryGetValue(key, out var value) && value != null && value is T) {
-                return (T)value;
+            if (_source.TryGetValue(key, out var value) && value != null && value is T tValue) {
+                return tValue;
             }
             return defaultValue;
         }
@@ -27,8 +27,8 @@ namespace KH.KVBDSL {
         /// </summary>
         /// <returns></returns>
         public T TryGet<T>(string key, Func<T> defaultValue) {
-            if (!_source.TryGetValue(key, out var value) && value != null && value is T) {
-                return (T)value;
+            if (_source.TryGetValue(key, out var value) && value != null && value is T tValue) {
+                return tValue;
             }
             return defaultValue();
         }
