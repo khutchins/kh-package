@@ -94,7 +94,9 @@ namespace KH.Console {
                 Debug.LogWarning($"Console already recognizes command '{command.Name}'. Existing handler will be overwritten.");
             }
             _registeredCmds[command.Name] = command;
-            _trie.Insert(command.Name);
+            if (!command.HideCommand) {
+                _trie.Insert(command.Name);
+            }
 
         }
 
@@ -393,6 +395,11 @@ namespace KH.Console {
         /// </summary>
         public string Name;
         /// <summary>
+        /// If true, does not autocomplete the base command. If autocomplete is provided,
+        /// it will still perform autocompletion once the command is fully entered.
+        /// </summary>
+        public bool HideCommand;
+        /// <summary>
         /// Description of the command. Optional.
         /// </summary>
         public string Description;
@@ -411,6 +418,7 @@ namespace KH.Console {
         /// autocomplete values for the command's current state. 
         /// 
         /// NOTE: You do not need to filter based on the partial final string, as the handler will do substring matching for you.
+        /// NOTE 2: Base command name autocomplete will also be done for you.
         /// </summary>
         public System.Func<string[], IEnumerable<string>> Autocomplete;
     }
