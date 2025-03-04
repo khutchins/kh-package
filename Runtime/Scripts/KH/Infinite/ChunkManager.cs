@@ -21,7 +21,7 @@ namespace KH.Infinite {
         private Vector2Long _lastPos = Vector2Long.zero;
         private readonly Vector2Int _smallestUnit;
 
-        private readonly Dictionary<Vector2Long, T> _chunkCache = new();
+        private readonly Dictionary<Vector2Long, T> _chunkCache = new Dictionary<Vector2Long, T>();
         private readonly List<T> _chunkInfoList = new();
 
         public ChunkManager(Vector2Int smallestUnit) {

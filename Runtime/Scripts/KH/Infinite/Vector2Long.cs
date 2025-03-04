@@ -13,11 +13,11 @@ public struct Vector2Long {
     }
 
     public static Vector2Long zero {
-        get => new(0, 0);
+        get => new Vector2Long(0, 0);
     }
 
     public static Vector2Long one {
-        get => new(1, 1);
+        get => new Vector2Long(1, 1);
     }
 
     public override bool Equals(object obj) {
