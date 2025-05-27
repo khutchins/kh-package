@@ -289,6 +289,14 @@ namespace KH.Texts {
 		public readonly bool hasValue = false;
 		public readonly bool outputText = true;
 
+		public static readonly HashSet<string> TMPRO_TAGS = new HashSet<string>() {
+			"align", "allcaps", "alpha", "b", "br", "color", "cspace", "font", "font-weight",
+			"gradient", "i", "ident", "line-height", "line-indent", "link", "lowercase", "margin",
+			"mark", "mspace", "nobr", "noparse", "page", "pos", "rotate", "s", "size", "smallcaps",
+			"space", "sprite", "strikethrough", "style", "sub", "sup", "u", "uppercase", "voffset",
+			"width"
+		};
+
 		public static TextToken CloseTagForTag(TextToken tag) {
 			return new TextToken(tag.closingTag);
 		}
@@ -333,7 +341,7 @@ namespace KH.Texts {
 					closingTag = "</" + text.Substring(1, endIdx - 1) + ">";
 				}
 
-				outputText = key == "color" || key == "i" || key == "b" || key == "size" || key == "material" || key == "quad";
+				outputText = TMPRO_TAGS.Contains(key);
 			}
 		}
 
