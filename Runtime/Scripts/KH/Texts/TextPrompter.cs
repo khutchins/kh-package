@@ -16,14 +16,18 @@ namespace KH.Texts {
 		public SingleInputMediator InteractMediator;
 		[Tooltip("What percent speed to play the text at.")]
 		public float SpeedModifier = 1f;
+        [Tooltip("Whether or not it should automatically skip to the next line.")]
+        [SerializeField] bool Autoplay = false;
 
         private TextAnimator _textAnimator;
 		private LineSpec _current;
 		private bool _waitingForInput;
+		private SingleCoroutineManager _coroutineManager;
 
         // Start is called before the first frame update
         void Awake() {
             _textAnimator = GetComponent<TextAnimator>();
+			_coroutineManager = new SingleCoroutineManager(this);
 			LineQueue.Clear();
         }
 
@@ -52,7 +56,15 @@ namespace KH.Texts {
 				DoneWithLine();
 			} else {
 				_waitingForInput = true;
+				if (Autoplay) {
+					_coroutineManager.StartCoroutine(WaitForLine(_current.Line.Length * 0.05f + 2f)); ;
+				}
 			}
+		}
+
+		private IEnumerator WaitForLine(float duration) {
+			yield return new WaitForSeconds(duration);
+			DoneWithLine();
 		}
 
 		private void Update() {
@@ -62,6 +74,7 @@ namespace KH.Texts {
 		}
 
 		private void DoneWithLine() {
+			_coroutineManager.StopCoroutine();
 			_textAnimator.RemoveText();
 			_current.LineFinished();
 			_current = null;
