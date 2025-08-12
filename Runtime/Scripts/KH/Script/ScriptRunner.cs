@@ -1,12 +1,10 @@
+using KH.Script;
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using UnityEngine;
-using TMPro;
-using Menutee;
-using System.Globalization;
-using System.Text;
-using KH.Script;
 
 namespace KH.Console {
     public class ScriptRunner {
@@ -109,6 +107,37 @@ namespace KH.Console {
             }
         }
 
+        /// <summary>
+        /// Execute a line using a coroutine-friendly path.
+        /// If the command has RunCallbackAsync, we yield it and let it push updates via setOutput.
+        /// Otherwise, we run the sync callback and set the output once.
+        /// </summary>
+        public IEnumerator ExecuteAsync(string str, Action<string> setOutput) {
+            var cmd = CommandParser.ParseText(str).ToArray();
+            if (setOutput == null) setOutput = (string _) => { };
+            if (cmd.Length < 1) { setOutput?.Invoke(""); yield break; }
+
+            if (!_registeredCmds.TryGetValue(cmd[0], out var handler)) {
+                setOutput?.Invoke($"Unrecognized command: {cmd[0]}\nSee all commands with 'help'.");
+                yield break;
+            }
+
+            // Prefer async if provided
+            if (handler.RunCallbackAsync != null) {
+                yield return handler.RunCallbackAsync(cmd, setOutput);
+                yield break;
+            }
+
+            // Fallback to sync path
+            string result;
+            try {
+                result = handler.RunCallback != null ? handler.RunCallback(cmd) : "";
+            } catch (Exception e) {
+                result = e.Message;
+            }
+            setOutput?.Invoke(result);
+        }
+
         public IEnumerable<string> GetCommandNames() => _registeredCmds.Keys;
         public bool TryGetCommand(string name, out Command command) => _registeredCmds.TryGetValue(name, out command);
 
@@ -121,7 +150,7 @@ namespace KH.Console {
             if (int.TryParse(arg, out int result)) {
                 return result;
             } else {
-                throw new System.Exception($"Argument {idx} ({arg}) was expected to be an int, but it wasn't.");
+                throw new Exception($"Argument {idx} ({arg}) was expected to be an int, but it wasn't.");
             }
         }
 
@@ -129,14 +158,14 @@ namespace KH.Console {
             var arg = GetArg(cmds, idx);
             try {
                 return float.Parse(arg, CultureInfo.InvariantCulture);
-            } catch (System.Exception) {
-                throw new System.Exception($"Argument {idx} ({arg}) was expected to be a float, but it wasn't.");
+            } catch (Exception) {
+                throw new Exception($"Argument {idx} ({arg}) was expected to be a float, but it wasn't.");
             }
         }
 
         private static string GetArg(string[] cmds, int idx) {
             if (idx + 1 >= cmds.Length) {
-                throw new System.Exception($"Expected at least {idx + 1} arguments.");
+                throw new Exception($"Expected at least {idx + 1} arguments.");
             }
             return cmds[idx + 1];
         }

@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 
 namespace KH.Script {
@@ -24,6 +25,11 @@ namespace KH.Script {
         /// the command name. Returns the text to be output on running the command.
         /// </summary>
         public System.Func<string[], string> RunCallback;
+        /// <summary>
+        /// Callback for running a command. Takes in tokenized cmd invocation and an action that can be used
+        /// to log text (for the console output). Returns an enumerator for running in a coroutine.
+        /// </summary>
+        public System.Func<string[], System.Action<string>, IEnumerator> RunCallbackAsync;
         /// <summary>
         /// Callback for supporting autocomplete. Optional. Takes in the current tokenization (with 0 being the cmd
         /// name and the final entry being the current partial string and returns an enumerable of all possible 

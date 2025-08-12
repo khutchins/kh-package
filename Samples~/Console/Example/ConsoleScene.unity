@@ -153,6 +153,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 01eeb3f085d445a4584a1ba95b228586, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Channel: {fileID: 11400000, guid: 14dc5cb3bc9fa2c4b94685cb4a61d182, type: 2}
 --- !u!4 &30589258
 Transform:
   m_ObjectHideFlags: 0

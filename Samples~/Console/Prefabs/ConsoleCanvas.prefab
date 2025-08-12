@@ -249,9 +249,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5dc4e35f3be37a943b178f9025614843, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Channel: {fileID: 11400000, guid: 14dc5cb3bc9fa2c4b94685cb4a61d182, type: 2}
   InputText: {fileID: 8334140909858988207}
   OutputText: {fileID: 7779798085625021372}
   UseDefaultDisplayControls: 1
+  CommandHistory: 20
+  OmitDuplicatesFromHistory: 1
 --- !u!1 &8334140909858988205
 GameObject:
   m_ObjectHideFlags: 0

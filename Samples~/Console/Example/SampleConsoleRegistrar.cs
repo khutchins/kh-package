@@ -1,11 +1,13 @@
 using KH.Console;
+using KH.Script;
 using System.Text;
 using UnityEngine;
 
 public class SampleConsoleRegistrar : MonoBehaviour {
+    [SerializeField] CommandChannel Channel;
+
     private void OnEnable() {
-        var instance = ConsoleManager.INSTANCE;
-        if (instance == null) {
+        if (Channel == null) {
             Debug.LogWarning($"Console does not exist. Cannot register.");
             return;
         }
@@ -15,7 +17,7 @@ public class SampleConsoleRegistrar : MonoBehaviour {
         // However, if you clean up the handlers using UnregisterHandler, it's probably fine for
         // ConsoleManager to be persistent without persistent registrars. Not sure what the point
         // would be though.
-        instance.RegisterHandler(new Command() {
+        Channel.Register(new Command() {
             Name = "read_args",
             Description = "Reads all the arguments provided and shows how they're tokenized.",
             Registrar = this,
@@ -32,7 +34,7 @@ public class SampleConsoleRegistrar : MonoBehaviour {
         // so to read the first positional argument using those, do ConsoleManager.ExpectString(cmd, 0). Generally
         // you shouldn't access them directly, as the Expect commands will handle array bounds and type coercion
         // for you. 
-        instance.RegisterHandler(new Command() {
+        Channel.Register(new Command() {
             Name = "add_ints",
             Description = "Adds together all the integers provided and returns the result.",
             Registrar = this,
@@ -50,7 +52,7 @@ public class SampleConsoleRegistrar : MonoBehaviour {
             }
         });
 
-        instance.RegisterHandler(new Command() {
+        Channel.Register(new Command() {
             Name = "add_floats",
             Description = "Adds together all the floats provided and returns the result.",
             Registrar = this,
@@ -69,7 +71,7 @@ public class SampleConsoleRegistrar : MonoBehaviour {
         });
 
         // Feel free to throw exceptions here: it will be caught and the text will be shown in the console output.
-        instance.RegisterHandler(new Command() {
+        Channel.Register(new Command() {
             Name = "throw",
             Description = "Throws a real exception.",
             Registrar = this,
@@ -79,7 +81,7 @@ public class SampleConsoleRegistrar : MonoBehaviour {
         });
 
         // You can do your own autocomplete.
-        instance.RegisterHandler(new Command() {
+        Channel.Register(new Command() {
             Name = "autocomplete",
             Description = "Example of using autocomplete.",
             Registrar = this,
