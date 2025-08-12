@@ -8,6 +8,7 @@ using System.Linq;
 using UnityEngine;
 
 public class ScriptingEngine : MonoBehaviour {
+    public static ScriptingEngine INSTANCE;
     [SerializeField] CommandChannel Channel;
 
     [Header("Output")]
@@ -18,6 +19,7 @@ public class ScriptingEngine : MonoBehaviour {
 
     private void Awake() {
         RegisterBuiltins();
+        INSTANCE = this;
     }
 
     void RegisterBuiltins() {
