@@ -6,12 +6,14 @@ using TMPro;
 using Menutee;
 using System.Globalization;
 using System.Text;
+using KH.Script;
 
 namespace KH.Console {
     [DefaultExecutionOrder(-100)]
     [RequireComponent(typeof(Canvas))]
     public class ConsoleManager : MonoBehaviour, IMenu {
         public static ConsoleManager INSTANCE;
+        [SerializeField] CommandChannel Channel;
         [SerializeField] TMP_Text InputText;
         [SerializeField] TMP_Text OutputText;
         [Tooltip("Whether ` + shift will toggle console and ESC will close it. Otherwise, do it yourself (it implements IMenu, so you can use that).")]
@@ -23,8 +25,8 @@ namespace KH.Console {
         [Tooltip("If true, a command will not be added to the history if it exactly matches the one before.")]
         [SerializeField] bool OmitDuplicatesFromHistory = true;
 
-        private Dictionary<string, Command> _registeredCmds = new Dictionary<string, Command>();
-        private Trie _trie = new Trie();
+        private ScriptRunner _runner = new ScriptRunner();
+
         private bool _isUp = false;
         private Canvas _canvas;
         private string _currentText = "";
@@ -37,12 +39,13 @@ namespace KH.Console {
 
         private SingleCoroutineManager _blinkCoroutine;
 
+
         private void Awake() {
             _canvas = GetComponent<Canvas>();
             _blinkCoroutine = new SingleCoroutineManager(this);
             _canvas.enabled = false;
             INSTANCE = this;
-            RegisterHandler(new Command() {
+            _runner.RegisterHandler(new Command() {
                 Name = "getver",
                 Description = "Gets the current build version.",
                 RunCallback = (string[] cmd) => {
@@ -50,15 +53,15 @@ namespace KH.Console {
                 }
             });
 
-            RegisterHandler(new Command() {
+            _runner.RegisterHandler(new Command() {
                 Name = "help",
                 Description = "Prints out the list of commands if no argument is given, prints out description if one is given. You know this, as you can only get this description by using it.",
                 RunCallback = (string[] cmd) => {
                     if (cmd.Length <= 1) {
-                        string commands = string.Join(' ', _registeredCmds.Keys.OrderBy(a => a));
+                        string commands = string.Join(' ', _runner.GetCommandNames().OrderBy(a => a));
                         return $"Available commands: {commands}";
                     } else {
-                        if (_registeredCmds.TryGetValue(cmd[1], out Command value)) {
+                        if (_runner.TryGetCommand(cmd[1], out Command value)) {
                             if (string.IsNullOrWhiteSpace(value.Description)) {
                                 return $"No description for command: {value.Name}";
                             } else {
@@ -73,7 +76,7 @@ namespace KH.Console {
                     if (cmd.Length > 2) {
                         return new string[0];
                     } else {
-                        return _registeredCmds.Keys.ToArray();
+                        return _runner.GetCommandNames().ToArray();
                     }
                 }
             });
@@ -85,42 +88,27 @@ namespace KH.Console {
             _tempString = "";
         }
 
-        public void RegisterHandler(Command command) {
-            if (command.RunCallback == null || string.IsNullOrWhiteSpace(command.Name)) {
-                Debug.LogWarning($"Commands must have a valid Name and RunCallback specified. This will not be added.");
-                return;
-            }
-            if (_registeredCmds.ContainsKey(command.Name)) {
-                Debug.LogWarning($"Console already recognizes command '{command.Name}'. Existing handler will be overwritten.");
-            }
-            _registeredCmds[command.Name] = command;
-            if (!command.HideCommand) {
-                _trie.Insert(command.Name);
-            }
-
-        }
-
-        public void RegisterHandler(string command, System.Func<string[], string> callback) {
-            RegisterHandler(new Command() {
-                Name = command,
-                RunCallback = callback,
-            });
-        }
-
-        public void UnregisterRegistrar(object registrar) {
-            foreach (Command cmd in _registeredCmds.Values.Where(x => x.Registrar == registrar).ToList()) {
-                UnregisterHandler(cmd);
+        void OnEnable() {
+            if (Channel != null) {
+                Channel.OnRegister += RegisterHandler;
+                Channel.OnUnregister += UnregisterHandler;
+                Channel.OnUnregisterRegistrar += UnregisterRegistrar;
             }
         }
 
-        public void UnregisterHandler(Command command) {
-            UnregisterHandler(command.Name);
+        void OnDisable() {
+            if (Channel != null) {
+                Channel.OnRegister -= RegisterHandler;
+                Channel.OnUnregister -= UnregisterHandler;
+                Channel.OnUnregisterRegistrar -= UnregisterRegistrar;
+            }
         }
 
-        public void UnregisterHandler(string command) {
-            _registeredCmds.Remove(command);
-            _trie.Remove(command);
-        }
+        public void RegisterHandler(Command command) => _runner.RegisterHandler(command);
+        public void RegisterHandler(string command, System.Func<string[], string> callback) => _runner.RegisterHandler(command, callback);
+        public void UnregisterRegistrar(object registrar) => _runner.UnregisterRegistrar(registrar);
+        public void UnregisterHandler(Command command) => _runner.UnregisterHandler(command);
+        public void UnregisterHandler(string command) => _runner.UnregisterHandler(command);
 
         private bool IsCtrlDown(params KeyCode[] keys) {
             if (!(UnityEngine.Input.GetKey(KeyCode.LeftControl) || UnityEngine.Input.GetKey(KeyCode.RightControl))) {
@@ -140,43 +128,12 @@ namespace KH.Console {
         }
 
         private void HandleAutocomplete() {
-            string[] tokens = CommandParser.ParseText(_currentText, true).ToArray();
-            if (tokens.Length < 1) {
-                tokens = new string[] { "" };
+            var (newText, output) = _runner.Autocomplete(_currentText);
+            if (newText != null) {
+                SetCurrentText(newText);
             }
-
-            string last = tokens[^1];
-            if (last == null) last = "";
-            Trie trie = null;
-            if (tokens.Length == 1) {
-                trie = _trie;
-            } else {
-                string cmd = tokens[0];
-                if (!string.IsNullOrWhiteSpace(cmd) && _registeredCmds.ContainsKey(cmd)) {
-                    Command command = _registeredCmds[cmd];
-                    if (command.Autocomplete != null) {
-                        List<string> autocomplete = command.Autocomplete(tokens)?.ToList();
-                        if (autocomplete != null && autocomplete.Count > 0) {
-                            trie = new Trie();
-                            foreach (string val in autocomplete) {
-                                trie.Insert(val);
-                            }
-                        }
-                    }
-                }
-            }
-            if (trie != null) {
-                string shortestShared = trie.GetShortestSharedPrefix(last);
-                List<string> words = trie.WordsWithPrefix(last).OrderBy(x => x).ToList();
-                string prior = tokens.Length > 1 ? string.Join(' ', tokens.Select(x => EscapeStringIfNecessary(x)).ToArray(), 0, tokens.Length - 1) + " " : "";
-                if (words.Count > 1) {
-                    SetCurrentText(prior + EscapeStringIfNecessary(shortestShared, false));
-                    OutputText.text = string.Join(' ', words);
-                } else {
-                    SetCurrentText(prior + EscapeStringIfNecessary(shortestShared, true) + " ");
-                }
-            } else {
-                OutputText.text = "No valid autocompletions.";
+            if (!string.IsNullOrEmpty(output)) {
+                OutputText.text = output;
             }
         }
 
@@ -258,31 +215,10 @@ namespace KH.Console {
             }
         }
 
-        private string GetDebugOutput() {
-            string[] cmd = CommandParser.ParseText(_currentText).ToArray();
-            StringBuilder text = new StringBuilder();
-            for (int i = 0; i < cmd.Length; i++) {
-                text.Append($"{i}: {cmd[i]}\n");
-            }
-            return text.ToString();
-        }
-
         void HandleInput(string str) {
-            string[] cmd = CommandParser.ParseText(str).ToArray();
-            string output = $"cmd: {str}\n";
-            if (cmd.Length < 1) {
-                output = "";
-            } else if (!_registeredCmds.ContainsKey(cmd[0])) {
-                output += $"Unrecognized command: {cmd[0]}\n";
-                output += "See all commands with 'help'.";
-            } else {
-                var handler = _registeredCmds[cmd[0]];
-                try {
-                    output += handler.RunCallback(cmd);
-                } catch (System.Exception e) {
-                    output += e.Message;
-                }
-            }
+            string execResult = _runner.Execute(str);
+            string output = string.IsNullOrEmpty(str) ? "" : $"cmd: {str}\n";
+            output += execResult;
             OutputText.text = output;
 
             if (!OmitDuplicatesFromHistory || str != _commandHistory.Last) {
@@ -387,39 +323,5 @@ namespace KH.Console {
                 return $"\"{text}{(addTerminatingCharacter ? '"' : "")}";
             }
         }
-    }
-
-    public struct Command {
-        /// <summary>
-        /// Name of the command.
-        /// </summary>
-        public string Name;
-        /// <summary>
-        /// If true, does not autocomplete the base command. If autocomplete is provided,
-        /// it will still perform autocompletion once the command is fully entered.
-        /// </summary>
-        public bool HideCommand;
-        /// <summary>
-        /// Description of the command. Optional.
-        /// </summary>
-        public string Description;
-        /// <summary>
-        /// The registrar responsible for the Command. Optional. Used only for bulk unregistering.
-        /// </summary>
-        public object Registrar;
-        /// <summary>
-        /// Callback for running a command. Takes in tokenized cmd invocation, with the first entry being
-        /// the command name. Returns the text to be output on running the command.
-        /// </summary>
-        public System.Func<string[], string> RunCallback;
-        /// <summary>
-        /// Callback for supporting autocomplete. Optional. Takes in the current tokenization (with 0 being the cmd
-        /// name and the final entry being the current partial string and returns an enumerable of all possible 
-        /// autocomplete values for the command's current state. 
-        /// 
-        /// NOTE: You do not need to filter based on the partial final string, as the handler will do substring matching for you.
-        /// NOTE 2: Base command name autocomplete will also be done for you.
-        /// </summary>
-        public System.Func<string[], IEnumerable<string>> Autocomplete;
     }
 }
