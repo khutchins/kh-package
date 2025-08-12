@@ -13,8 +13,8 @@ namespace KH.Console {
         private Trie _trie = new Trie();
 
         public void RegisterHandler(Command command) {
-            if (command.RunCallback == null || string.IsNullOrWhiteSpace(command.Name)) {
-                Debug.LogWarning($"Commands must have a valid Name and RunCallback specified. This will not be added.");
+            if ((command.RunCallback == null && command.RunCallbackAsync == null) || string.IsNullOrWhiteSpace(command.Name)) {
+                Debug.LogWarning($"Commands must have a valid Name and RunCallback or RunCallbackAsync specified. This will not be added.");
                 return;
             }
             if (_registeredCmds.ContainsKey(command.Name)) {
