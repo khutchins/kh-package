@@ -14,9 +14,9 @@ namespace KH.SceneStuff {
     /// OnBeforeLoadPersistent
     /// PersistentObjects
     /// OnAfterLoadPersistent
-    /// OnBeforeLoadSceneSpecific
+    /// OnBeforeLoadSceneScoped
     /// SceneScopedObjects
-    /// OnAfterLoadSceneSpecific
+    /// OnAfterLoadSceneScoped
     /// OnAfterAwake
     /// </summary>
     [DefaultExecutionOrder(-5)]
@@ -47,6 +47,8 @@ namespace KH.SceneStuff {
             OnBeforeLoadSceneScoped();
             LoadAllPrefabs(SceneScopedPrefabs);
             OnAfterLoadSceneScoped();
+
+            OnAfterAwake();
         }
 
         protected void LoadAllPrefabs(GameObject[] objects) {

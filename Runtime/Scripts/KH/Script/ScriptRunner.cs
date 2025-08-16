@@ -113,6 +113,8 @@ namespace KH.Console {
         /// Otherwise, we run the sync callback and set the output once.
         /// </summary>
         public IEnumerator ExecuteAsync(string str, Action<string> setOutput) {
+            // Comment.
+            if (str.TrimStart().StartsWith("#")) yield break;
             var cmd = CommandParser.ParseText(str).ToArray();
             if (setOutput == null) setOutput = (string _) => { };
             if (cmd.Length < 1) { setOutput?.Invoke(""); yield break; }
