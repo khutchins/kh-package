@@ -17,20 +17,22 @@ namespace KH.Editor {
 			public readonly string Extension;
 			public readonly BuildTarget BuildTarget;
 			public readonly bool ShouldCopyFilesAndFolders;
+			public readonly bool ShouldWrapInDirectory;
 
-			public Platform(string name, string folderName, string extension, BuildTarget buildTarget, bool shouldCopyFilesAndFolders) {
+			public Platform(string name, string folderName, string extension, BuildTarget buildTarget, bool shouldCopyFilesAndFolders, bool shouldWrapInDirectory) {
 				Name = name;
 				FolderName = folderName;
 				Extension = extension;
 				BuildTarget = buildTarget;
 				ShouldCopyFilesAndFolders = shouldCopyFilesAndFolders;
+				ShouldWrapInDirectory = shouldWrapInDirectory;
 			}
 		}
 
-		public static readonly Platform PLATFORM_WIN = new Platform("Windows", "win", ".exe", BuildTarget.StandaloneWindows64, true);
-		public static readonly Platform PLATFORM_LINUX = new Platform("Linux", "lin", ".x64", BuildTarget.StandaloneLinux64, true);
-		public static readonly Platform PLATFORM_MAC = new Platform("Mac", "mac", null, BuildTarget.StandaloneOSX, true);
-		public static readonly Platform PLATFORM_WEBGL = new Platform("WebGL", "web", null, BuildTarget.WebGL, false);
+		public static readonly Platform PLATFORM_WIN = new Platform("Windows", "win", ".exe", BuildTarget.StandaloneWindows64, true, false);
+		public static readonly Platform PLATFORM_LINUX = new Platform("Linux", "lin", ".x64", BuildTarget.StandaloneLinux64, true, false);
+		public static readonly Platform PLATFORM_MAC = new Platform("Mac", "mac", null, BuildTarget.StandaloneOSX, true, false);
+		public static readonly Platform PLATFORM_WEBGL = new Platform("WebGL", "web", null, BuildTarget.WebGL, false, true);
 
 		public static readonly Platform[] SupportedPlatforms = { PLATFORM_WIN, PLATFORM_LINUX, PLATFORM_MAC, PLATFORM_WEBGL };
 
@@ -49,9 +51,11 @@ namespace KH.Editor {
 				foreach (string service in ddServices) {
 					string path = PathForBuildTarget(target, service);
 					Debug.Log("Building " + target.Name);
+
+					String locationPath = target.ShouldWrapInDirectory ? Path.Combine(path, PlayerSettings.productName) : path;
                     BuildPlayerOptions options = new BuildPlayerOptions {
                         scenes = EditorBuildSettings.scenes.Select(x => x.path).ToArray(),
-                        locationPathName = Combine(path, PlayerSettings.productName),
+                        locationPathName = Path.Combine(path, PlayerSettings.productName),
                         target = target.BuildTarget,
                         options = BuildOptions.ShowBuiltPlayer,
                         extraScriptingDefines = new string[] { NormalizeDDName(service) }
@@ -67,7 +71,7 @@ namespace KH.Editor {
 						string[] foldersToPull = new string[2];
 						foldersToPull[0] = target.FolderName;
 						foldersToPull[1] = service;
-						CopyFilesAndFolders(Combine(Application.dataPath, "Output"), path, foldersToPull);
+						CopyFilesAndFolders(Path.Combine(Application.dataPath, "Output"), path, foldersToPull);
 					}
 				}
 			}
@@ -79,7 +83,7 @@ namespace KH.Editor {
 
         private static void PlatformSpecificPostProcessing(Platform target, string path) {
 			if (target.Extension != null) {
-				string appPath = Combine(path, PlayerSettings.productName);
+				string appPath = Path.Combine(path, PlayerSettings.productName);
 				string pathWithExt = appPath + target.Extension;
 				Debug.Log("Moving " + path + " -> " + pathWithExt);
 				File.Move(appPath, pathWithExt);
@@ -89,7 +93,8 @@ namespace KH.Editor {
 		private static string PathForBuildTarget(Platform platform, string ddService) {
 			string parent = Directory.GetParent(Application.dataPath).ToString();
 			Debug.Log("Parent: " + parent);
-			string platformPath = Combine(parent, "build", ddService, platform.FolderName, PlayerSettings.productName);
+            string sanitizedName = SanitizeName(PlayerSettings.productName);
+            string platformPath = Path.Combine(parent, "build", ddService, platform.FolderName, sanitizedName);
 
 			if (Directory.Exists(platformPath)) {
 				FileUtil.DeleteFileOrDirectory(platformPath);
@@ -140,15 +145,8 @@ namespace KH.Editor {
 			}
 		}
 
-		static string Combine(params string[] paths) {
-			string str = "";
-			if (paths.Length > 0) {
-				str = paths[0];
-				for (int i = 1; i < paths.Length; i++) {
-					str += "/" + paths[i];
-				}
-			}
-			return str;
-		}
-	}
+        static string SanitizeName(string name) {
+            return name.Replace(" ", "");
+        }
+    }
 }
