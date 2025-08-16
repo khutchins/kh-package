@@ -55,7 +55,7 @@ namespace KH.Editor {
 					String locationPath = target.ShouldWrapInDirectory ? Path.Combine(path, PlayerSettings.productName) : path;
                     BuildPlayerOptions options = new BuildPlayerOptions {
                         scenes = EditorBuildSettings.scenes.Select(x => x.path).ToArray(),
-                        locationPathName = locationPath,
+                        locationPathName = Path.Combine(path, PlayerSettings.productName),
                         target = target.BuildTarget,
                         options = BuildOptions.ShowBuiltPlayer,
                         extraScriptingDefines = new string[] { NormalizeDDName(service) }
@@ -93,8 +93,7 @@ namespace KH.Editor {
 		private static string PathForBuildTarget(Platform platform, string ddService) {
 			string parent = Directory.GetParent(Application.dataPath).ToString();
 			Debug.Log("Parent: " + parent);
-            string sanitizedName = SanitizeName(PlayerSettings.productName);
-            string platformPath = Path.Combine(parent, "build", ddService, platform.FolderName, sanitizedName);
+            string platformPath = Path.Combine(parent, "build", ddService, platform.FolderName, PlayerSettings.productName);
 
 			if (Directory.Exists(platformPath)) {
 				FileUtil.DeleteFileOrDirectory(platformPath);
@@ -144,9 +143,5 @@ namespace KH.Editor {
 				FileUtil.DeleteFileOrDirectory(file);
 			}
 		}
-
-        static string SanitizeName(string name) {
-            return name.Replace(" ", "");
-        }
     }
 }
