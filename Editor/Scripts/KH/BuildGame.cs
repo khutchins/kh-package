@@ -29,10 +29,10 @@ namespace KH.Editor {
 			}
 		}
 
-		public static readonly Platform PLATFORM_WIN = new Platform("Windows", "win", ".exe", BuildTarget.StandaloneWindows64, true, false);
-		public static readonly Platform PLATFORM_LINUX = new Platform("Linux", "lin", ".x64", BuildTarget.StandaloneLinux64, true, false);
-		public static readonly Platform PLATFORM_MAC = new Platform("Mac", "mac", null, BuildTarget.StandaloneOSX, true, false);
-		public static readonly Platform PLATFORM_WEBGL = new Platform("WebGL", "web", null, BuildTarget.WebGL, false, true);
+		public static readonly Platform PLATFORM_WIN = new Platform("Windows", "win", ".exe", BuildTarget.StandaloneWindows64, true, true);
+		public static readonly Platform PLATFORM_LINUX = new Platform("Linux", "lin", ".x64", BuildTarget.StandaloneLinux64, true, true);
+		public static readonly Platform PLATFORM_MAC = new Platform("Mac", "mac", null, BuildTarget.StandaloneOSX, true, true);
+		public static readonly Platform PLATFORM_WEBGL = new Platform("WebGL", "web", null, BuildTarget.WebGL, false, false);
 
 		public static readonly Platform[] SupportedPlatforms = { PLATFORM_WIN, PLATFORM_LINUX, PLATFORM_MAC, PLATFORM_WEBGL };
 
