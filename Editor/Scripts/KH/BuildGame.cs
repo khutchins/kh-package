@@ -55,7 +55,7 @@ namespace KH.Editor {
 					String locationPath = target.ShouldWrapInDirectory ? Path.Combine(path, PlayerSettings.productName) : path;
                     BuildPlayerOptions options = new BuildPlayerOptions {
                         scenes = EditorBuildSettings.scenes.Select(x => x.path).ToArray(),
-                        locationPathName = Path.Combine(path, PlayerSettings.productName),
+                        locationPathName = locationPath,
                         target = target.BuildTarget,
                         options = BuildOptions.ShowBuiltPlayer,
                         extraScriptingDefines = new string[] { NormalizeDDName(service) }
