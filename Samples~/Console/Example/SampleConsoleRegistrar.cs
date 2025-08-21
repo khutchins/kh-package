@@ -1,5 +1,6 @@
 using KH.Console;
 using KH.Script;
+using System.Collections;
 using System.Text;
 using UnityEngine;
 
@@ -78,6 +79,18 @@ public class SampleConsoleRegistrar : MonoBehaviour {
             RunCallback = (string[] cmd) => {
                 throw new System.Exception("This message was the exception text!");
             }
+        });
+
+        IEnumerator AsyncThrow(string[] cmd, System.Action<string> _) {
+            yield return null;
+            throw new System.Exception("This message will not be seen in the console because it's async!");
+        }
+
+        Channel.Register(new Command() {
+            Name = "throw_async",
+            Description = "Throws a real exception.",
+            Registrar = this,
+            RunCallbackAsync = AsyncThrow,
         });
 
         // You can do your own autocomplete.

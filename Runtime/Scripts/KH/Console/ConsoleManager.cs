@@ -216,7 +216,7 @@ namespace KH.Console {
         }
 
         void HandleInput(string str) {
-            string execResult = _runner.Execute(str);
+            string execResult = _runner.RunOrStart(this, str);
             string output = string.IsNullOrEmpty(str) ? "" : $"cmd: {str}\n";
             output += execResult;
             OutputText.text = output;

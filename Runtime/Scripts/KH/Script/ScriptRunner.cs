@@ -89,10 +89,15 @@ namespace KH.Console {
             }
         }
 
+        private static bool IsComment(string str) {
+            return str.TrimStart().StartsWith("#");
+        }
+
         /// <summary>
         /// Execute a command line and return the resulting output string.
         /// </summary>
         public string Execute(string str) {
+            if (IsComment(str)) return "";
             var cmd = CommandParser.ParseText(str).ToArray();
             if (cmd.Length < 1) {
                 return "";
@@ -107,16 +112,36 @@ namespace KH.Console {
             }
         }
 
+        public string RunOrStart(MonoBehaviour runner, string str) {
+            if (IsComment(str)) return "";
+            var cmd = CommandParser.ParseText(str).ToArray();
+            if (cmd.Length < 1) {
+                return "";
+            }
+            if (!_registeredCmds.TryGetValue(cmd[0], out var handler)) {
+                return $"Unrecognized command: {cmd[0]}\nSee all commands with 'help'.";
+            }
+            try {
+                if (handler.RunCallbackAsync != null) {
+                    // Don't wait for this to finish, as they're often dependent on in-game actions, which could cause a softlock.
+                    runner.StartCoroutine(handler.RunCallbackAsync(cmd, (str) => { }));
+                    return "Running asynchronous command.";
+                }
+                return handler.RunCallback(cmd);
+            } catch (System.Exception e) {
+                return e.Message;
+            }
+        }
+
         /// <summary>
         /// Execute a line using a coroutine-friendly path.
         /// If the command has RunCallbackAsync, we yield it and let it push updates via setOutput.
         /// Otherwise, we run the sync callback and set the output once.
         /// </summary>
         public IEnumerator ExecuteAsync(string str, Action<string> setOutput) {
-            // Comment.
-            if (str.TrimStart().StartsWith("#")) yield break;
+            if (IsComment(str)) yield break;
             var cmd = CommandParser.ParseText(str).ToArray();
-            if (setOutput == null) setOutput = (string _) => { };
+            setOutput ??= (string _) => { };
             if (cmd.Length < 1) { setOutput?.Invoke(""); yield break; }
 
             if (!_registeredCmds.TryGetValue(cmd[0], out var handler)) {
