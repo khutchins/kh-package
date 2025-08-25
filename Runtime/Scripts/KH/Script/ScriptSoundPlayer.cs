@@ -25,6 +25,11 @@ namespace KH.Script {
             _audioEventsByName = (audioEvents ?? Array.Empty<AudioEvent>()).Where(x => x != null).GroupBy(x => x.name, StringComparer.OrdinalIgnoreCase).ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase);
         }
 
+#if UNITY_EDITOR
+        [KVBSCommand("play_sound", typeof(AudioEvent))]
+        private static void _KVBSDefinition() { }
+#endif
+
         private void OnEnable() {
             if (Channel == null) return;
 

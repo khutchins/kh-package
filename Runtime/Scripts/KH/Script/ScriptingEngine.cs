@@ -1,4 +1,5 @@
 using KH;
+using KH.Audio;
 using KH.Console;
 using KH.Script;
 using System;
@@ -22,6 +23,13 @@ public class ScriptingEngine : MonoBehaviour {
         RegisterBuiltins();
         INSTANCE = this;
     }
+
+#if UNITY_EDITOR
+    [KVBSCommand("wait", "float")]
+    [KVBSCommand("waitrt", "float")]
+    [KVBSCommand("log", "...string")]
+    private static void _KVBSDefinition() { }
+#endif
 
     void RegisterBuiltins() {
         IEnumerator WaitForSeconds(float amt, bool realtime) {
