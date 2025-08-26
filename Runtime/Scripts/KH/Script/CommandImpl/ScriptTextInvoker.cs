@@ -26,14 +26,14 @@ namespace KH.Script {
             if (Channel == null) return;
             if (Registry == null) return;
 
-            IEnumerator WaitForLine(string[] argv, Action<string> logger) {
-                string name = ScriptRunner.ExpectString(argv, 0);
+            IEnumerator WaitForLine(Invocation invocation) {
+                string name = invocation.ExpectString(0);
                 var queue = Registry.GetItem(name);
                 if (queue == null) {
-                    logger($"Unknown text queue '{name}'");
+                    invocation.SetOutput($"Unknown text queue '{name}'");
                     yield break;
                 }
-                string line = ScriptRunner.ExpectString(argv, 1);
+                string line = invocation.ExpectString(1);
                 yield return queue.EnqueueAndAwait(new LineSpec("", line));
             }
 

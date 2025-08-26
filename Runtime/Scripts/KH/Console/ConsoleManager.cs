@@ -48,27 +48,28 @@ namespace KH.Console {
             _runner.RegisterHandler(new Command() {
                 Name = "getver",
                 Description = "Gets the current build version.",
-                RunCallback = (string[] cmd) => {
-                    return Application.version;
+                RunCallback = (invocation) => {
+                    invocation.SetOutput(Application.version);
                 }
             });
 
             _runner.RegisterHandler(new Command() {
                 Name = "help",
                 Description = "Prints out the list of commands if no argument is given, prints out description if one is given. You know this, as you can only get this description by using it.",
-                RunCallback = (string[] cmd) => {
-                    if (cmd.Length <= 1) {
+                RunCallback = (invocation) => {
+                    if (invocation.ArgCount == 0) {
                         string commands = string.Join(' ', _runner.GetCommandNames().OrderBy(a => a));
-                        return $"Available commands: {commands}";
+                        invocation.SetOutput($"Available commands: {commands}");
                     } else {
-                        if (_runner.TryGetCommand(cmd[1], out Command value)) {
+                        string cmdName = invocation.ExpectString(0);
+                        if (_runner.TryGetCommand(cmdName, out Command value)) {
                             if (string.IsNullOrWhiteSpace(value.Description)) {
-                                return $"No description for command: {value.Name}";
+                                invocation.SetOutput($"No description for command: {value.Name}");
                             } else {
-                                return $"{value.Name}: {value.Description}";
+                                invocation.SetOutput($"{value.Name}: {value.Description}");
                             }
                         } else {
-                            return $"No command with name: {cmd[0]}";
+                            invocation.SetOutput($"No command with name: {cmdName}");
                         }
                     }
                 },
@@ -105,7 +106,6 @@ namespace KH.Console {
         }
 
         public void RegisterHandler(Command command) => _runner.RegisterHandler(command);
-        public void RegisterHandler(string command, System.Func<string[], string> callback) => _runner.RegisterHandler(command, callback);
         public void UnregisterRegistrar(object registrar) => _runner.UnregisterRegistrar(registrar);
         public void UnregisterHandler(Command command) => _runner.UnregisterHandler(command);
         public void UnregisterHandler(string command) => _runner.UnregisterHandler(command);
@@ -275,35 +275,6 @@ namespace KH.Console {
         }
 
         public void SetMenuOnTop(bool isTop) {
-        }
-
-        public static string ExpectString(string[] cmds, int idx) {
-            return GetArg(cmds, idx);
-        }
-
-        public static int ExpectInt(string[] cmds, int idx) {
-            var arg = GetArg(cmds, idx);
-            if (int.TryParse(arg, out int result)) {
-                return result;
-            } else {
-                throw new System.Exception($"Argument {idx} ({arg}) was expected to be an int, but it wasn't.");
-            }
-        }
-
-        public static float ExpectFloat(string[] cmds, int idx) {
-            var arg = GetArg(cmds, idx);
-            try {
-                return float.Parse(arg, CultureInfo.InvariantCulture);
-            } catch (System.Exception) {
-                throw new System.Exception($"Argument {idx} ({arg}) was expected to be a float, but it wasn't.");
-            }
-        }
-
-        private static string GetArg(string[] cmds, int idx) {
-            if (idx + 1 >= cmds.Length) {
-                throw new System.Exception($"Expected at least {idx + 1} arguments.");
-            }
-            return cmds[idx + 1];
         }
 
         public static string EscapeStringIfNecessary(string text, bool addTerminatingCharacter = true) {

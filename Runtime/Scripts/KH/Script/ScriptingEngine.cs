@@ -6,6 +6,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using UnityEngine;
 
 [DefaultExecutionOrder(-99)]
@@ -44,20 +45,23 @@ public class ScriptingEngine : MonoBehaviour {
         _runner.RegisterHandler(new Command {
             Name = "wait",
             Description = "wait <seconds> in scaled time.",
-            RunCallbackAsync = (args, setOutput) => WaitForSeconds(ScriptRunner.ExpectFloat(args, 0), false)
+            RunCallbackAsync = (invocation) => WaitForSeconds(invocation.ExpectFloat(0), false)
         });
 
         _runner.RegisterHandler(new Command {
             Name = "waitrt",
             Description = "waitrt <seconds> in unscaled time.",
-            RunCallbackAsync = (args, setOutput) => WaitForSeconds(ScriptRunner.ExpectFloat(args, 0), true)
+            RunCallbackAsync = (invocation) => WaitForSeconds(invocation.ExpectFloat(0), true)
         });
 
         _runner.RegisterHandler(new Command {
             Name = "log",
             Description = "Log messages.",
-            RunCallback = (args) => {
-                return string.Join(" ", args.Skip(1));
+            RunCallback = (invocation) => {
+                StringBuilder stringBuilder = new StringBuilder();
+                for (int i = 0; i < invocation.ArgCount; i++) {
+                    stringBuilder.Append(invocation.ExpectString(0)).Append(" ");
+                }
             }
         });
     }
@@ -134,9 +138,15 @@ public class ScriptingEngine : MonoBehaviour {
             }
 
             // Run this group concurrently and wait until all in the group complete.
-            var enumerators = new List<IEnumerator>(group.Count);
-            foreach (var line in group) enumerators.Add(RunSingleLine(line));
-            yield return CoroutineCoordinator.RunAll(this, enumerators);
+            if (group.Count == 0) {
+                continue;
+            } else if (group.Count == 1) {
+                yield return RunSingleLine(group[0]);
+            } else {
+                var enumerators = new List<IEnumerator>(group.Count);
+                foreach (var line in group) enumerators.Add(RunSingleLine(line));
+                yield return CoroutineCoordinator.RunAll(this, enumerators);
+            }
         }
     }
 

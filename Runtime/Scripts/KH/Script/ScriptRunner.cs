@@ -27,13 +27,6 @@ namespace KH.Console {
 
         }
 
-        public void RegisterHandler(string command, System.Func<string[], string> callback) {
-            RegisterHandler(new Command() {
-                Name = command,
-                RunCallback = callback,
-            });
-        }
-
         public void UnregisterRegistrar(object registrar) {
             foreach (Command cmd in _registeredCmds.Values.Where(x => x.Registrar == registrar).ToList()) {
                 UnregisterHandler(cmd);
@@ -93,41 +86,33 @@ namespace KH.Console {
             return str.TrimStart().StartsWith("#");
         }
 
-        /// <summary>
-        /// Execute a command line and return the resulting output string.
-        /// </summary>
-        public string Execute(string str) {
-            if (IsComment(str)) return "";
-            var cmd = CommandParser.ParseText(str).ToArray();
+        private Invocation CreateInvocation(string commandString, Action<string> setOutput = null) {
+            setOutput ??= (string _) => { };
+            if (IsComment(commandString)) return null;
+            var cmd = CommandParser.ParseText(commandString).ToArray();
             if (cmd.Length < 1) {
-                return "";
+                return null;
             }
+
             if (!_registeredCmds.TryGetValue(cmd[0], out var handler)) {
-                return $"Unrecognized command: {cmd[0]}\nSee all commands with 'help'.";
+                setOutput($"Unrecognized command: {cmd[0]}\nSee all commands with 'help'.");
+                return null;
             }
-            try {
-                return handler.RunCallback(cmd);
-            } catch (System.Exception e) {
-                return e.Message;
-            }
+            return new Invocation(this, handler, cmd, setOutput);
         }
 
         public string RunOrStart(MonoBehaviour runner, string str) {
-            if (IsComment(str)) return "";
-            var cmd = CommandParser.ParseText(str).ToArray();
-            if (cmd.Length < 1) {
-                return "";
-            }
-            if (!_registeredCmds.TryGetValue(cmd[0], out var handler)) {
-                return $"Unrecognized command: {cmd[0]}\nSee all commands with 'help'.";
-            }
+            string output = "";
+            var invocation = CreateInvocation(str, (str) => { output += str + "\n"; });
+            if (invocation == null) return output;
             try {
-                if (handler.RunCallbackAsync != null) {
+                if (invocation.Command.RunCallbackAsync != null) {
                     // Don't wait for this to finish, as they're often dependent on in-game actions, which could cause a softlock.
-                    runner.StartCoroutine(handler.RunCallbackAsync(cmd, (str) => { }));
+                    runner.StartCoroutine(invocation.Command.RunCallbackAsync(invocation));
                     return "Running asynchronous command.";
                 }
-                return handler.RunCallback(cmd);
+                invocation.Command.RunCallback(invocation);
+                return output;
             } catch (System.Exception e) {
                 return e.Message;
             }
@@ -139,63 +124,24 @@ namespace KH.Console {
         /// Otherwise, we run the sync callback and set the output once.
         /// </summary>
         public IEnumerator ExecuteAsync(string str, Action<string> setOutput) {
-            if (IsComment(str)) yield break;
-            var cmd = CommandParser.ParseText(str).ToArray();
-            setOutput ??= (string _) => { };
-            if (cmd.Length < 1) { setOutput?.Invoke(""); yield break; }
-
-            if (!_registeredCmds.TryGetValue(cmd[0], out var handler)) {
-                setOutput?.Invoke($"Unrecognized command: {cmd[0]}\nSee all commands with 'help'.");
-                yield break;
-            }
+            var invocation = CreateInvocation(str, setOutput);
+            if (invocation == null) yield break;
 
             // Prefer async if provided
-            if (handler.RunCallbackAsync != null) {
-                yield return handler.RunCallbackAsync(cmd, setOutput);
+            if (invocation.Command.RunCallbackAsync != null) {
+                yield return invocation.Command.RunCallbackAsync(invocation);
                 yield break;
             }
 
             // Fallback to sync path
-            string result;
             try {
-                result = handler.RunCallback != null ? handler.RunCallback(cmd) : "";
-            } catch (Exception e) {
-                result = e.Message;
+                invocation.Command.RunCallback?.Invoke(invocation);
+            } catch (Exception) {
             }
-            setOutput?.Invoke(result);
         }
 
         public IEnumerable<string> GetCommandNames() => _registeredCmds.Keys;
         public bool TryGetCommand(string name, out Command command) => _registeredCmds.TryGetValue(name, out command);
-
-        public static string ExpectString(string[] cmds, int idx) {
-            return GetArg(cmds, idx);
-        }
-
-        public static int ExpectInt(string[] cmds, int idx) {
-            var arg = GetArg(cmds, idx);
-            if (int.TryParse(arg, out int result)) {
-                return result;
-            } else {
-                throw new Exception($"Argument {idx} ({arg}) was expected to be an int, but it wasn't.");
-            }
-        }
-
-        public static float ExpectFloat(string[] cmds, int idx) {
-            var arg = GetArg(cmds, idx);
-            try {
-                return float.Parse(arg, CultureInfo.InvariantCulture);
-            } catch (Exception) {
-                throw new Exception($"Argument {idx} ({arg}) was expected to be a float, but it wasn't.");
-            }
-        }
-
-        private static string GetArg(string[] cmds, int idx) {
-            if (idx + 1 >= cmds.Length) {
-                throw new Exception($"Expected at least {idx + 1} arguments.");
-            }
-            return cmds[idx + 1];
-        }
 
         public static string EscapeStringIfNecessary(string text, bool addTerminatingCharacter = true) {
             if (!text.Any(char.IsWhiteSpace)) {

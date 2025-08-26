@@ -22,12 +22,12 @@ public class SampleConsoleRegistrar : MonoBehaviour {
             Name = "read_args",
             Description = "Reads all the arguments provided and shows how they're tokenized.",
             Registrar = this,
-            RunCallback = (string[] cmd) => {
+            RunCallback = (invocation) => {
                 StringBuilder text = new StringBuilder();
-                for (int i = 0; i < cmd.Length; i++) {
-                    text.Append($"{i}: {cmd[i]}\n");
+                for (int i = 0; i < invocation.ArgCount; i++) {
+                    text.Append($"{i}: {invocation.ExpectString(i)}\n");
                 }
-                return text.ToString();
+                invocation.SetOutput(text.ToString());
             }
         });
 
@@ -39,17 +39,17 @@ public class SampleConsoleRegistrar : MonoBehaviour {
             Name = "add_ints",
             Description = "Adds together all the integers provided and returns the result.",
             Registrar = this,
-            RunCallback = (string[] cmd) => {
+            RunCallback = (invocation) => {
                 int total = 0;
                 StringBuilder text = new StringBuilder();
-                for (int i = 1; i < cmd.Length; i++) {
-                    int val = ConsoleManager.ExpectInt(cmd, i - 1);
+                for (int i = 0; i < invocation.ArgCount; i++) {
+                    int val = invocation.ExpectInt(i);
                     total += val;
                     if (i == 1) text.Append(val);
                     else text.Append($" + {val}");
                 }
                 text.Append($" = {total}");
-                return text.ToString();
+                invocation.SetOutput(text.ToString());
             }
         });
 
@@ -57,17 +57,17 @@ public class SampleConsoleRegistrar : MonoBehaviour {
             Name = "add_floats",
             Description = "Adds together all the floats provided and returns the result.",
             Registrar = this,
-            RunCallback = (string[] cmd) => {
+            RunCallback = (invocation) => {
                 float total = 0;
                 StringBuilder text = new StringBuilder();
-                for (int i = 1; i < cmd.Length; i++) {
-                    float val = ConsoleManager.ExpectFloat(cmd, i - 1);
+                for (int i = 0; i < invocation.ArgCount; i++) {
+                    float val = invocation.ExpectFloat(i);
                     total += val;
                     if (i == 1) text.Append(val);
                     else text.Append($" + {val}");
                 }
                 text.Append($" = {total}");
-                return text.ToString();
+                invocation.SetOutput(text.ToString());
             }
         });
 
@@ -76,12 +76,12 @@ public class SampleConsoleRegistrar : MonoBehaviour {
             Name = "throw",
             Description = "Throws a real exception.",
             Registrar = this,
-            RunCallback = (string[] cmd) => {
+            RunCallback = (invocation) => {
                 throw new System.Exception("This message was the exception text!");
             }
         });
 
-        IEnumerator AsyncThrow(string[] cmd, System.Action<string> _) {
+        IEnumerator AsyncThrow(Invocation invocation) {
             yield return null;
             throw new System.Exception("This message will not be seen in the console because it's async!");
         }
@@ -98,8 +98,12 @@ public class SampleConsoleRegistrar : MonoBehaviour {
             Name = "autocomplete",
             Description = "Example of using autocomplete.",
             Registrar = this,
-            RunCallback = (string[] cmd) => {
-                return string.Join(' ', cmd, 1, cmd.Length - 1);
+            RunCallback = (Invocation invocation) => {
+                StringBuilder text = new StringBuilder();
+                for (int i = 0; i < invocation.ArgCount; i++) {
+                    text.Append(invocation.ExpectString(i)).Append(' ');
+                }
+                invocation.SetOutput(text.ToString());
             },
             Autocomplete = (string[] cmd) => {
                 // Remember cmd[0] is the command name (useful if you want to share these).

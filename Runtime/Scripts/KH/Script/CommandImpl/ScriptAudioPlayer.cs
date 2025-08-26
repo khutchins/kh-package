@@ -25,11 +25,11 @@ namespace KH.Script {
             if (Channel == null) return;
             if (Registry == null) return;
 
-            IEnumerator WaitForAudio(string[] argv, Action<string> logger) {
-                string name = ScriptRunner.ExpectString(argv, 0);
+            IEnumerator WaitForAudio(Invocation invocation) {
+                string name = invocation.ExpectString(0);
                 AudioEvent aevent = Registry.GetItem(name);
                 if (aevent == null) {
-                    logger($"Unknown audio event '{name}'");
+                    invocation.SetOutput($"Unknown audio event '{name}'");
                     yield break;
                 }
                 var source = aevent.PlayOneShot();

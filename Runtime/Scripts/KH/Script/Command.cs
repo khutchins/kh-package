@@ -22,14 +22,14 @@ namespace KH.Script {
         public object Registrar;
         /// <summary>
         /// Callback for running a command. Takes in tokenized cmd invocation, with the first entry being
-        /// the command name. Returns the text to be output on running the command.
+        /// the command name.
         /// </summary>
-        public System.Func<string[], string> RunCallback;
+        public System.Action<Invocation> RunCallback;
         /// <summary>
         /// Callback for running a command. Takes in tokenized cmd invocation and an action that can be used
         /// to log text (for the console output). Returns an enumerator for running in a coroutine.
         /// </summary>
-        public System.Func<string[], System.Action<string>, IEnumerator> RunCallbackAsync;
+        public System.Func<Invocation, IEnumerator> RunCallbackAsync;
         /// <summary>
         /// Callback for supporting autocomplete. Optional. Takes in the current tokenization (with 0 being the cmd
         /// name and the final entry being the current partial string and returns an enumerable of all possible 
