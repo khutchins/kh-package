@@ -13,7 +13,7 @@ namespace KH.Script {
 
         private const string OutputDirectory = "Assets/KVBScripts";
 
-        [MenuItem("Tools/KH.Tools/Generate Definition Files (from Attributes)")]
+        [MenuItem("Tools/KH.Tools/Generate def.kvbs files")]
         public static void GenerateDefinitionFiles() {
             _aliasMap = new Dictionary<Type, string>();
             Directory.CreateDirectory(OutputDirectory);
@@ -80,8 +80,32 @@ namespace KH.Script {
             foreach (var type in allTypesWithAlias) {
                 var aliasAttr = (KVBSAliasAttribute)type.GetCustomAttribute(typeof(KVBSAliasAttribute));
                 string unionString;
+                string aliasName = type.Name;
+                Type mapKeyType = type;
 
-                if (type.IsClass) {
+                if (IsSubclassOfRawGeneric(typeof(RegistrySO<>), type)) {
+                    // This is a RegistrySO subclass. Find the generic type it holds.
+                    Type assetType = null;
+                    Type currentType = type;
+                    while (currentType != null && currentType != typeof(object)) {
+                        if (currentType.IsGenericType && currentType.GetGenericTypeDefinition() == typeof(RegistrySO<>)) {
+                            assetType = currentType.GetGenericArguments()[0];
+                            break;
+                        }
+                        currentType = currentType.BaseType;
+                    }
+
+                    if (assetType == null) {
+                        Debug.LogError($"[KVBSAlias] on RegistrySO subclass '{type.Name}' failed: Could not determine the generic asset type. Skipping.");
+                        continue;
+                    }
+
+                    unionString = GetTypeStringFor(assetType);
+                    // These refer to the held asset so that it will use the name of the
+                    // held object, not the registry.
+                    aliasName = assetType.Name;
+                    mapKeyType = assetType;
+                } else if (type.IsClass) {
                     // For classes, validate that they inherit from ScriptableObject.
                     if (!typeof(ScriptableObject).IsAssignableFrom(type)) {
                         Debug.LogError($"Attribute [KVBSAlias] on class '{type.Name}' is invalid. This attribute can only be used on classes that inherit from 'ScriptableObject'. Skipping alias generation for this type.");
@@ -95,16 +119,16 @@ namespace KH.Script {
                 }
 
                 // If the type is valid, add it to our map for the next phase.
-                _aliasMap[type] = type.Name;
+                _aliasMap[mapKeyType] = aliasName;
 
                 // Group aliases into files based on their class name for better organization.
-                string className = type.DeclaringType?.Name ?? type.Name;
+                string className = aliasName;
                 if (!aliasesByFile.ContainsKey(className)) {
                     aliasesByFile[className] = new StringBuilder();
                     aliasesByFile[className].AppendLine($"# This file is auto-generated for aliases defined in '{className}'.");
                     aliasesByFile[className].AppendLine("# Do not edit it manually, as your changes will be overwritten.\n");
                 }
-                aliasesByFile[className].AppendLine($"alias {type.Name} {unionString}\n");
+                aliasesByFile[className].AppendLine($"alias {aliasName} {unionString}\n");
             }
 
             // Write all the discovered alias definitions to their respective files.
@@ -158,6 +182,15 @@ namespace KH.Script {
                 string filePath = Path.Combine(targetDirectory, $"{className}.def.kvbs");
                 File.AppendAllText(filePath, fileContent.ToString());
             }
+        }
+
+        static bool IsSubclassOfRawGeneric(Type generic, Type toCheck) {
+            while (toCheck != null && toCheck != typeof(object)) {
+                var cur = toCheck.IsGenericType ? toCheck.GetGenericTypeDefinition() : toCheck;
+                if (generic == cur) return true;
+                toCheck = toCheck.BaseType;
+            }
+            return false;
         }
     }
 }

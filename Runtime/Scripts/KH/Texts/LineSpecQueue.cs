@@ -5,7 +5,6 @@ using System.Linq;
 using UnityEngine;
 
 namespace KH.Texts {
-    [KVBSAlias]
     [CreateAssetMenu(menuName = "KH/Text/Line Spec Queue")]
     public class LineSpecQueue : HandlerQueue<LineSpec> { }
 }
