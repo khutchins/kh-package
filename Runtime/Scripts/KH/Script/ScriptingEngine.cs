@@ -24,12 +24,17 @@ public class ScriptingEngine : MonoBehaviour {
         INSTANCE = this;
     }
 
-#if UNITY_EDITOR
-    [KVBSCommand("wait", "float")]
-    [KVBSCommand("waitrt", "float")]
-    [KVBSCommand("log", "...string")]
-    private static void _KVBSDefinition() { }
-#endif
+    [KVBSCommand("wait", "Waits the given amount of time (scaled).")]
+    [KVBSArg("float", "duration", "The time to wait in seconds.")]
+    private static void _KVBSWaitDefinition() { }
+
+    [KVBSCommand("waitrt", "Waits the given amount of time (unscaled).")]
+    [KVBSArg("float", "duration", "The time to wait in seconds.")]
+    private static void _KVBSWaitRTDefinition() { }
+
+    [KVBSCommand("log", "Logs the messages to the console.")]
+    [KVBSArg("string", "message", "The message to log", true)]
+    private static void _KVBSLog() { }
 
     void RegisterBuiltins() {
         IEnumerator WaitForSeconds(float amt, bool realtime) {

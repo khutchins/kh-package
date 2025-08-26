@@ -26,10 +26,10 @@ namespace KH.Script {
             _textQueuesByName = (textQueues ?? Array.Empty<LineSpecQueue>()).Where(x => x != null).GroupBy(x => x.name, StringComparer.OrdinalIgnoreCase).ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase);
         }
 
-#if UNITY_EDITOR
-        [KVBSCommand("say_text", typeof(LineSpecQueue), "string")]
+        [KVBSCommand("say_text", "Plays a text line to the given queue.")]
+        [KVBSArg(typeof(LineSpecQueue), "queue", "The queue to enqueue the line into.")]
+        [KVBSArg("string", "line", "The line to enqueue.")]
         private static void _KVBSDefinition() { }
-#endif
 
         private void OnEnable() {
             if (Channel == null) return;
