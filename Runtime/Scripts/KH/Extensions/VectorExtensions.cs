@@ -11,13 +11,28 @@ namespace KH.Extensions {
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector3 ToVectorXvY(this Vector2 vec, float v) {
+            return new Vector3(vec.x, v, vec.y);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector3 ToVector0XY(this Vector2 vec) {
             return new Vector3(0, vec.x, vec.y);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector3 ToVectorvXY(this Vector2 vec, float v) {
+            return new Vector3(v, vec.x, vec.y);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector3 ToVectorXY0(this Vector2 vec) {
             return new Vector3(vec.x, vec.y, 0);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector3 ToVectorXYv(this Vector2 vec, float v) {
+            return new Vector3(vec.x, vec.y, v);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -41,13 +56,28 @@ namespace KH.Extensions {
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector3Int ToVectorXvY(this Vector2Int vec, int v) {
+            return new Vector3Int(vec.x, v, vec.y);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector3Int ToVector0XY(this Vector2Int vec) {
             return new Vector3Int(0, vec.x, vec.y);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector3Int ToVectorvXY(this Vector2Int vec, int v) {
+            return new Vector3Int(v, vec.x, vec.y);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector3Int ToVectorXY0(this Vector2Int vec) {
             return new Vector3Int(vec.x, vec.y, 0);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector3Int ToVectorXYv(this Vector2Int vec, int v) {
+            return new Vector3Int(vec.x, vec.y, v);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
