@@ -12,10 +12,10 @@ namespace KH.SceneStuff {
 
         [SerializeField]
         private MenuList[] MenuPrefabs;
+        [Tooltip("Prefabs that should only be loaded in this scene.")]
         [SerializeField]
         private GameObject[] BonusPrefabs;
 
-        [Header("DON'T OVERRIDE ABOVE!")]
 
         [SerializeField]
         private MenuType _menuType;
