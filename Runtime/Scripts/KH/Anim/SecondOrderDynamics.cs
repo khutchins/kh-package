@@ -63,6 +63,9 @@ namespace KH.Anim {
             return _y;
         }
 
+        public void AddVelocity(T v) {
+            _yd = Plus(_yd, v);
+        }
 
         abstract protected T Times(T obj, float scalar);
         abstract protected T Divide(T obj, float scalar);

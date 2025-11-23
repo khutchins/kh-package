@@ -23,6 +23,7 @@ namespace KH.Infinite {
 
         private readonly Dictionary<Vector2Long, T> _chunkCache = new Dictionary<Vector2Long, T>();
         private readonly List<T> _chunkInfoList = new();
+        private static readonly int CHEANUP_CHECKS_PER_FRAME = 100;
 
         public ChunkManager(Vector2Int smallestUnit) {
             _smallestUnit = smallestUnit;
@@ -201,6 +202,10 @@ namespace KH.Infinite {
                         // Don't want it to hang on clearing. Not sure if that'll happen, but hey, whatever.
                         clears++;
                         if (clears % 10 == 0) yield return null;
+                    }
+                    if (i % CHEANUP_CHECKS_PER_FRAME == (CHEANUP_CHECKS_PER_FRAME - 1)) {
+                        // Don't go through the whole array every frame unless it's small.
+                        yield return null;
                     }
                 }
                 yield return null;
