@@ -67,6 +67,11 @@ namespace KH.Anim {
             _yd = Plus(_yd, v);
         }
 
+        public void SetState(T offset) {
+            _y = offset;
+            _yd = DefaultValue();
+        }
+
         abstract protected T Times(T obj, float scalar);
         abstract protected T Divide(T obj, float scalar);
         abstract protected T Plus(T obj1, T obj2);
