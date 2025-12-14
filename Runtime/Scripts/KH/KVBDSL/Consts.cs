@@ -6,7 +6,9 @@ namespace KH.KVBDSL {
     public static class Consts {
         public const string TYPE_STRING = "s";
         public const string TYPE_INT = "i";
+        public const string TYPE_LONG = "l";
         public const string TYPE_FLOAT = "f";
+        public const string TYPE_DOUBLE = "d";
         public const string TYPE_BOOL = "b";
         public const string TYPE_RGB = "_rgb";
         public const string TYPE_RGBA = "_rgba";

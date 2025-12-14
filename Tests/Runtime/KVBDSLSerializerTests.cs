@@ -44,6 +44,8 @@ namespace KH.KVBDSL {
             values["key7"] = "\nfoo";
             values["key9"] = new Color(80f / 255, 60f / 255, 40f / 255);
             values["foo bar"] = 32;
+            values["key_long"] = 5L;
+            values["key_double"] = 5.5;
             AssertSurvivesRoundTrip(values);
 
             // Check that escapes happen correctly with items translated into multi-line strings.
@@ -67,6 +69,8 @@ namespace KH.KVBDSL {
             values["key7"] = "\nfoo";
             values["key8"] = new Color(.5f, .375f, .25f);
             values["key9"] = new Color(.5f, .375f, .25f, .5f);
+            values["key10"] = 5L;
+            values["key11"] = 5.5;
 
             Assert.AreEqual(BootlegMLS(
                 "key1: s foo",
@@ -87,6 +91,8 @@ namespace KH.KVBDSL {
                 "\"\"\"",
                 "key8: _rgb #806040",
                 "key9: _rgba #80604080",
+                "key10: l 5",
+                "key11: d 5.5",
                 ""
             ), new Serializer().Serialize(values));
         }
@@ -189,6 +195,29 @@ namespace KH.KVBDSL {
             // Single backslashes should not find themselves escaping the following unescaped letter.
             AssertMLS("\n\\\\t", "\n\\t");
             AssertMLS("\n測試字串", "\n測試字串");
+        }
+
+        public void TestLong() {
+            // Some basic cases.
+            AssertExpected("l 5000000000", 5000000000L);
+            AssertExpected("l -9223372036854775808", long.MinValue);
+            AssertExpected("l 9223372036854775807", long.MaxValue);
+
+            // Verify that it doesn't deserialize as int.
+            AssertExpected("l 5", 5L);
+        }
+
+        [Test]
+        public void TestDouble() {
+            // Some basic cases.
+            AssertExpected("d 5.5", 5.5d);
+            AssertExpected("d -12345.6789", -12345.6789d);
+
+            // Verify scientific notation handling matches CultureInfo.InvariantCulture
+            AssertExpected("d 1E+20", 1E+20d);
+
+            // Verify distinction from float ("f 5.5")
+            AssertExpected("d 5.5", 5.5d);
         }
 
         void AssertSurvivesRoundTrip(Dictionary<string, object> dict) {

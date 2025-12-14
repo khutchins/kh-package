@@ -40,6 +40,16 @@ namespace KH.KVBDSL {
             }
             return (curr, output);
         });
+        private static readonly TypeHandler LongHandler = new TypeHandler(Consts.TYPE_LONG, (Deserializer ds, string input, int start) => {
+            int curr = ReadToEndOfLine(input, start, out string str);
+            object output = null;
+            if (long.TryParse(str, NumberStyles.Integer, CultureInfo.InvariantCulture, out long result)) {
+                output = result;
+            } else {
+                curr = ReadToNextLineAndOutputError(input, start, "Invalid long format");
+            }
+            return (curr, output);
+        });
         private static readonly TypeHandler FloatHandler = new TypeHandler(Consts.TYPE_FLOAT, (Deserializer ds, string input, int start) => {
             int curr = ReadToEndOfLine(input, start, out string str);
             object output = null;
@@ -47,6 +57,16 @@ namespace KH.KVBDSL {
                 output = result;
             } else {
                 curr = ReadToNextLineAndOutputError(input, start, "Invalid float format");
+            }
+            return (curr, output);
+        });
+        private static readonly TypeHandler DoubleHandler = new TypeHandler(Consts.TYPE_DOUBLE, (Deserializer ds, string input, int start) => {
+            int curr = ReadToEndOfLine(input, start, out string str);
+            object output = null;
+            if (double.TryParse(str, NumberStyles.Float, CultureInfo.InvariantCulture, out double result)) {
+                output = result;
+            } else {
+                curr = ReadToNextLineAndOutputError(input, start, "Invalid double format");
             }
             return (curr, output);
         });
@@ -191,7 +211,9 @@ namespace KH.KVBDSL {
 
         public static Dictionary<string, TypeHandler> Handlers = new Dictionary<string, TypeHandler>() {
             { IntHandler.Type, IntHandler },
+            { LongHandler.Type, LongHandler },
             { FloatHandler.Type, FloatHandler },
+            { DoubleHandler.Type, DoubleHandler },
             { BoolHandler.Type, BoolHandler },
             { StringHandler.Type, StringHandler },
             { StringHandlerSingleQuote.Type, StringHandlerSingleQuote },

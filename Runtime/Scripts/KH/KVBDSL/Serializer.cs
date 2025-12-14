@@ -22,9 +22,19 @@ namespace KH.KVBDSL {
             sb.Append((int)obj);
         });
 
+        private static readonly TypeHandler LongHandler = new TypeHandler((object obj) => obj is long, (object obj, StringBuilder sb) => {
+            sb.Append($"{Consts.TYPE_LONG} ");
+            sb.Append((long)obj);
+        });
+
         private static readonly TypeHandler FloatHandler = new TypeHandler((object obj) => obj is float, (object obj, StringBuilder sb) => {
             sb.Append($"{Consts.TYPE_FLOAT} ");
             sb.Append(((float)obj).ToString(CultureInfo.InvariantCulture));
+        });
+
+        private static readonly TypeHandler DoubleHandler = new TypeHandler((object obj) => obj is double, (object obj, StringBuilder sb) => {
+            sb.Append($"{Consts.TYPE_DOUBLE} ");
+            sb.Append(((double)obj).ToString(CultureInfo.InvariantCulture));
         });
 
         private static readonly TypeHandler BoolHandler = new TypeHandler((object obj) => obj is bool, (object obj, StringBuilder sb) => {
@@ -43,7 +53,7 @@ namespace KH.KVBDSL {
         });
 
         public static List<TypeHandler> Handlers = new List<TypeHandler> {
-            IntHandler, FloatHandler, BoolHandler, RGBHandler, RGBAHandler
+            IntHandler, LongHandler, FloatHandler, DoubleHandler, BoolHandler, RGBHandler, RGBAHandler
         };
 
         [Flags]

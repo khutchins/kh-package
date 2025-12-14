@@ -170,6 +170,18 @@ namespace KH.KVBDSL {
         }
 
         [Test]
+        public void TestLong() {
+            AssertLong(5000000000L, "5000000000");
+            AssertLong(-9223372036854775808, "-9223372036854775808");
+            AssertLong(9223372036854775807, "9223372036854775807");
+            AssertLong(2147483648L, "2147483648");
+            AssertLong(0, "0");
+
+            AssertBadParse("l 5.5");
+            AssertBadParse("l foo");
+        }
+
+        [Test]
         public void TestFloat() {
             AssertFloat(-1, "-1");
             AssertFloat(1, "1");
@@ -193,6 +205,30 @@ namespace KH.KVBDSL {
 
             // Verify that the deserializer uses '.' regardless.
             AssertFloat(1.5f, "1.5");
+        }
+
+
+        [Test]
+        public void TestDouble() {
+            AssertDouble(5.5d, "5.5");
+            AssertDouble(-12345.6789d, "-12345.6789");
+            AssertDouble(1E+20d, "1E+20");
+            AssertDouble(0d, "0");
+
+            AssertBadParse("d 5,5");
+            AssertBadParse("d foo");
+        }
+
+        [Test]
+        public void TestDoubleWithCommaSeparatorCulture() {
+            // France uses ',' as a decimal separator.
+            Thread.CurrentThread.CurrentCulture = new CultureInfo("fr-FR");
+
+            // Verify that it's the culture is used by default and formats as ','.
+            Assert.AreEqual(1.5, double.Parse("1,5"));
+
+            // Verify that the deserializer uses '.' regardless.
+            AssertDouble(1.5, "1.5");
         }
 
         [Test]
@@ -367,6 +403,8 @@ namespace KH.KVBDSL {
             file.AppendLine("  some ok text. \"\"\"");
             file.AppendLine("key9: _rgb #806040");
             file.AppendLine("key10: _rgba #80604080");
+            file.AppendLine("key_long: l 5");
+            file.AppendLine("key_double: d -1.5");
             file.AppendLine("key999:i 1");
             Dictionary<string, object> expected = new Dictionary<string, object>();
             expected["key0"] = 1;
@@ -381,6 +419,8 @@ namespace KH.KVBDSL {
             expected["key8"] = "this is\nsome ok text.";
             expected["key9"] = new Color(128f / 255, 96f / 255, 64f / 255);
             expected["key10"] = new Color(128f / 255, 96f / 255, 64f / 255, 128f / 255);
+            expected["key_long"] = 5L;
+            expected["key_double"] = -1.5;
             expected["key999"] = 1;
 
             var actual = new Deserializer().Parse(file.ToString());
@@ -427,8 +467,17 @@ namespace KH.KVBDSL {
             SimpleDictAssert($"key:i {testStr}", "key", expected);
         }
 
+        private static void AssertLong(long expected, string testStr) {
+            SimpleDictAssert($"key:l {testStr}", "key", expected);
+        }
+
+
         private static void AssertFloat(float expected, string testStr) {
             SimpleDictAssert($"key:f {testStr}", "key", expected);
+        }
+
+        private static void AssertDouble(double expected, string testStr) {
+            SimpleDictAssert($"key:d {testStr}", "key", expected);
         }
 
         private static void AssertBool(bool expected, string testStr) {
