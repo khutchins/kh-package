@@ -223,6 +223,68 @@ namespace KH.Save {
         private void OpenEditorToFile() {
             EditorUtility.RevealInFinder(SavePath());
         }
+
+        [ContextMenu("Create Missing References as Sub-Assets")]
+        private void CreateMissingReferences() {
+            var fields = GetFieldInfos();
+            bool changed = false;
+
+            foreach (var field in fields) {
+                if (!typeof(ValueReference).IsAssignableFrom(field.FieldType)) continue;
+
+                var currentValue = field.GetValue(this) as ScriptableObject;
+
+                if (currentValue == null) {
+                    var newRef = ScriptableObject.CreateInstance(field.FieldType);
+                    newRef.name = field.Name;
+
+                    AssetDatabase.AddObjectToAsset(newRef, this);
+
+                    field.SetValue(this, newRef);
+                    changed = true;
+                    Debug.Log($"Created sub-asset for: {field.Name}");
+                }
+            }
+
+            if (changed) {
+                EditorUtility.SetDirty(this);
+                AssetDatabase.SaveAssets();
+                AssetDatabase.Refresh();
+            }
+        }
+
+        [ContextMenu("Cleanup Unused Sub-Assets")]
+        private void CleanupUnusedSubAssets() {
+            string path = AssetDatabase.GetAssetPath(this);
+
+            Object[] allAssets = AssetDatabase.LoadAllAssetsAtPath(path);
+            HashSet<Object> referencedAssets = new HashSet<Object>();
+            foreach (var field in GetFieldInfos()) {
+                var val = field.GetValue(this) as Object;
+                if (val != null) referencedAssets.Add(val);
+            }
+
+            bool changed = false;
+
+            // Destroy unused subassets.
+            foreach (var asset in allAssets) {
+                if (asset == this) continue;
+
+                if (asset is ValueReference && !referencedAssets.Contains(asset)) {
+                    Debug.Log($"Deleting unused sub-asset: {asset.name}");
+                    DestroyImmediate(asset, true);
+                    changed = true;
+                }
+            }
+
+            if (changed) {
+                EditorUtility.SetDirty(this);
+                AssetDatabase.SaveAssets();
+                AssetDatabase.ImportAsset(path);
+            } else {
+                Debug.Log("No unused sub-assets found.");
+            }
+        }
 #endif
     }
 }
