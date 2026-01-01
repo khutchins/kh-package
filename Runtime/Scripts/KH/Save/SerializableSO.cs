@@ -219,6 +219,41 @@ namespace KH.Save {
             Debug.Log($"Created default settings at: {assetPath}");
         }
 
+        [ContextMenu("Update Default Settings Asset")]
+        private void UpdateDefaultTextAsset() {
+            if (DefaultValues == null) {
+                Debug.LogWarning("DefaultValues asset is not assigned. Creating asset instead.");
+                CreateDefaultTextAsset();
+                return;
+            }
+
+            string assetPath = AssetDatabase.GetAssetPath(DefaultValues);
+
+            var existingDict = new Deserializer().Parse(DefaultValues.text);
+            existingDict ??= new Dictionary<string, object>();
+
+            var currentValues = ReadCurrentFieldValues();
+
+            bool changed = false;
+            foreach (var entry in currentValues) {
+                if (!existingDict.ContainsKey(entry.Key)) {
+                    existingDict[entry.Key] = entry.Value;
+                    changed = true;
+                }
+            }
+
+            if (changed) {
+                string newContent = new Serializer().Serialize(existingDict);
+                File.WriteAllText(assetPath, newContent);
+
+                AssetDatabase.ImportAsset(assetPath);
+                AssetDatabase.Refresh();
+                Debug.Log($"Updated {assetPath} with missing default values.");
+            } else {
+                Debug.Log("Default settings are already up to date.");
+            }
+        }
+
         [ContextMenu("Show File In Explorer")]
         private void OpenEditorToFile() {
             EditorUtility.RevealInFinder(SavePath());
