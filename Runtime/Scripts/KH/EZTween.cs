@@ -190,15 +190,18 @@ namespace KH {
 				return C3 * t * t * t - C1 * t * t;
 			};
 
-			public static Func<float, float> EaseOutBack = (float t) => {
-				t = 1 - Mathf.Clamp(t, 0, 1);
-				return 1 + C3 * t * t * t + C1 * t * t;
-			};
+            public static Func<float, float> EaseOutBack = (float t) => {
+                t = Mathf.Clamp(t, 0, 1) - 1;
+                return 1 + C3 * t * t * t + C1 * t * t;
+            };
 
 			public static Func<float, float> EaseInOutBack = (float t) => {
-				return t < 0.5f
-					? (Mathf.Pow(2 * t, 2) * ((C2 + 1) * 2 * t - C2)) / 2f
-					: (Mathf.Pow(2 * t - 2, 2) * ((C2 + 1) * (t * 2 - 2) + C2) + 2) / 2f;
+                t = Mathf.Clamp(t, 0, 1);
+                float f1 = 2 * t;
+                float f2 = 2 * t - 2;
+                return t < 0.5f
+					? (f1 * f1 * ((C2 + 1) * f1 - C2)) / 2f
+					: (f2 * f2 * ((C2 + 1) * f2 + C2) + 2) / 2f;
 			};
 
 			public static Func<float, float> EaseInBounce = (float t) => {
