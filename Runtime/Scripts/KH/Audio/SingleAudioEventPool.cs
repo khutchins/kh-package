@@ -71,6 +71,7 @@ namespace KH.Audio {
             AudioSource audioSource = ASHelper.MakeAudioSource();
             audioSource.gameObject.name = $"AS: {this.name} (Pool)";
             audioSource.outputAudioMixerGroup = MixerGroup;
+            audioSource.gameObject.AddComponent<AudioProxy>();
             audioSource.gameObject.SetActive(false);
             return audioSource;
         }

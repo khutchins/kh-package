@@ -1,6 +1,7 @@
 using UnityEngine;
 
 namespace KH.Audio {
+    [CreateAssetMenu(menuName = "KH/Audio Events/StartLoopStop")]
     public class StartLoopStopAudioEvent : AudioEvent {
         public AudioEvent StartSound;
         public AudioEvent LoopSound;

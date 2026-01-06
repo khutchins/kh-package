@@ -17,6 +17,7 @@ namespace KH.Audio {
 
         public override AudioPlaybackHandle CreateHandle(AudioSource source, AudioProxy runner, PlaybackConfig config, bool managed) {
             source.clip = clip;
+            source.loop = false;
             source.volume = Random.Range(volume.minValue, volume.maxValue) * config.VolumeMod;
             source.pitch = Random.Range(pitch.minValue, pitch.maxValue) * config.PitchMod;
             source.outputAudioMixerGroup = MixerGroup;
