@@ -4,7 +4,7 @@ using Random = UnityEngine.Random;
 
 namespace KH.Audio {
 	[CreateAssetMenu(menuName = "KH/Audio Events/WeightedRandom")]
-	public class WeightedRandomAudioEvent : MultipleAudioEvent {
+	public class WeightedRandomAudioEvent : AudioEvent {
 		[Serializable]
 		public struct CompositeEntry {
 			public AudioEvent Event;
@@ -13,7 +13,7 @@ namespace KH.Audio {
 
 		public CompositeEntry[] Entries;
 
-		internal override AudioEvent NextEvent() {
+		private AudioEvent NextEvent() {
 			float totalWeight = 0;
 			for (int i = 0; i < Entries.Length; i++) {
 				totalWeight += Entries[i].Weight;
@@ -30,5 +30,11 @@ namespace KH.Audio {
 			}
 			return null;
 		}
-	}
+
+        public override AudioPlaybackHandle CreateHandle(AudioSource source, AudioProxy runner, PlaybackConfig config, bool isManaged) {
+            var aevent = NextEvent();
+			if (aevent == null) return null;
+			return aevent.CreateHandle(source, runner, config, isManaged);
+        }
+    }
 }

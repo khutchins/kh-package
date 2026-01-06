@@ -17,18 +17,23 @@ namespace KH.Actions {
                 Finished();
                 return;
             }
-            AudioSource source = null;
-            if (Is2DSound) source = Audio.PlayOneShot();
-            else source = Audio.PlayClipAtPoint(this.transform.position);
+            AudioPlaybackHandle handle;
+            if (Is2DSound) {
+                handle = Audio.Prepare().PlayIn2D();
+            } else {
+                handle = Audio.Prepare().PlayAtPoint(this.transform.position);
+            }
+
             if (WaitForFinish) {
-                StartCoroutine(WaitForFinishCoroutine(source));
+                // Use the new handle helper!
+                StartCoroutine(Wait(handle));
             } else {
                 Finished();
             }
-		}
+        }
 
-        IEnumerator WaitForFinishCoroutine(AudioSource source) {
-            yield return new WaitWhile(() => source != null && source.isPlaying);
+        private IEnumerator Wait(AudioPlaybackHandle handle) {
+            yield return handle.WaitForCompletion();
             Finished();
         }
     }

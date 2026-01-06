@@ -7,19 +7,9 @@ namespace KH.Audio {
 	public class SingleAudioEventSub : SingleAudioEvent {
 		public SubtitleObject Subtitle;
 
-		public override AudioSource Play(AudioSource source, float volumeMod = 1f, float pitchMod = 1f) {
-			if (Subtitle != null) SubtitleManager.AddSubtitleToDefaultManager(Subtitle);
-			return base.Play(source, volumeMod, pitchMod);
-		}
-
-		public override AudioSource PlayClipAtPoint(Vector3 position, float volumeMod = 1f, float pitchMod = 1f) {
-			if (Subtitle != null) SubtitleManager.AddSubtitleToDefaultManager(Subtitle);
-			return base.PlayClipAtPoint(position, volumeMod, pitchMod);
-		}
-
-		public override AudioSource PlayOneShot(float volumeMod = 1f, float pitchMod = 1f) {
-			if (Subtitle != null) SubtitleManager.AddSubtitleToDefaultManager(Subtitle);
-			return base.PlayOneShot(volumeMod, pitchMod);
-		}
+        public override AudioPlaybackHandle CreateHandle(AudioSource source, AudioProxy runner, PlaybackConfig config, bool managed) {
+            if (Subtitle != null) SubtitleManager.AddSubtitleToDefaultManager(Subtitle);
+            return base.CreateHandle(source, runner, config, managed);
+        }
 	}
 }

@@ -15,44 +15,12 @@ namespace KH.Audio {
 
 		public AudioMixerGroup MixerGroup;
 
-		public override AudioSource Play(AudioSource source, float volumeMod = 1f, float pitchMod = 1f) {
-			if (clip == null) return null;
-
-			source.clip = clip;
-			source.volume = Random.Range(volume.minValue, volume.maxValue);
-			source.pitch = Random.Range(pitch.minValue, pitch.maxValue);
-			if (MixerGroup != null) source.outputAudioMixerGroup = MixerGroup;
-			source.Play();
-
-			return source;
-		}
-
-		public override AudioSource PlayClipAtPoint(Vector3 position, float volumeMod = 1f, float pitchMod = 1f) {
-			if (clip == null) return null;
-
-			return ASHelper.PlayClipAtPoint(
-				clip, 
-				position, 
-				false, 
-				volumeMod * Random.Range(volume.minValue, volume.maxValue), 
-				pitchMod * Random.Range(pitch.minValue, pitch.maxValue),
-				true,
-				MixerGroup
-			);
-		}
-
-		public override AudioSource PlayOneShot(float volumeMod = 1f, float pitchMod = 1f) {
-			if (clip == null) return null;
-
-			return ASHelper.PlayClipAtPoint(
-				clip, 
-				Vector3.zero, 
-				true, 
-				volumeMod * Random.Range(volume.minValue, volume.maxValue), 
-				pitchMod * Random.Range(pitch.minValue, pitch.maxValue), 
-				true,
-				MixerGroup
-			);
-		}
-	}
+        public override AudioPlaybackHandle CreateHandle(AudioSource source, AudioProxy runner, PlaybackConfig config, bool managed) {
+            source.clip = clip;
+            source.volume = Random.Range(volume.minValue, volume.maxValue) * config.VolumeMod;
+            source.pitch = Random.Range(pitch.minValue, pitch.maxValue) * config.PitchMod;
+            source.outputAudioMixerGroup = MixerGroup;
+            return new AudioPlaybackHandle(source, runner, managed);
+        }
+    }
 }

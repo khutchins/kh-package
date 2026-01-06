@@ -9,8 +9,9 @@ namespace KH.Audio {
 		[SerializeField] private AudioSource _previewer;
 
 		public void OnEnable() {
-			_previewer = EditorUtility.CreateGameObjectWithHideFlags("Audio preview", HideFlags.HideAndDontSave, typeof(AudioSource)).GetComponent<AudioSource>();
-		}
+            GameObject go = EditorUtility.CreateGameObjectWithHideFlags("Audio preview", HideFlags.HideAndDontSave, typeof(AudioSource), typeof(AudioProxy));
+            _previewer = go.GetComponent<AudioSource>();
+        }
 
 		public void OnDisable() {
 			DestroyImmediate(_previewer.gameObject);
@@ -21,7 +22,7 @@ namespace KH.Audio {
 
 			EditorGUI.BeginDisabledGroup(serializedObject.isEditingMultipleObjects);
 			if (GUILayout.Button("Preview")) {
-				((AudioEvent)target).Play(_previewer);
+				((AudioEvent)target).Prepare().PlayUsingSource(_previewer);
 			}
 			EditorGUI.EndDisabledGroup();
 		}

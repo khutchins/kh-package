@@ -32,8 +32,7 @@ namespace KH.Script {
                     logger($"Unknown audio event '{name}'");
                     yield break;
                 }
-                var source = aevent.PlayOneShot();
-                yield return new WaitWhile(() => source != null && source.isPlaying);
+                yield return aevent.Prepare().PlayIn2D().WaitForCompletion();
             }
 
             Channel.Register(new Command {

@@ -22,19 +22,19 @@ namespace KH.Audio {
 
         public void PlayOneShot() {
             CheckAndPlay(() => {
-                if (AudioEvent != null) AudioEvent.PlayOneShot();
+                if (AudioEvent != null) AudioEvent.Prepare().PlayIn2D();
             });
 		}
 
         public void Play(AudioSource source) {
             CheckAndPlay(() => {
-                if (AudioEvent != null) AudioEvent.Play(source);
+                if (AudioEvent != null) AudioEvent.Prepare().PlayUsingSource(source);
             });
 		}
 
         public void PlayClipAtPoint(Vector3 position) {
             CheckAndPlay(() => {
-                if (AudioEvent != null) AudioEvent.PlayClipAtPoint(position);
+                if (AudioEvent != null) AudioEvent.Prepare().PlayAtPoint(position);
             });
 		}
     }
