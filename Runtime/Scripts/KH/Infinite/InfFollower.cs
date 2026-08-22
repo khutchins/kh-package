@@ -40,12 +40,20 @@ namespace KH.Infinite {
         protected virtual void OnAwake() { }
         protected virtual void OnStart() { }
 
+        public Transform Target {
+            get { return ObjectToFollow; }
+            set {
+                ObjectToFollow = value;
+                if (_chunkManagers != null && value != null) Regenerate(value.position);
+            }
+        }
+
         private void OnValidate() {
             if (_chunkManagers != null) {
                 foreach (var chunkManager in _chunkManagers) {
                     chunkManager.SetRadius(GenerateRadius, ClearRadius);
                 }
-                Regenerate(ObjectToFollow.position);
+                if (ObjectToFollow != null) Regenerate(ObjectToFollow.position);
             }
         }
 
@@ -59,7 +67,7 @@ namespace KH.Infinite {
         }
 
         private void Start() {
-            Regenerate(ObjectToFollow.position);
+            if (ObjectToFollow != null) Regenerate(ObjectToFollow.position);
             foreach (var chunkManager in _chunkManagers) {
                 StartCoroutine(chunkManager.CleanupCoroutine());
             }
@@ -67,6 +75,7 @@ namespace KH.Infinite {
         }
 
         private void Update() {
+            if (ObjectToFollow == null) return;
             if (Vector3.Distance(ObjectToFollow.position, _lastCheck) > 1) {
                 Regenerate(ObjectToFollow.position);
                 _lastCheck = ObjectToFollow.position;
@@ -89,7 +98,7 @@ namespace KH.Infinite {
             foreach (var chunkManager in _chunkManagers) {
                 chunkManager.SetRadius(GenerateRadius, ClearRadius);
             }
-            Regenerate(ObjectToFollow.position);
+            if (ObjectToFollow != null) Regenerate(ObjectToFollow.position);
         }
 
         public void SetClearRadius(int radius) {
@@ -97,7 +106,7 @@ namespace KH.Infinite {
             foreach (var chunkManager in _chunkManagers) {
                 chunkManager.SetRadius(GenerateRadius, ClearRadius);
             }
-            Regenerate(ObjectToFollow.position);
+            if (ObjectToFollow != null) Regenerate(ObjectToFollow.position);
         }
 
         public void SetGenerateAndClearRadius(int generate, int clear) {
@@ -106,7 +115,7 @@ namespace KH.Infinite {
             foreach (var chunkManager in _chunkManagers) {
                 chunkManager.SetRadius(GenerateRadius, ClearRadius);
             }
-            Regenerate(ObjectToFollow.position);
+            if (ObjectToFollow != null) Regenerate(ObjectToFollow.position);
         }
 
         void Regenerate(Vector3 position) {
@@ -116,6 +125,7 @@ namespace KH.Infinite {
         }
 
         private void OnDrawGizmosSelected() {
+            if (ObjectToFollow == null) return;
             Gizmos.color = new Color(0, 1, 0, 0.2f);
             Gizmos.DrawSphere(ObjectToFollow.transform.position, GenerateRadius);
             Gizmos.color = new Color(1, 0, 0, 0.2f);
